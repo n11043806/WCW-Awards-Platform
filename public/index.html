@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to Firebase Hosting</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-database-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-functions-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-messaging-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-analytics-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-remote-config-compat.js"></script>
+    <script defer src="/__/firebase/12.0.0/firebase-performance-compat.js"></script>
+    <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+  </head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WCW Awards - Welcome</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+  
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+  
+      header {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end; /* aligns logo to the right */
+        padding: 20px 40px;
+        background-color: transparent; /* optional: keep it see-through */
+        position: absolute; /* optional: make it overlay the content */
+        top: 0;
+        left: 0;
+        z-index: 10;
+      }
+
+  
+      header img {
+        height: 150px;
+      }
+  
+      .main-section {
+        display: flex;
+        flex-wrap: wrap;
+        min-height: 100vh;
+      }
+  
+      .image-section {
+        flex: 1 1 50%;
+        background-image: url('Images/homepageimage2.jpg'); /* Replace with your image path */
+        background-size: cover;
+        background-position: center;
+        min-height: 400px;
+      }
+  
+      .content-section {
+        flex: 1 1 50%;
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 60px;
+      }
+  
+      .content-section h1 {
+        font-size: 2.8rem;
+        margin-bottom: 20px;
+        color: #d7336f;
+      }
+  
+      .content-section p {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+      }
+  
+      .buttons {
+        display: flex;
+        gap: 20px;
+      }
+  
+      .buttons button {
+        padding: 12px 30px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+  
+      .sign-in {
+        background-color: #f4f4f4;
+        color: #333;
+        border: 1px solid #ccc;
+      }
+  
+      .sign-in:hover {
+        background-color: #e0e0e0;
+      }
+  
+      .sign-up {
+        background-color: #d7336f;
+        color: #fff;
+      }
+  
+      .sign-up:hover {
+        background-color: #b8235a;
+      }
+  
+      @media (max-width: 768px) {
+        .main-section {
+          flex-direction: column;
+        }
+  
+        .content-section {
+          align-items: center;
+          text-align: center;
+          padding: 40px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+  
+    <header>
+      <img src="Images/logo.png" alt="WCW Logo"> <!-- Replace with your logo -->
+    </header>
+  
+    <div class="main-section">
+      <div class="image-section"></div>
+      <div class="content-section">
+        <h1>Women<br>Changing The World<br>Awards</h1>
+        <p>Celebrating women making a global impact. Join us for the 2026 Global Summit and Awards.</p>
+        <div class="buttons">
+          <button class="sign-in" onclick="location.href='signin.html'">Sign In</button>
+          <button class="sign-up" onclick="location.href='signup.html'">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  
+  </body>
+    <script src="app.js" >
+
+    </script>
+  </body>
+</html>
