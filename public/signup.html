@@ -49,6 +49,7 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
       width: 500px;
       max-width: 95vw;
+      position: relative;
     }
 
     .signup-container h2 {
@@ -56,6 +57,20 @@
       margin-bottom: 25px;
       color: #d7336f;
       font-size: 28px;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 14px;
+      color: #d7336f;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .back-button:hover {
+      text-decoration: underline;
     }
 
     input, select {
@@ -134,17 +149,22 @@
 </head>
 
 <body>
+  <!-- Logo -->
   <header>
     <img src="Images/Logo.png" alt="WCW Logo" />
   </header>
 
+  <!-- Split layout -->
   <div class="split-screen">
     <div class="left-side"></div>
     <div class="right-side"></div>
   </div>
 
+  <!-- Centered form -->
   <div class="center-content">
     <div class="signup-container">
+      <div class="back-button" onclick="goBack()">← Back</div>
+
       <h2>Create an Account</h2>
 
       <label for="email">Email</label>
@@ -192,8 +212,12 @@
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
-  <!-- Sign-up logic -->
+  <!-- JavaScript logic -->
   <script>
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
     function signUp() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;

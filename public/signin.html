@@ -47,6 +47,7 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
       width: 500px;
       max-width: 95vw;
+      position: relative;
     }
 
     .login-container h2 {
@@ -87,6 +88,20 @@
       text-align: center;
     }
 
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 14px;
+      color: #d7336f;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .back-button:hover {
+      text-decoration: underline;
+    }
+
     header {
       position: absolute;
       top: 20px;
@@ -115,6 +130,8 @@
   <!-- Centered sign-in form -->
   <div class="center-content">
     <div class="login-container">
+      <div class="back-button" onclick="goBack()">← Back</div>
+
       <h2>Sign In</h2>
       <input type="email" id="email" placeholder="Email" required />
       <input type="password" id="password" placeholder="Password" required />
@@ -130,6 +147,10 @@
 
   <!-- Sign-in logic -->
   <script>
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
     function signIn() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
