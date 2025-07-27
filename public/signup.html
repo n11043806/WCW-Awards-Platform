@@ -149,18 +149,15 @@
 </head>
 
 <body>
-  <!-- Logo -->
   <header>
     <img src="Images/Logo.png" alt="WCW Logo" />
   </header>
 
-  <!-- Split layout -->
   <div class="split-screen">
     <div class="left-side"></div>
     <div class="right-side"></div>
   </div>
 
-  <!-- Centered form -->
   <div class="center-content">
     <div class="signup-container">
       <div class="back-button" onclick="goBack()">← Back</div>
@@ -207,12 +204,11 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-database-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
-  <!-- JavaScript logic -->
   <script>
     function goBack() {
       window.location.href = "index.html";
@@ -223,6 +219,12 @@
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirm-password").value;
       const termsAccepted = document.getElementById("terms").checked;
+
+      const dob = document.getElementById("dob").value;
+      const gender = document.getElementById("gender").value;
+      const phone = document.getElementById("phone").value;
+      const address = document.getElementById("address").value;
+
       const errorBox = document.getElementById("error");
       const successBox = document.getElementById("success");
 
@@ -246,6 +248,17 @@
 
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
+          const user = userCredential.user;
+          const uid = user.uid;
+
+          firebase.database().ref('users/' + uid).set({
+            email: email,
+            dob: dob,
+            gender: gender,
+            phone: phone,
+            address: address
+          });
+
           successBox.textContent = "Account created successfully!";
           setTimeout(() => {
             window.location.href = "signin.html";
