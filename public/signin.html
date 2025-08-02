@@ -158,7 +158,8 @@
 
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          window.location.href = "index.html";
+          // Redirect to applicant dashboard
+          window.location.href = "applicantdashboard.html";
         })
         .catch((error) => {
           errorBox.textContent = error.message;
