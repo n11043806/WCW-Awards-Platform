@@ -130,8 +130,7 @@
     }
 
     .success {
-      color: green;
-      margin-top: 10px;
+      margin-top: 20px;
       text-align: center;
     }
 
@@ -159,7 +158,7 @@
   </div>
 
   <div class="center-content">
-    <div class="signup-container">
+    <div class="signup-container" id="signup-form">
       <div class="back-button" onclick="goBack()">← Back</div>
 
       <h2>Create an Account</h2>
@@ -200,8 +199,9 @@
 
       <button onclick="signUp()">Sign Up</button>
       <div class="error" id="error"></div>
-      <div class="success" id="success"></div>
     </div>
+
+    <div class="success" id="success"></div>
   </div>
 
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
@@ -212,6 +212,10 @@
   <script>
     function goBack() {
       window.location.href = "index.html";
+    }
+
+    function goToSignIn() {
+      window.location.href = "signin.html";
     }
 
     function signUp() {
@@ -227,9 +231,10 @@
 
       const errorBox = document.getElementById("error");
       const successBox = document.getElementById("success");
+      const signupForm = document.getElementById("signup-form");
 
       errorBox.textContent = "";
-      successBox.textContent = "";
+      successBox.innerHTML = "";
 
       if (!termsAccepted) {
         errorBox.textContent = "You must accept the terms and conditions.";
@@ -259,10 +264,15 @@
             address: address
           });
 
-          successBox.textContent = "Account created successfully!";
-          setTimeout(() => {
-            window.location.href = "signin.html";
-          }, 1500);
+          // Hide the form and show success message
+          signupForm.style.display = "none";
+          successBox.innerHTML = `
+            <div style="text-align: center; padding: 40px; border-radius: 10px; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
+              <h2 style="color: #d7336f;">Account Created Successfully!</h2>
+              <p style="margin: 20px 0;">You can now sign in with your account.</p>
+              <button style="padding: 12px 25px; font-size: 16px; background-color: #d7336f; color: white; border: none; border-radius: 5px; cursor: pointer;" onclick="goToSignIn()">Go to Sign In</button>
+            </div>
+          `;
         })
         .catch((error) => {
           errorBox.textContent = error.message;
