@@ -6,9 +6,7 @@
   <title>Applicant Dashboard - WCW Awards</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -101,7 +99,7 @@
 
 <body>
   <header>
-    <h1>Welcome to Your Dashboard</h1>
+    <h1 id="welcomeMessage">Welcome to Your Dashboard</h1>
     <button class="logout-btn" onclick="logout()">Log Out</button>
   </header>
 
@@ -152,7 +150,7 @@
 
     // Redirect to application form
     function startNewApplication() {
-      window.location.href = "applicationform.html"; // Update this if you name your form file differently
+      window.location.href = "applicationform.html";
     }
 
     // Placeholder for profile editing
@@ -160,18 +158,22 @@
       alert("Profile management coming soon!");
     }
 
-    // Load submitted applications (example placeholder logic)
+    // Personalize dashboard and load applications
     firebase.auth().onAuthStateChanged(user => {
-      const list = document.getElementById('applicationsList');
-      list.innerHTML = ""; // clear loading message
+      const welcomeEl = document.getElementById("welcomeMessage");
+      const list = document.getElementById("applicationsList");
 
       if (user) {
+        const name = user.displayName || user.email || "User";
+        welcomeEl.textContent = `Welcome, ${name}!`;
+
         const db = firebase.firestore();
         db.collection("applications").where("userId", "==", user.uid)
           .get()
           .then(querySnapshot => {
+            list.innerHTML = "";
             if (querySnapshot.empty) {
-              list.innerHTML = "<li>No applications submitted yet.</li>";
+              list.innerHTML = "<li>No applications have been submitted yet.</li>";
             } else {
               querySnapshot.forEach(doc => {
                 const data = doc.data();
@@ -184,8 +186,9 @@
           .catch(error => {
             list.innerHTML = `<li>Error loading applications: ${error.message}</li>`;
           });
+
       } else {
-        list.innerHTML = "<li>User not signed in.</li>";
+        window.location.href = "signin.html";
       }
     });
   </script>
