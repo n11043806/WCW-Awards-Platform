@@ -6,88 +6,58 @@
   <title>Sign Up - WCW Awards</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     html, body {
       margin: 0;
       height: 100%;
       font-family: Arial, sans-serif;
     }
-
     .split-screen {
       display: flex;
       height: 100vh;
       width: 100%;
     }
-
-    .left-side {
-      flex: 1;
-      background-color: #d7336f;
-    }
-
-    .right-side {
-      flex: 1;
-      background-color: #ffffff;
-    }
-
+    .left-side { flex: 1; background-color: #d7336f; }
+    .right-side { flex: 1; background-color: #ffffff; }
     .center-content {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
       overflow-y: auto;
       max-height: 95vh;
     }
-
     .signup-container {
       background: white;
       padding: 50px;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      width: 500px;
-      max-width: 95vw;
+      width: 500px; max-width: 95vw;
       position: relative;
     }
-
     .signup-container h2 {
       text-align: center;
       margin-bottom: 25px;
       color: #d7336f;
       font-size: 28px;
     }
-
     .back-button {
       position: absolute;
-      top: 20px;
-      left: 30px;
+      top: 20px; left: 30px;
       font-size: 14px;
       color: #d7336f;
       cursor: pointer;
       font-weight: bold;
     }
-
-    .back-button:hover {
-      text-decoration: underline;
-    }
-
+    .back-button:hover { text-decoration: underline; }
     input, select {
-      width: 100%;
-      padding: 14px;
+      width: 100%; padding: 14px;
       margin: 10px 0;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 16px;
     }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
-
+    label { font-weight: bold; display: block; margin-top: 10px; }
     small {
       display: block;
       margin-top: -8px;
@@ -95,18 +65,15 @@
       color: #888;
       font-size: 12px;
     }
-
     .checkbox-container {
       margin-top: 15px;
       display: flex;
       align-items: center;
     }
-
     .checkbox-container input {
       width: auto;
       margin-right: 10px;
     }
-
     button {
       width: 100%;
       padding: 14px;
@@ -118,39 +85,28 @@
       font-size: 17px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #b8235a;
-    }
-
+    button:hover { background-color: #b8235a; }
     .error {
       color: red;
       margin-top: 10px;
       text-align: center;
     }
-
     .success {
       margin-top: 20px;
       text-align: center;
     }
-
     header {
       position: absolute;
-      top: 20px;
-      right: 30px;
+      top: 20px; right: 30px;
       z-index: 1000;
     }
-
     header img {
       height: 150px;
     }
   </style>
 </head>
-
 <body>
-  <header>
-    <img src="Images/Logo.png" alt="WCW Logo" />
-  </header>
+  <header><img src="Images/Logo.png" alt="WCW Logo" /></header>
 
   <div class="split-screen">
     <div class="left-side"></div>
@@ -160,30 +116,13 @@
   <div class="center-content">
     <div class="signup-container" id="signup-form">
       <div class="back-button" onclick="goBack()">← Back</div>
-
       <h2>Create an Account</h2>
+
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" placeholder="Your full name" required />
 
       <label for="email">Email</label>
       <input type="email" id="email" placeholder="Enter your email" required />
-
-      <label for="dob">Date of Birth</label>
-      <input type="date" id="dob" required />
-
-      <label for="gender">Gender</label>
-      <select id="gender" required>
-        <option value="" disabled selected>Select gender</option>
-        <option value="female">Female</option>
-        <option value="male">Male</option>
-        <option value="nonbinary">Non-binary</option>
-        <option value="prefer-not">Prefer not to say</option>
-        <option value="other">Other</option>
-      </select>
-
-      <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" placeholder="e.g. 0400 000 000" required />
-
-      <label for="address">Address</label>
-      <input type="text" id="address" placeholder="Your address" required />
 
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="Create a password" required />
@@ -204,9 +143,9 @@
     <div class="success" id="success"></div>
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
-  <script src="/__/firebase/12.0.0/firebase-database-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
   <script>
@@ -219,15 +158,11 @@
     }
 
     function signUp() {
-      const email = document.getElementById("email").value;
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirm-password").value;
       const termsAccepted = document.getElementById("terms").checked;
-
-      const dob = document.getElementById("dob").value;
-      const gender = document.getElementById("gender").value;
-      const phone = document.getElementById("phone").value;
-      const address = document.getElementById("address").value;
 
       const errorBox = document.getElementById("error");
       const successBox = document.getElementById("success");
@@ -241,30 +176,26 @@
         return;
       }
 
+      if (!fullName || !email || !password || !confirmPassword) {
+        errorBox.textContent = "All fields are required.";
+        return;
+      }
+
       if (password !== confirmPassword) {
         errorBox.textContent = "Passwords do not match.";
         return;
       }
 
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-        errorBox.textContent = "Password must be at least 8 characters long and include a number and a capital letter.";
+        errorBox.textContent = "Password must be at least 8 characters and include a number and a capital letter.";
         return;
       }
 
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          const user = userCredential.user;
-          const uid = user.uid;
-
-          firebase.database().ref('users/' + uid).set({
-            email: email,
-            dob: dob,
-            gender: gender,
-            phone: phone,
-            address: address
-          });
-
-          // Hide the form and show success message
+          return userCredential.user.updateProfile({ displayName: fullName });
+        })
+        .then(() => {
           signupForm.style.display = "none";
           successBox.innerHTML = `
             <div style="text-align: center; padding: 40px; border-radius: 10px; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
