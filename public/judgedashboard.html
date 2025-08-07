@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Judge Dashboard - WCW Awards</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: #d7336f;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #ffe6ee;
+    }
+
+    main {
+      padding: 40px 30px;
+    }
+
+    .dashboard-section {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 30px auto;
+    }
+
+    .dashboard-section h2 {
+      color: #d7336f;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-section p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-section button {
+      padding: 12px 20px;
+      background-color: #d7336f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .dashboard-section button:hover {
+      background-color: #b8235a;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Welcome, <span id="judgeName">Judge</span></h1>
+    <button class="logout-btn" onclick="logout()">Log Out</button>
+  </header>
+
+  <main>
+    <div class="dashboard-section">
+      <h2>Assigned Applications</h2>
+      <p>View the list of applications assigned to you for evaluation.</p>
+      <button onclick="alert('Assigned applications coming soon')">View Applications</button>
+    </div>
+
+    <div class="dashboard-section">
+      <h2>Submit Scores & Feedback</h2>
+      <p>Provide your feedback and scores for each application.</p>
+      <button onclick="alert('Scoring module coming soon')">Start Reviewing</button>
+    </div>
+
+    <div class="dashboard-section">
+      <h2>Review History</h2>
+      <p>Check your past evaluations and scoring history.</p>
+      <button onclick="alert('Review history coming soon')">View History</button>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 WCW Awards Platform. All rights reserved.
+  </footer>
+
+  <!-- Firebase SDKs -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      }).catch((error) => {
+        alert("Error signing out: " + error.message);
+      });
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        firebase.firestore().collection("users").doc(uid).get()
+          .then(doc => {
+            if (doc.exists) {
+              const name = doc.data().fullName || user.displayName || "Judge";
+              document.getElementById("judgeName").textContent = name;
+            } else {
+              document.getElementById("judgeName").textContent = "Judge";
+            }
+          }).catch(error => {
+            console.error("Failed to fetch judge name:", error);
+          });
+      } else {
+        window.location.href = "signin.html";
+      }
+    });
+  </script>
+</body>
+</html>
