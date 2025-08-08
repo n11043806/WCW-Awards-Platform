@@ -72,6 +72,43 @@
       background: #d62d83;
       color: #fff;
     }
+    .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 210px;
+    height: 100vh;
+    background: #d62d83;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding-top: 30px;
+    z-index: 100;
+  }
+  .sidebar h2 {
+    font-size: 22px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .sidebar a {
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    display: block;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    background: #b8235a;
+  }
+  .main-content {
+    margin-left: 210px;
+    /* matches sidebar width */
+  }
+
     .user-circle {
       width: 28px;
       height: 28px;
@@ -212,24 +249,34 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome, <span id="adminName">Admin</span></h1>
-    <button class="logout-btn" onclick="logout()">Log Out</button>
-  </header>
-  <div class="topnav">
-    <div class="topnav-left">
-      <div class="topnav-title">Women Changing The World Awards</div>
-      <a href="#" class="topnav-btn">Home</a>
-      <a href="#" class="topnav-btn">Manage</a>
-      <a href="#" class="topnav-btn">Enter</a>
-      <a href="#" class="topnav-btn">Judge</a>
-    </div>
-    <div style="display: flex; align-items: center;">
-      <span id="adminNameTop">Katy Garner</span>
-      <div class="user-circle">KG</div>
-    </div>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="#" class="active">Dashboard</a>
+    <a href="#">Entries</a>
+    <a href="#">Users</a>
+    <a href="#">Judging</a>
+    <a href="#">Logout</a>
   </div>
-  <main>
+  <div class="main-content">
+    <!-- Move everything else inside this div -->
+    <header>
+      <h1>Welcome, <span id="adminName">Admin</span></h1>
+      <button class="logout-btn" onclick="logout()">Log Out</button>
+    </header>
+    <div class="topnav">
+      <div class="topnav-left">
+        <div class="topnav-title">Women Changing The World Awards</div>
+        <a href="#" class="topnav-btn">Home</a>
+        <a href="#" class="topnav-btn">Manage</a>
+        <a href="#" class="topnav-btn">Enter</a>
+        <a href="#" class="topnav-btn">Judge</a>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <span id="adminNameTop">Katy Garner</span>
+        <div class="user-circle">KG</div>
+      </div>
+    </div>
+    <main>
     <div class="cards-row">
       <div class="card">
         <div class="card-title">WCW24</div>
