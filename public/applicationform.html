@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Application Form - WCW Awards</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
+    header { background-color: #d7336f; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 24px; }
+    .back-btn { background-color: white; color: #d7336f; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .back-btn:hover { background-color: #ffe6ee; }
+    main { padding: 40px 30px; }
+    .dates-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 800px; margin: 30px auto; }
+    .dates-section h2, .dates-section h3, .dates-section h4 { color: #d7336f; }
+    .dates-section ul { font-size: 16px; }
+    .dates-section p { font-size: 16px; }
+    .start-entry-btn { padding: 12px 20px; background-color: #d7336f; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    .start-entry-btn:hover { background-color: #b8235a; }
+    .tab-list { display: flex; gap: 0; margin: 40px auto 0 auto; max-width: 800px; }
+    .tab { flex: 1; padding: 16px 0; text-align: center; font-size: 18px; font-weight: 500; border: none; cursor: pointer; background: #888; color: #fff; border-radius: 6px 6px 0 0; margin-right: 2px; }
+    .tab.active { background: #b8235a; color: #fff; }
+    .tab-content { background: white; min-height: 200px; border-radius: 0 0 10px 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; padding: 30px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+    .form-group textarea { resize: vertical; }
+    .word-count { font-size: 13px; color: #888; float: right; }
+    .eligibility-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+    .submit-btn { padding: 12px 20px; background-color: #d7336f; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+  </style>
+  <!-- Add Firebase SDKs  -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js"></script>
+</head>
+<body>
+  <header>
+    <h1>WCW Awards Application</h1>
+    <button class="back-btn" onclick="goBack()">Back</button>
+  </header>
+  <main>
+    <div class="dates-section" id="datesSection">
+      <h2>Dates</h2>
+      <ul style="margin-bottom: 1.5em;">
+        <li>Please note the entry deadline, this date is final and there will be no extensions provided.</li>
+        <li>You may edit your entry after submitting, up until the entry deadline for your region.</li>
+        <li>Please make sure all your personal details are entered accurately, including contact details.</li>
+        <li>You are eligible to enter more than one category, as long as the work submitted meets the criteria.</li>
+      </ul>
+      <p style="font-style: italic; margin-bottom: 1.5em;">* You can use the ‘copy’ feature to create a copy of your entry and change the category as required.</p>
+      <h3>IMPORTANT DATES</h3>
+      <h4>GLOBAL:</h4>
+      <p>All nominations have now closed for 2025<br>
+      Finalists in all categories announced - 17 FEBRUARY 2025</p>
+      <p>People’s Choice Voting starts - 24 FEBRUARY 2025<br>
+      People’s Choice Voting ends - 10 MARCH 2025</p>
+      <p>Winners Announced Global Awards & Summit - London 2-3 APRIL 2025</p>
+      <p>For any questions, please contact <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a></p>
+      <h3>Support</h3>
+      <p>If you have any questions on the entry process, please contact the organisers by email to <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a></p>
+      <button class="start-entry-btn" id="start-entry-btn">Start Entry</button>
+    </div>
+    <div id="tabSection" style="display:none;">
+      <!-- Only show Start Here tab at first -->
+      <div class="tab-list">
+        <button class="tab active" id="tabStart">Start here</button>
+        <button class="tab" id="tabCriteria" disabled>Criteria</button>
+      </div>
+      <div id="tabContent" class="tab-content"></div>
+    </div>
+    <button type="button" id="testAddDocBtn">Test Add Document</button>
+  </main>
+  <script>
+    function goBack() {
+      window.location.href = "applicantdashboard.html";
+    }
+
+    // Tab content templates
+    const startHereContent = `
+      <form id="startHereForm">
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="">Select category</option>
+            <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
+            <option value="IMPACT AWARDS">IMPACT AWARDS</option>
+            <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
+            <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
+            <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
+            <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="website">Website (optional)</label>
+          <input type="text" id="website" name="website" />
+        </div>
+        <div class="form-group">
+          <label for="award">Which Awards would you want to enter?</label>
+          <select id="award" name="award" required>
+            <option value="">Select award</option>
+            <option value="WCWA Americas">WCWA Americas</option>
+            <option value="WCWA Middle East & North Africa (MENA)">WCWA Middle East & North Africa (MENA)</option>
+            <option value="WCWA Czech Republic">WCWA Czech Republic</option>
+            <option value="WCWA South Africa">WCWA South Africa</option>
+            <option value="WCWA Global 2025">WCWA Global 2025</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="mobile">Mobile Number</label>
+          <input type="tel" id="mobile" name="mobile" required />
+        </div>
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" name="address" required autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label for="instagram">Instagram profile page URL</label>
+          <input type="text" id="instagram" name="instagram" />
+        </div>
+        <div class="form-group">
+          <label for="linkedin">LinkedIn profile page URL (if applicable)</label>
+          <input type="text" id="linkedin" name="linkedin" />
+        </div>
+        <button type="button" id="saveStartHereBtn">Save</button>
+        <button type="button" id="saveNextBtn">Save & Next</button>
+      </form>
+    `;
+
+    const criteriaContent = `
+      <form id="criteriaForm">
+        <div class="form-group">
+          <label for="about_yourself">Tell us about yourself</label>
+          <textarea id="about_yourself" name="about_yourself" maxlength="1200" rows="3"></textarea>
+          <span class="word-count" id="count_about_yourself">0/150</span>
+        </div>
+        <div class="form-group">
+          <label for="about_work">Tell us about your work</label>
+          <textarea id="about_work" name="about_work" maxlength="1200" rows="3"></textarea>
+          <span class="word-count" id="count_about_work">0/150</span>
+        </div>
+        <div class="form-group">
+          <label for="inspiration">What inspired you to do this work?</label>
+          <textarea id="inspiration" name="inspiration" maxlength="1600" rows="4"></textarea>
+          <span class="word-count" id="count_inspiration">0/200</span>
+        </div>
+        <div class="form-group">
+          <label for="unique">What makes what you do special or unique?</label>
+          <textarea id="unique" name="unique" maxlength="1600" rows="4"></textarea>
+          <span class="word-count" id="count_unique">0/200</span>
+        </div>
+        <div class="form-group">
+          <label for="challenge">What has been your greatest challenge & how have you addressed this? </label>
+          <textarea id="challenge" name="challenge" maxlength="4000" rows="6"></textarea>
+          <span class="word-count" id="count_challenge">0/500</span>
+        </div>
+        <div class="form-group">
+          <label for="achievements">What have been your top 3 greatest achievements in the past 12 months? </label>
+          <textarea id="achievements" name="achievements" maxlength="2400" rows="5"></textarea>
+          <span class="word-count" id="count_achievements">0/300</span>
+        </div>
+        <div class="form-group">
+          <label for="significance">Why were these achievements significant and what do you attribute your achievements to?</label>
+          <textarea id="significance" name="significance" maxlength="1600" rows="4"></textarea>
+          <span class="word-count" id="count_significance">0/200</span>
+        </div>
+        <div class="form-group">
+          <label for="vision">What is your big picture vision for the work you are doing? </label>
+          <textarea id="vision" name="vision" maxlength="4000" rows="6"></textarea>
+          <span class="word-count" id="count_vision">0/500</span>
+        </div>
+        <div class="form-group">
+          <label for="recognition">Why should you be recognised in this category? </label>
+          <textarea id="recognition" name="recognition" maxlength="4000" rows="6"></textarea>
+          <span class="word-count" id="count_recognition">0/500</span>
+        </div>
+        <div class="eligibility-check">
+          <input type="checkbox" id="confirm-eligibility" />
+          <label for="confirm-eligibility" style="font-size: 0.98rem; font-weight: 400;">
+            I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+          </label>
+        </div>
+        <button type="button" id="saveCriteriaBtn">Save</button>
+        <button type="submit" class="submit-btn" id="submit-application" disabled>Submit Application</button>
+      </form>
+    `;
+
+    // Show tab section on Start Entry
+    document.getElementById('start-entry-btn').onclick = function() {
+      document.getElementById('datesSection').style.display = 'none';
+      document.getElementById('tabSection').style.display = 'block';
+      document.getElementById('tabContent').innerHTML = startHereContent;
+      setUpStartHereTab();
+    };
+
+    // Tab switching logic
+    document.getElementById('tabStart').onclick = function() {
+      document.getElementById('tabStart').classList.add('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabContent').innerHTML = startHereContent;
+      setUpStartHereTab();
+    };
+    document.getElementById('tabCriteria').onclick = function() {
+      document.getElementById('tabStart').classList.remove('active');
+      document.getElementById('tabCriteria').classList.add('active');
+      document.getElementById('tabContent').innerHTML = criteriaContent;
+      setUpCriteriaTab();
+    };
+
+    let applicationId = null; // Store Firestore doc ID
+
+    // Save Start Here data
+    document.getElementById('saveStartHereBtn').onclick = async function() {
+      const startForm = document.getElementById("startHereForm");
+      const startData = {
+        category: startForm.category.value,
+        name: startForm.name.value,
+        website: startForm.website.value,
+        awards_choice: startForm.award.value,
+        email: startForm.email.value,
+        mobile_number: startForm.mobile.value,
+        address: startForm.address.value,
+        instagram_url: startForm.instagram.value,
+        linkedin_url: startForm.linkedin.value,
+        stage: "draft",
+        user_id: currentUser ? currentUser.uid : "",
+        applicant_id: currentUser ? currentUser.uid : ""
+      };
+      try {
+        let docRef;
+        if (!applicationId) {
+          docRef = await firebase.firestore().collection("applications").add(startData);
+          applicationId = docRef.id; // Firestore auto-generates this
+        } else {
+          await firebase.firestore().collection("applications").doc(applicationId).update(startData);
+          docRef = await firebase.firestore().collection("applications").doc(applicationId).get();
+        }
+        if (docRef && (docRef.id || docRef.exists)) {
+          alert("Application saved as draft.");
+        } else {
+          alert("Failed to save application. Please try again.");
+        }
+      } catch (error) {
+        alert("Failed to save application: " + error.message);
+      }
+    };
+
+    // Save & Next
+    document.getElementById('saveNextBtn').onclick = async function() {
+      await document.getElementById('saveStartHereBtn').onclick();
+      // Enable Criteria tab and switch to it
+      document.getElementById('tabCriteria').disabled = false;
+      document.getElementById('tabCriteria').click();
+    };
+
+    // Tab switching logic
+    document.getElementById('tabStart').onclick = function() {
+      document.getElementById('tabStart').classList.add('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabContent').innerHTML = startHereContent;
+      setUpStartHereTab();
+    };
+    document.getElementById('tabCriteria').onclick = function() {
+      document.getElementById('tabStart').classList.remove('active');
+      document.getElementById('tabCriteria').classList.add('active');
+      document.getElementById('tabContent').innerHTML = criteriaContent;
+      setUpCriteriaTab();
+    };
+
+    // Enable submit only if checkbox is checked
+    function setUpCriteriaTab() {
+      const checkbox = document.getElementById('confirm-eligibility');
+      const submitBtn = document.getElementById('submit-application');
+      if (checkbox && submitBtn) {
+        checkbox.addEventListener('change', function() {
+          submitBtn.disabled = !checkbox.checked;
+        });
+      }
+      // Word count logic for all textareas
+      const wordLimits = {
+        about_yourself: 150,
+        about_work: 150,
+        inspiration: 200,
+        unique: 200,
+        challenge: 500,
+        achievements: 300,
+        significance: 200,
+        vision: 500,
+        recognition: 500
+      };
+      Object.keys(wordLimits).forEach(id => {
+        const textarea = document.getElementById(id);
+        const countSpan = document.getElementById('count_' + id);
+        if (textarea && countSpan) {
+          textarea.addEventListener('input', function() {
+            const words = textarea.value.trim().split(/\s+/).filter(Boolean);
+            countSpan.textContent = `${words.length}/${wordLimits[id]}`;
+            if (words.length > wordLimits[id]) {
+              textarea.style.borderColor = 'red';
+            } else {
+              textarea.style.borderColor = '#ccc';
+            }
+          });
+        }
+      });
+
+      // Save Criteria data
+      document.getElementById('saveCriteriaBtn').onclick = async function() {
+        const criteriaForm = document.getElementById("criteriaForm");
+        const criteriaData = {
+          tell_us_about_yourself: criteriaForm.about_yourself.value,
+          tell_us_about_your_work: criteriaForm.about_work.value,
+          what_inspired_you: criteriaForm.inspiration.value,
+          what_makes_you_unique: criteriaForm.unique.value,
+          greatest_challenge: criteriaForm.challenge.value,
+          top_achievements: criteriaForm.achievements.value,
+          achievements_significance: criteriaForm.significance.value,
+          big_picture_vision: criteriaForm.vision.value,
+          recognition_reason: criteriaForm.recognition.value,
+          eligibility: criteriaForm['confirm-eligibility'].checked,
+          stage: "draft"
+        };
+        if (applicationId) {
+          await firebase.firestore().collection("applications").doc(applicationId).update(criteriaData);
+          alert("Criteria data saved as draft.");
+        }
+      };
+
+      // Attach submit handler for criteria tab
+      const criteriaForm = document.getElementById("criteriaForm");
+      if (criteriaForm) {
+        criteriaForm.onsubmit = async function(e) {
+          e.preventDefault();
+          const startForm = document.getElementById("startHereForm");
+          const criteriaForm = document.getElementById("criteriaForm");
+          const allData = {
+            category: startForm.category.value,
+            name: startForm.name.value,
+            website: startForm.website.value,
+            awards_choice: startForm.award.value,
+            email: startForm.email.value,
+            mobile_number: startForm.mobile.value,
+            address: startForm.address.value,
+            instagram_url: startForm.instagram.value,
+            linkedin_url: startForm.linkedin.value,
+            tell_us_about_yourself: criteriaForm.about_yourself.value,
+            tell_us_about_your_work: criteriaForm.about_work.value,
+            what_inspired_you: criteriaForm.inspiration.value,
+            what_makes_you_unique: criteriaForm.unique.value,
+            greatest_challenge: criteriaForm.challenge.value,
+            top_achievements: criteriaForm.achievements.value,
+            achievements_significance: criteriaForm.significance.value,
+            big_picture_vision: criteriaForm.vision.value,
+            recognition_reason: criteriaForm.recognition.value,
+            eligibility: criteriaForm['confirm-eligibility'].checked,
+            stage: "submitted",
+            status: "submitted"
+          };
+          if (applicationId) {
+            await firebase.firestore().collection("applications").doc(applicationId).set(allData, { merge: true });
+            alert("Application submitted!");
+            window.location.href = "applicantdashboard.html";
+          }
+        };
+      }
+    }
+
+    // Placeholder for start here tab setup if needed
+    function setUpStartHereTab() {
+      // Attach event listeners after form is rendered
+      const saveBtn = document.getElementById('saveStartHereBtn');
+      if (saveBtn) {
+        saveBtn.onclick = async function() {
+          const startForm = document.getElementById("startHereForm");
+          const startData = {
+            category: startForm.category.value,
+            name: startForm.name.value,
+            website: startForm.website.value,
+            awards_choice: startForm.award.value,
+            email: startForm.email.value,
+            mobile_number: startForm.mobile.value,
+            address: startForm.address.value,
+            instagram_url: startForm.instagram.value,
+            linkedin_url: startForm.linkedin.value,
+            stage: "draft",
+            user_id: currentUser ? currentUser.uid : "",
+            applicant_id: currentUser ? currentUser.uid : ""
+          };
+          try {
+            let docRef;
+            if (!applicationId) {
+              docRef = await firebase.firestore().collection("applications").add(startData);
+              applicationId = docRef.id;
+            } else {
+              await firebase.firestore().collection("applications").doc(applicationId).update(startData);
+              docRef = await firebase.firestore().collection("applications").doc(applicationId).get();
+            }
+            if (docRef && (docRef.id || docRef.exists)) {
+              alert("Application saved as draft.");
+            } else {
+              alert("Failed to save application. Please try again.");
+            }
+          } catch (error) {
+            alert("Failed to save application: " + error.message);
+          }
+        };
+      }
+
+      const nextBtn = document.getElementById('saveNextBtn');
+      if (nextBtn) {
+        nextBtn.onclick = async function() {
+          if (saveBtn) await saveBtn.onclick();
+          document.getElementById('tabCriteria').disabled = false;
+          document.getElementById('tabCriteria').click();
+        };
+      }
+
+      // Add any other event listeners for Start Here tab here
+    }
+
+    let currentUser = null;
+    firebase.auth().onAuthStateChanged(user => {
+      currentUser = user;
+    });
+
+    // Save Start Here data
+    document.getElementById('saveStartHereBtn').onclick = async function() {
+      const startForm = document.getElementById("startHereForm");
+      const startData = {
+        category: startForm.category.value,
+        name: startForm.name.value,
+        website: startForm.website.value,
+        awards_choice: startForm.award.value,
+        email: startForm.email.value,
+        mobile_number: startForm.mobile.value,
+        address: startForm.address.value,
+        instagram_url: startForm.instagram.value,
+        linkedin_url: startForm.linkedin.value,
+        stage: "draft",
+        user_id: currentUser ? currentUser.uid : "",
+        applicant_id: currentUser ? currentUser.uid : ""
+      };
+      try {
+        let docRef;
+        if (!applicationId) {
+          docRef = await firebase.firestore().collection("applications").add(startData);
+          applicationId = docRef.id; // Firestore auto-generates this
+        } else {
+          await firebase.firestore().collection("applications").doc(applicationId).update(startData);
+          docRef = await firebase.firestore().collection("applications").doc(applicationId).get();
+        }
+        if (docRef && (docRef.id || docRef.exists)) {
+          alert("Application saved as draft.");
+        } else {
+          alert("Failed to save application. Please try again.");
+        }
+      } catch (error) {
+        alert("Failed to save application: " + error.message);
+      }
+    };
+
+    // Helper to generate a random applicant id
+    function getRandomApplicantId() {
+      return 'test_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    document.getElementById('testAddDocBtn').onclick = async function() {
+      try {
+        const docRef = await firebase.firestore().collection("applications").add({});
+        alert("Test document added! ID: " + docRef.id);
+      } catch (error) {
+        alert("Error: " + error.message);
+        console.error(error);
+      }
+    };
+  </script>
+</body>
+</html>
