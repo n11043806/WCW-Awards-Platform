@@ -34,7 +34,8 @@
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
-  <script src="/__/firebase/init.js"></script>
+  
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
 </head>
 <body>
   <header>
@@ -71,7 +72,6 @@
       </div>
       <div id="tabContent" class="tab-content"></div>
     </div>
-    <button type="button" id="testAddDocBtn">Test Add Document</button>
   </main>
   <script>
     function goBack() {
@@ -339,93 +339,50 @@
       // Attach submit handler for criteria tab
       const criteriaForm = document.getElementById("criteriaForm");
       if (criteriaForm) {
-        criteriaForm.onsubmit = async function(e) {
+        criteriaForm.onsubmit = function(e) {
           e.preventDefault();
-          const startForm = document.getElementById("startHereForm");
-          const criteriaForm = document.getElementById("criteriaForm");
-          const allData = {
-            category: startForm.category.value,
-            name: startForm.name.value,
-            website: startForm.website.value,
-            awards_choice: startForm.award.value,
-            email: startForm.email.value,
-            mobile_number: startForm.mobile.value,
-            address: startForm.address.value,
-            instagram_url: startForm.instagram.value,
-            linkedin_url: startForm.linkedin.value,
-            tell_us_about_yourself: criteriaForm.about_yourself.value,
-            tell_us_about_your_work: criteriaForm.about_work.value,
-            what_inspired_you: criteriaForm.inspiration.value,
-            what_makes_you_unique: criteriaForm.unique.value,
-            greatest_challenge: criteriaForm.challenge.value,
-            top_achievements: criteriaForm.achievements.value,
-            achievements_significance: criteriaForm.significance.value,
-            big_picture_vision: criteriaForm.vision.value,
-            recognition_reason: criteriaForm.recognition.value,
-            eligibility: criteriaForm['confirm-eligibility'].checked,
-            stage: "submitted",
-            status: "submitted"
-          };
-          if (applicationId) {
-            await firebase.firestore().collection("applications").doc(applicationId).set(allData, { merge: true });
-            alert("Application submitted!");
-            window.location.href = "applicantdashboard.html";
-          }
+          alert("This will be implemented.");
         };
       }
     }
 
     // Placeholder for start here tab setup if needed
     function setUpStartHereTab() {
-      // Attach event listeners after form is rendered
+      // Save button just shows popup
       const saveBtn = document.getElementById('saveStartHereBtn');
       if (saveBtn) {
-        saveBtn.onclick = async function() {
-          const startForm = document.getElementById("startHereForm");
-          const startData = {
-            category: startForm.category.value,
-            name: startForm.name.value,
-            website: startForm.website.value,
-            awards_choice: startForm.award.value,
-            email: startForm.email.value,
-            mobile_number: startForm.mobile.value,
-            address: startForm.address.value,
-            instagram_url: startForm.instagram.value,
-            linkedin_url: startForm.linkedin.value,
-            stage: "draft",
-            user_id: currentUser ? currentUser.uid : "",
-            applicant_id: currentUser ? currentUser.uid : ""
-          };
-          try {
-            let docRef;
-            if (!applicationId) {
-              docRef = await firebase.firestore().collection("applications").add(startData);
-              applicationId = docRef.id;
-            } else {
-              await firebase.firestore().collection("applications").doc(applicationId).update(startData);
-              docRef = await firebase.firestore().collection("applications").doc(applicationId).get();
-            }
-            if (docRef && (docRef.id || docRef.exists)) {
-              alert("Application saved as draft.");
-            } else {
-              alert("Failed to save application. Please try again.");
-            }
-          } catch (error) {
-            alert("Failed to save application: " + error.message);
-          }
+        saveBtn.onclick = function() {
+          alert("This will be implemented.");
         };
       }
 
+      // Save & Next button just enables Criteria tab
       const nextBtn = document.getElementById('saveNextBtn');
       if (nextBtn) {
-        nextBtn.onclick = async function() {
-          if (saveBtn) await saveBtn.onclick();
+        nextBtn.onclick = function() {
           document.getElementById('tabCriteria').disabled = false;
           document.getElementById('tabCriteria').click();
         };
       }
+    }
 
-      // Add any other event listeners for Start Here tab here
+    function setUpCriteriaTab() {
+      // Save button just shows popup
+      const saveBtn = document.getElementById('saveCriteriaBtn');
+      if (saveBtn) {
+        saveBtn.onclick = function() {
+          alert("This will be implemented.");
+        };
+      }
+
+      // Submit button just shows popup
+      const submitBtn = document.getElementById('submit-application');
+      if (submitBtn) {
+        submitBtn.onclick = function(e) {
+          e.preventDefault();
+          alert("This will be implemented.");
+        };
+      }
     }
 
     let currentUser = null;
@@ -473,16 +430,6 @@
     function getRandomApplicantId() {
       return 'test_' + Math.random().toString(36).substr(2, 9);
     }
-
-    document.getElementById('testAddDocBtn').onclick = async function() {
-      try {
-        const docRef = await firebase.firestore().collection("applications").add({});
-        alert("Test document added! ID: " + docRef.id);
-      } catch (error) {
-        alert("Error: " + error.message);
-        console.error(error);
-      }
-    };
   </script>
 </body>
 </html>
