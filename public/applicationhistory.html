@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Applications - WCW Awards</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
+    header { background-color: #d7336f; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 24px; }
+    .back-btn { background-color: white; color: #d7336f; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .back-btn:hover { background-color: #ffe6ee; }
+    main { padding: 40px 30px; }
+    .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 1100px; margin: 30px auto; }
+    h2 { color: #d7336f; margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+    th { background: #faf0f4; color: #8c1f4c; }
+    .muted { color: #777; }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+</head>
+<body>
+  <header>
+    <h1>My Applications</h1>
+    <button class="back-btn" onclick="goBack()">Back</button>
+  </header>
+
+  <main>
+    <div class="container">
+      <h2>Application History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Application ID</th>
+            <th>Category</th>
+            <th>Award</th>
+            <th>Stage</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody id="appsBody">
+          <tr><td colspan="7" class="muted">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    function goBack() {
+      window.location.href = "applicantdashboard.html";
+    }
+
+    function fmt(ts) {
+      try {
+        if (!ts) return "-";
+        if (ts.toDate) return ts.toDate().toLocaleString();
+        // ISO string
+        return new Date(ts).toLocaleString();
+      } catch { return "-"; }
+    }
+
+    firebase.auth().onAuthStateChanged(async user => {
+      const body = document.getElementById('appsBody');
+      if (!user) {
+        window.location.href = "signin.html";
+        return;
+      }
+      try {
+        const db = firebase.firestore();
+        // Fetch all apps for this user (user_id field)
+        const snap = await db.collection('applications')
+          .where('user_id', '==', user.uid)
+          .get();
+
+        body.innerHTML = "";
+
+        if (snap.empty) {
+          body.innerHTML = `<tr><td colspan="7" class="muted">No applications found.</td></tr>`;
+          return;
+        }
+
+        // Render rows
+        snap.docs.forEach(doc => {
+          const d = doc.data();
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${doc.id}</td>
+            <td>${d.category || "-"}</td>
+            <td>${d.awards_choice || "-"}</td>
+            <td>${d.stage || "-"}</td>
+            <td>${d.status || "-"}</td>
+            <td>${fmt(d.createdAt)}</td>
+            <td>${fmt(d.updatedAt)}</td>
+          `;
+          body.appendChild(tr);
+        });
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="7" class="muted">Error: ${err.message}</td></tr>`;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

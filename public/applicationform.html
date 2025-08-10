@@ -195,6 +195,11 @@
       </form>
     `;
 
+    // Single source of truth for state
+    let applicationId = null;
+    let currentUser = null;
+    firebase.auth().onAuthStateChanged(u => { currentUser = u; });
+
     // Show tab section on Start Entry
     document.getElementById('start-entry-btn').onclick = function() {
       document.getElementById('datesSection').style.display = 'none';
@@ -203,7 +208,7 @@
       setUpStartHereTab();
     };
 
-    // Tab switching logic
+    // Tabs
     document.getElementById('tabStart').onclick = function() {
       document.getElementById('tabStart').classList.add('active');
       document.getElementById('tabCriteria').classList.remove('active');
@@ -217,218 +222,240 @@
       setUpCriteriaTab();
     };
 
-    let applicationId = null; // Store Firestore doc ID
+    // Helpers
+    const db = () => firebase.firestore();
 
-    // Save Start Here data
-    document.getElementById('saveStartHereBtn').onclick = async function() {
-      const startForm = document.getElementById("startHereForm");
-      const startData = {
-        category: startForm.category.value,
-        name: startForm.name.value,
-        website: startForm.website.value,
-        awards_choice: startForm.award.value,
-        email: startForm.email.value,
-        mobile_number: startForm.mobile.value,
-        address: startForm.address.value,
-        instagram_url: startForm.instagram.value,
-        linkedin_url: startForm.linkedin.value,
-        stage: "draft",
-        user_id: currentUser ? currentUser.uid : "",
-        applicant_id: currentUser ? currentUser.uid : ""
-      };
+    function allInputsDisabled(rootEl) {
+      const els = (rootEl || document).querySelectorAll('input, select, textarea, button');
+      els.forEach(el => el.disabled = true);
+    }
+
+    // --- Hydration utilities (prefill from last-saved doc) ---
+    async function getApplicationData() {
+      if (!applicationId) return null;
       try {
-        let docRef;
-        if (!applicationId) {
-          docRef = await firebase.firestore().collection("applications").add(startData);
-          applicationId = docRef.id; // Firestore auto-generates this
-        } else {
-          await firebase.firestore().collection("applications").doc(applicationId).update(startData);
-          docRef = await firebase.firestore().collection("applications").doc(applicationId).get();
-        }
-        if (docRef && (docRef.id || docRef.exists)) {
-          alert("Application saved as draft.");
-        } else {
-          alert("Failed to save application. Please try again.");
-        }
-      } catch (error) {
-        alert("Failed to save application: " + error.message);
+        const snap = await db().collection('applications').doc(applicationId).get();
+        return snap.exists ? snap.data() : null;
+      } catch (e) {
+        console.error('Failed to fetch application', e);
+        return null;
       }
-    };
+    }
+    function setVal(form, id, value) {
+      const el = form.querySelector('#' + id);
+      if (el) el.value = value ?? '';
+    }
+    async function hydrateStartHereForm() {
+      const form = document.getElementById('startHereForm');
+      if (!form) return;
+      const data = await getApplicationData();
+      if (!data) return;
+      setVal(form, 'category', data.category);
+      setVal(form, 'name', data.name);
+      setVal(form, 'website', data.website);
+      setVal(form, 'award', data.awards_choice);
+      setVal(form, 'email', data.email);
+      setVal(form, 'mobile', data.mobile_number);
+      setVal(form, 'address', data.address);
+      setVal(form, 'instagram', data.instagram_url);
+      setVal(form, 'linkedin', data.linkedin_url);
+    }
+    async function hydrateCriteriaForm() {
+      const form = document.getElementById('criteriaForm');
+      if (!form) return;
+      const data = await getApplicationData();
+      if (!data) return;
+      setVal(form, 'about_yourself', data.tell_us_about_yourself);
+      setVal(form, 'about_work', data.tell_us_about_your_work);
+      setVal(form, 'inspiration', data.what_inspired_you);
+      setVal(form, 'unique', data.what_makes_you_unique);
+      setVal(form, 'challenge', data.greatest_challenge);
+      setVal(form, 'achievements', data.top_achievements);
+      setVal(form, 'significance', data.achievements_significance);
+      setVal(form, 'vision', data.big_picture_vision);
+      setVal(form, 'recognition', data.recognition_reason);
+      const cb = form.querySelector('#confirm-eligibility');
+      if (cb) cb.checked = !!data.eligibility;
+      const submitBtn = form.querySelector('#submit-application');
+      if (submitBtn) submitBtn.disabled = cb ? !cb.checked : true;
+    }
 
-    // Save & Next
-    document.getElementById('saveNextBtn').onclick = async function() {
-      await document.getElementById('saveStartHereBtn').onclick();
-      // Enable Criteria tab and switch to it
-      document.getElementById('tabCriteria').disabled = false;
-      document.getElementById('tabCriteria').click();
-    };
-
-    // Tab switching logic
-    document.getElementById('tabStart').onclick = function() {
-      document.getElementById('tabStart').classList.add('active');
-      document.getElementById('tabCriteria').classList.remove('active');
-      document.getElementById('tabContent').innerHTML = startHereContent;
-      setUpStartHereTab();
-    };
-    document.getElementById('tabCriteria').onclick = function() {
-      document.getElementById('tabStart').classList.remove('active');
-      document.getElementById('tabCriteria').classList.add('active');
-      document.getElementById('tabContent').innerHTML = criteriaContent;
-      setUpCriteriaTab();
-    };
-
-    // Enable submit only if checkbox is checked
-    function setUpCriteriaTab() {
-      const checkbox = document.getElementById('confirm-eligibility');
-      const submitBtn = document.getElementById('submit-application');
-      if (checkbox && submitBtn) {
-        checkbox.addEventListener('change', function() {
-          submitBtn.disabled = !checkbox.checked;
-        });
-      }
-      // Word count logic for all textareas
-      const wordLimits = {
-        about_yourself: 150,
-        about_work: 150,
-        inspiration: 200,
-        unique: 200,
-        challenge: 500,
-        achievements: 300,
-        significance: 200,
-        vision: 500,
-        recognition: 500
+    function collectStartHere(form) {
+      const val = id => (form.querySelector('#' + id)?.value || '');
+      return {
+        category: val('category'),
+        name: val('name'),
+        website: val('website'),
+        awards_choice: val('award'),
+        email: val('email'),
+        mobile_number: val('mobile'),
+        address: val('address'),
+        instagram_url: val('instagram'),
+        linkedin_url: val('linkedin')
       };
-      Object.keys(wordLimits).forEach(id => {
-        const textarea = document.getElementById(id);
-        const countSpan = document.getElementById('count_' + id);
-        if (textarea && countSpan) {
-          textarea.addEventListener('input', function() {
-            const words = textarea.value.trim().split(/\s+/).filter(Boolean);
-            countSpan.textContent = `${words.length}/${wordLimits[id]}`;
-            if (words.length > wordLimits[id]) {
-              textarea.style.borderColor = 'red';
-            } else {
-              textarea.style.borderColor = '#ccc';
-            }
-          });
-        }
-      });
+    }
 
-      // Save Criteria data
-      document.getElementById('saveCriteriaBtn').onclick = async function() {
-        const criteriaForm = document.getElementById("criteriaForm");
-        const criteriaData = {
-          tell_us_about_yourself: criteriaForm.about_yourself.value,
-          tell_us_about_your_work: criteriaForm.about_work.value,
-          what_inspired_you: criteriaForm.inspiration.value,
-          what_makes_you_unique: criteriaForm.unique.value,
-          greatest_challenge: criteriaForm.challenge.value,
-          top_achievements: criteriaForm.achievements.value,
-          achievements_significance: criteriaForm.significance.value,
-          big_picture_vision: criteriaForm.vision.value,
-          recognition_reason: criteriaForm.recognition.value,
-          eligibility: criteriaForm['confirm-eligibility'].checked,
-          stage: "draft"
-        };
-        if (applicationId) {
-          await firebase.firestore().collection("applications").doc(applicationId).update(criteriaData);
-          alert("Criteria data saved as draft.");
-        }
+    function collectCriteria(form) {
+      const val = id => (form.querySelector('#' + id)?.value || '');
+      return {
+        tell_us_about_yourself: val('about_yourself'),
+        tell_us_about_your_work: val('about_work'),
+        what_inspired_you: val('inspiration'),
+        what_makes_you_unique: val('unique'),
+        greatest_challenge: val('challenge'),
+        top_achievements: val('achievements'),
+        achievements_significance: val('significance'),
+        big_picture_vision: val('vision'),
+        recognition_reason: val('recognition'),
+        eligibility: !!form.querySelector('#confirm-eligibility')?.checked
       };
+    }
 
-      // Attach submit handler for criteria tab
-      const criteriaForm = document.getElementById("criteriaForm");
-      if (criteriaForm) {
-        criteriaForm.onsubmit = function(e) {
-          e.preventDefault();
-          alert("This will be implemented.");
-        };
+    // Create/update Start Here data and keep the same document
+    async function saveStartHereToFirestore() {
+      if (!currentUser) throw new Error('Not signed in');
+      const form = document.getElementById('startHereForm');
+      if (!form) throw new Error('Start Here form not found');
+
+      const payload = {
+        ...collectStartHere(form),
+        stage: 'draft',
+        user_id: currentUser.uid,
+        applicant_id: currentUser.uid,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if (!applicationId) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+
+      if (!applicationId) {
+        const docRef = await db().collection('applications').add(payload); // auto-ID
+        applicationId = docRef.id;
+        return docRef.id;
+      } else {
+        await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+        return applicationId;
       }
     }
 
-    // Placeholder for start here tab setup if needed
+    // Ensure we have a doc to update from Criteria (edge case safety)
+    async function ensureApplicationDoc() {
+      if (applicationId) return applicationId;
+      if (!currentUser) throw new Error('Not signed in');
+      const base = {
+        stage: 'draft',
+        user_id: currentUser.uid,
+        applicant_id: currentUser.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      const docRef = await db().collection('applications').add(base);
+      applicationId = docRef.id;
+      return applicationId;
+    }
+
+    // START HERE handlers
     function setUpStartHereTab() {
-      // Save button just shows popup
       const saveBtn = document.getElementById('saveStartHereBtn');
-      if (saveBtn) {
-        saveBtn.onclick = function() {
-          alert("This will be implemented.");
-        };
-      }
-
-      // Save & Next button just enables Criteria tab
       const nextBtn = document.getElementById('saveNextBtn');
-      if (nextBtn) {
-        nextBtn.onclick = function() {
-          document.getElementById('tabCriteria').disabled = false;
-          document.getElementById('tabCriteria').click();
-        };
-      }
-    }
 
-    function setUpCriteriaTab() {
-      // Save button just shows popup
-      const saveBtn = document.getElementById('saveCriteriaBtn');
       if (saveBtn) {
-        saveBtn.onclick = function() {
-          alert("This will be implemented.");
+        saveBtn.onclick = async function () {
+          try {
+            await saveStartHereToFirestore();
+            alert('Application saved as draft.');
+          } catch (err) {
+            console.error(err);
+            alert('Failed to save application: ' + err.message);
+          }
         };
       }
 
-      // Submit button just shows popup
-      const submitBtn = document.getElementById('submit-application');
-      if (submitBtn) {
-        submitBtn.onclick = function(e) {
-          e.preventDefault();
-          alert("This will be implemented.");
+      if (nextBtn) {
+        nextBtn.onclick = async function () {
+          try {
+            await saveStartHereToFirestore();
+            const critTab = document.getElementById('tabCriteria');
+            if (critTab) {
+              critTab.disabled = false;
+              critTab.click();
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Failed to save application: ' + err.message);
+          }
         };
       }
+
+      // Prefill with last-saved data
+      hydrateStartHereForm();
     }
 
-    let currentUser = null;
-    firebase.auth().onAuthStateChanged(user => {
-      currentUser = user;
-    });
+    // CRITERIA handlers
+    function setUpCriteriaTab() {
+      const saveBtn = document.getElementById('saveCriteriaBtn');
+      const submitBtn = document.getElementById('submit-application');
+      const checkbox = document.getElementById('confirm-eligibility');
 
-    // Save Start Here data
-    document.getElementById('saveStartHereBtn').onclick = async function() {
-      const startForm = document.getElementById("startHereForm");
-      const startData = {
-        category: startForm.category.value,
-        name: startForm.name.value,
-        website: startForm.website.value,
-        awards_choice: startForm.award.value,
-        email: startForm.email.value,
-        mobile_number: startForm.mobile.value,
-        address: startForm.address.value,
-        instagram_url: startForm.instagram.value,
-        linkedin_url: startForm.linkedin.value,
-        stage: "draft",
-        user_id: currentUser ? currentUser.uid : "",
-        applicant_id: currentUser ? currentUser.uid : ""
-      };
-      try {
-        let docRef;
-        if (!applicationId) {
-          docRef = await firebase.firestore().collection("applications").add(startData);
-          applicationId = docRef.id; // Firestore auto-generates this
-        } else {
-          await firebase.firestore().collection("applications").doc(applicationId).update(startData);
-          docRef = await firebase.firestore().collection("applications").doc(applicationId).get();
-        }
-        if (docRef && (docRef.id || docRef.exists)) {
-          alert("Application saved as draft.");
-        } else {
-          alert("Failed to save application. Please try again.");
-        }
-      } catch (error) {
-        alert("Failed to save application: " + error.message);
+      if (checkbox && submitBtn) {
+        submitBtn.disabled = !checkbox.checked;
+        checkbox.onchange = () => { submitBtn.disabled = !checkbox.checked; };
       }
-    };
 
-    // Helper to generate a random applicant id
-    function getRandomApplicantId() {
-      return 'test_' + Math.random().toString(36).substr(2, 9);
+      if (saveBtn) {
+        saveBtn.onclick = async function () {
+          try {
+            if (!currentUser) throw new Error('Not signed in');
+            const form = document.getElementById('criteriaForm');
+            if (!form) throw new Error('Criteria form not found');
+
+            await ensureApplicationDoc();
+            const payload = {
+              ...collectCriteria(form),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              stage: 'draft'
+            };
+            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+            alert('Criteria saved as draft.');
+          } catch (err) {
+            console.error(err);
+            alert('Failed to save criteria: ' + err.message);
+          }
+        };
+      }
+
+      if (submitBtn) {
+        submitBtn.onclick = async function (e) {
+          e.preventDefault();
+          try {
+            if (!currentUser) throw new Error('Not signed in');
+            const form = document.getElementById('criteriaForm');
+            if (!form) throw new Error('Criteria form not found');
+            if (!checkbox?.checked) { alert('Please confirm eligibility to submit.'); return; }
+
+            await ensureApplicationDoc();
+
+            const payload = {
+              ...collectCriteria(form),
+              stage: 'submitted',
+              status: 'submitted',
+              submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+
+            alert('Application submitted successfully.');
+
+            // Reset state and redirect to dashboard for a fresh start
+            applicationId = null;
+            window.location.href = 'applicantdashboard.html';
+          } catch (err) {
+            console.error(err);
+            alert('Failed to submit application: ' + err.message);
+          }
+        };
+      }
+
+      // Prefill with last-saved data
+      hydrateCriteriaForm();
     }
   </script>
 </body>
