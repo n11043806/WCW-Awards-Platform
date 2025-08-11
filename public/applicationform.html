@@ -29,6 +29,56 @@
     .eligibility-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
     .submit-btn { padding: 12px 20px; background-color: #d7336f; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
     .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+    /* Preview modal */
+.preview-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.4); z-index: 1000; padding: 24px; }
+.preview-modal.open { display: flex; }
+.preview-dialog { background: #fff; border-radius: 10px; max-width: 980px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden; }
+.preview-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #faf0f4; color: #8c1f4c; }
+.preview-body { padding: 18px; max-height: 75vh; overflow: auto; }
+.preview-title { margin: 18px 0 10px; color: #8c1f4c; background: #faf0f4; padding: 8px 12px; border-radius: 6px; }
+.preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+@media (max-width: 800px) { .preview-grid { grid-template-columns: 1fr; } }
+.preview-actions { display: flex; gap: 10px; }
+.preview-close { background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+.preview-close:hover { background: #ffe6ee; }
+.preview-submit { background: #d7336f; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+.preview-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    .preview-grid > div {
+      display: flex;
+      align-items: center;
+      gap: 8px;              
+    }
+    .preview-grid label {
+      min-width: 150px;   
+      font-weight: 600;
+      color: #000;
+    }
+    .preview-grid label::after {
+      content: ":";         
+      margin-left: 4px;    
+    }
+
+    
+    .action-btn {
+      border: 2px solid transparent;
+      border-radius: 4px;
+      padding: 8px 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color .15s ease-in-out, transform .05s ease-in-out;
+    }
+    .action-btn:active { transform: translateY(1px); }
+    .btn-view { background: #e1faed; color: #1f7a4b; border-color: #c9f2da; }
+    .btn-view:hover { background: #c9f2da; }
+
+    .form-actions {
+      margin-top: 12px;              
+      display: flex;
+      gap: 10px;                    
+      flex-wrap: wrap;
+    }
   </style>
   <!-- Add Firebase SDKs  -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
@@ -73,6 +123,72 @@
       <div id="tabContent" class="tab-content"></div>
     </div>
   </main>
+  <div id="previewModal" class="preview-modal" aria-hidden="true">
+  <div class="preview-dialog">
+    <div class="preview-header">
+      <strong>Preview your application</strong>
+      <div class="preview-actions">
+        <button id="previewClose" class="preview-close">Close</button>
+        <button id="previewSubmit" class="preview-submit" disabled>Submit Application</button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <h3 class="preview-title">Start here</h3>
+      <div class="preview-grid">
+        <div>
+          <label>Category</label>
+          <select id="pv_category">
+            <option value="">Select category</option>
+            <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
+            <option value="IMPACT AWARDS">IMPACT AWARDS</option>
+            <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
+            <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
+            <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
+            <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
+          </select>
+        </div>
+        <div>
+          <label>Award</label>
+          <select id="pv_award">
+            <option value="">Select award</option>
+            <option value="WCWA Americas">WCWA Americas</option>
+            <option value="WCWA Middle East & North Africa (MENA)">WCWA Middle East & North Africa (MENA)</option>
+            <option value="WCWA Czech Republic">WCWA Czech Republic</option>
+            <option value="WCWA South Africa">WCWA South Africa</option>
+            <option value="WCWA Global 2025">WCWA Global 2025</option>
+          </select>
+        </div>
+        <div><label>Name</label><input id="pv_name" type="text"></div>
+        <div><label>Website</label><input id="pv_website" type="text"></div>
+        <div><label>Email</label><input id="pv_email" type="email"></div>
+        <div><label>Mobile Number</label><input id="pv_mobile" type="tel"></div>
+        <div><label>Address</label><input id="pv_address" type="text"></div>
+        <div><label>Instagram URL</label><input id="pv_instagram" type="text"></div>
+        <div><label>LinkedIn URL</label><input id="pv_linkedin" type="text"></div>
+      </div>
+
+      <h3 class="preview-title">Criteria</h3>
+      <div>
+        <div class="form-group"><label>Tell us about yourself</label><textarea id="pv_about_yourself" rows="3"></textarea></div>
+        <div class="form-group"><label>Tell us about your work</label><textarea id="pv_about_work" rows="3"></textarea></div>
+        <div class="form-group"><label>What inspired you?</label><textarea id="pv_inspiration" rows="4"></textarea></div>
+        <div class="form-group"><label>What makes you unique?</label><textarea id="pv_unique" rows="4"></textarea></div>
+        <div class="form-group"><label>Greatest challenge</label><textarea id="pv_challenge" rows="6"></textarea></div>
+        <div class="form-group"><label>Top achievements (last 12 months)</label><textarea id="pv_achievements" rows="5"></textarea></div>
+        <div class="form-group"><label>Why achievements significant?</label><textarea id="pv_significance" rows="4"></textarea></div>
+        <div class="form-group"><label>Big picture vision</label><textarea id="pv_vision" rows="6"></textarea></div>
+        <div class="form-group"><label>Why should you be recognised?</label><textarea id="pv_recognition" rows="6"></textarea></div>
+
+        <div class="eligibility-check">
+          <input type="checkbox" id="pv_confirm_eligibility" />
+          <label for="pv_confirm_eligibility" style="font-size: 0.98rem; font-weight: 400;">
+            I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   <script>
     function goBack() {
       window.location.href = "applicantdashboard.html";
@@ -125,15 +241,17 @@
           <input type="text" id="address" name="address" required autocomplete="off"/>
         </div>
         <div class="form-group">
-          <label for="instagram">Instagram profile page URL</label>
+          <label for="instagram">Instagram profile page URL (if applicable)</label>
           <input type="text" id="instagram" name="instagram" />
         </div>
         <div class="form-group">
           <label for="linkedin">LinkedIn profile page URL (if applicable)</label>
           <input type="text" id="linkedin" name="linkedin" />
         </div>
-        <button type="button" id="saveStartHereBtn">Save</button>
-        <button type="button" id="saveNextBtn">Save & Next</button>
+        <div class="form-actions">
+          <button type="button" class="action-btn btn-view" id="saveStartHereBtn">Save</button>
+          <button type="button" class="action-btn btn-view" id="saveNextBtn">Save & Next</button>
+        </div>
       </form>
     `;
 
@@ -190,8 +308,10 @@
             I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
           </label>
         </div>
-        <button type="button" id="saveCriteriaBtn">Save</button>
-        <button type="submit" class="submit-btn" id="submit-application" disabled>Submit Application</button>
+        <div class="form-actions">
+          <button type="button" class="action-btn btn-view" id="saveCriteriaBtn">Save</button>
+          <button type="button" class="action-btn btn-view" id="previewBtn">Preview</button>
+        </div>
       </form>
     `;
 
@@ -230,7 +350,7 @@
       els.forEach(el => el.disabled = true);
     }
 
-    // --- Hydration utilities (prefill from last-saved doc) ---
+    // Prefill from last-saved document
     async function getApplicationData() {
       if (!applicationId) return null;
       try {
@@ -336,7 +456,7 @@
       }
     }
 
-    // Ensure we have a doc to update from Criteria (edge case safety)
+    // 
     async function ensureApplicationDoc() {
       if (applicationId) return applicationId;
       if (!currentUser) throw new Error('Not signed in');
@@ -392,13 +512,8 @@
     // CRITERIA handlers
     function setUpCriteriaTab() {
       const saveBtn = document.getElementById('saveCriteriaBtn');
-      const submitBtn = document.getElementById('submit-application');
       const checkbox = document.getElementById('confirm-eligibility');
-
-      if (checkbox && submitBtn) {
-        submitBtn.disabled = !checkbox.checked;
-        checkbox.onchange = () => { submitBtn.disabled = !checkbox.checked; };
-      }
+      const previewBtn = document.getElementById('previewBtn');
 
       if (saveBtn) {
         saveBtn.onclick = async function () {
@@ -422,41 +537,210 @@
         };
       }
 
-      if (submitBtn) {
-        submitBtn.onclick = async function (e) {
-          e.preventDefault();
+      // Open preview 
+      if (previewBtn) {
+        previewBtn.onclick = async function () {
           try {
-            if (!currentUser) throw new Error('Not signed in');
-            const form = document.getElementById('criteriaForm');
-            if (!form) throw new Error('Criteria form not found');
-            if (!checkbox?.checked) { alert('Please confirm eligibility to submit.'); return; }
-
-            await ensureApplicationDoc();
-
-            const payload = {
-              ...collectCriteria(form),
-              stage: 'submitted',
-              status: 'submitted',
-              submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
-
-            alert('Application submitted successfully.');
-
-            // Reset state and redirect to dashboard for a fresh start
-            applicationId = null;
-            window.location.href = 'applicantdashboard.html';
+            await openPreviewModal();
           } catch (err) {
             console.error(err);
-            alert('Failed to submit application: ' + err.message);
+            alert('Failed to open preview: ' + err.message);
           }
         };
+      }
+
+      if (checkbox) {
+        checkbox.onchange = () => {};
       }
 
       // Prefill with last-saved data
       hydrateCriteriaForm();
     }
   </script>
+  <script>
+</script>
+
+<script>
+(function initContinueApplication() {
+  try {
+    const qs = new URLSearchParams(location.search);
+    const idFromUrl = qs.get('application');
+    const idFromSession = sessionStorage.getItem('continueApplicationId');
+    const id = idFromUrl || idFromSession;
+
+    if (!id) return; // new-application flow
+
+    sessionStorage.removeItem('continueApplicationId');
+    applicationId = id;
+
+    // Show tabs and default to Start Here
+    const dates = document.getElementById('datesSection');
+    const tabs = document.getElementById('tabSection');
+    if (dates) dates.style.display = 'none';
+    if (tabs) tabs.style.display = 'block';
+
+    const tabStart = document.getElementById('tabStart');
+    const tabCriteria = document.getElementById('tabCriteria');
+    const tabContent = document.getElementById('tabContent');
+
+    tabStart?.classList.add('active');
+    if (tabCriteria) {
+      tabCriteria.disabled = false; 
+      tabCriteria.classList.remove('active');
+    }
+
+    if (tabContent) {
+      tabContent.innerHTML = typeof startHereContent !== 'undefined' ? startHereContent : '';
+      if (typeof setUpStartHereTab === 'function') setUpStartHereTab();
+    }
+
+    if (typeof hydrateStartHereForm === 'function') hydrateStartHereForm();
+  } catch (e) {
+    console.error('Failed to initialize continued application', e);
+  }
+})();
+</script>
+<script>
+
+function pvSet(id, v) { const el = document.getElementById(id); if (el) el.value = v ?? ''; }
+function pvGet(id) { const el = document.getElementById(id); return el ? el.value || '' : ''; }
+
+function collectPreviewStartHere() {
+  return {
+    category: pvGet('pv_category'),
+    name: pvGet('pv_name'),
+    website: pvGet('pv_website'),
+    awards_choice: pvGet('pv_award'),
+    email: pvGet('pv_email'),
+    mobile_number: pvGet('pv_mobile'),
+    address: pvGet('pv_address'),
+    instagram_url: pvGet('pv_instagram'),
+    linkedin_url: pvGet('pv_linkedin')
+  };
+}
+function collectPreviewCriteria() {
+  return {
+    tell_us_about_yourself: pvGet('pv_about_yourself'),
+    tell_us_about_your_work: pvGet('pv_about_work'),
+    what_inspired_you: pvGet('pv_inspiration'),
+    what_makes_you_unique: pvGet('pv_unique'),
+    greatest_challenge: pvGet('pv_challenge'),
+    top_achievements: pvGet('pv_achievements'),
+    achievements_significance: pvGet('pv_significance'),
+    big_picture_vision: pvGet('pv_vision'),
+    recognition_reason: pvGet('pv_recognition'),
+    eligibility: !!document.getElementById('pv_confirm_eligibility')?.checked
+  };
+}
+
+async function openPreviewModal() {
+  const startForm = document.getElementById('startHereForm');
+  const criteriaForm = document.getElementById('criteriaForm');
+  let startData = startForm ? collectStartHere(startForm) : {};
+  let critData = criteriaForm ? collectCriteria(criteriaForm) : {};
+
+  // If fields are empty and we have an applicationId, try to hydrate from Firestore
+  if (applicationId) {
+    const data = await getApplicationData();
+    if (data) {
+      startData = { ...startData, 
+        category: startData.category || data.category,
+        name: startData.name || data.name,
+        website: startData.website || data.website,
+        awards_choice: startData.awards_choice || data.awards_choice,
+        email: startData.email || data.email,
+        mobile_number: startData.mobile_number || data.mobile_number,
+        address: startData.address || data.address,
+        instagram_url: startData.instagram_url || data.instagram_url,
+        linkedin_url: startData.linkedin_url || data.linkedin_url
+      };
+      critData = { ...critData,
+        tell_us_about_yourself: critData.tell_us_about_yourself || data.tell_us_about_yourself,
+        tell_us_about_your_work: critData.tell_us_about_your_work || data.tell_us_about_your_work,
+        what_inspired_you: critData.what_inspired_you || data.what_inspired_you,
+        what_makes_you_unique: critData.what_makes_you_unique || data.what_makes_you_unique,
+        greatest_challenge: critData.greatest_challenge || data.greatest_challenge,
+        top_achievements: critData.top_achievements || data.top_achievements,
+        achievements_significance: critData.achievements_significance || data.achievements_significance,
+        big_picture_vision: critData.big_picture_vision || data.big_picture_vision,
+        recognition_reason: critData.recognition_reason || data.recognition_reason,
+        eligibility: typeof critData.eligibility === 'boolean' ? critData.eligibility : !!data.eligibility
+      };
+    }
+  }
+
+  // Fill preview inputs
+  pvSet('pv_category', startData.category);
+  pvSet('pv_award', startData.awards_choice);
+  pvSet('pv_name', startData.name);
+  pvSet('pv_website', startData.website);
+  pvSet('pv_email', startData.email);
+  pvSet('pv_mobile', startData.mobile_number);
+  pvSet('pv_address', startData.address);
+  pvSet('pv_instagram', startData.instagram_url);
+  pvSet('pv_linkedin', startData.linkedin_url);
+
+  pvSet('pv_about_yourself', critData.tell_us_about_yourself);
+  pvSet('pv_about_work', critData.tell_us_about_your_work);
+  pvSet('pv_inspiration', critData.what_inspired_you);
+  pvSet('pv_unique', critData.what_makes_you_unique);
+  pvSet('pv_challenge', critData.greatest_challenge);
+  pvSet('pv_achievements', critData.top_achievements);
+  pvSet('pv_significance', critData.achievements_significance);
+  pvSet('pv_vision', critData.big_picture_vision);
+  pvSet('pv_recognition', critData.recognition_reason);
+  const pvcb = document.getElementById('pv_confirm_eligibility');
+  if (pvcb) pvcb.checked = !!critData.eligibility;
+
+  const pvSubmit = document.getElementById('previewSubmit');
+  const pvCheck = document.getElementById('pv_confirm_eligibility');
+  if (pvSubmit && pvCheck) {
+    pvSubmit.disabled = !pvCheck.checked;
+    pvCheck.onchange = () => { pvSubmit.disabled = !pvCheck.checked; };
+  }
+
+  // Open
+  document.getElementById('previewModal').classList.add('open');
+  document.getElementById('previewModal').setAttribute('aria-hidden','false');
+}
+
+function closePreviewModal() {
+  const el = document.getElementById('previewModal');
+  el.classList.remove('open');
+  el.setAttribute('aria-hidden','true');
+}
+
+document.getElementById('previewClose')?.addEventListener('click', closePreviewModal);
+document.getElementById('previewModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'previewModal') closePreviewModal();
+});
+
+// Submit from preview 
+document.getElementById('previewSubmit')?.addEventListener('click', async () => {
+  try {
+    if (!currentUser) throw new Error('Not signed in');
+    await ensureApplicationDoc();
+
+    const payload = {
+      ...collectPreviewStartHere(),
+      ...collectPreviewCriteria(),
+      stage: 'submitted',
+      status: 'submitted',
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      user_id: currentUser.uid,
+      applicant_id: currentUser.uid
+    };
+
+    await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+    alert('Application submitted successfully.');
+    applicationId = null;
+    window.location.href = 'applicantdashboard.html';
+  } catch (err) {
+    console.error(err);
+    alert('Failed to submit application: ' + err.message);
+  }
+});
+</script>
 </body>
 </html>

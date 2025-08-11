@@ -17,6 +17,79 @@
     th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
     th { background: #faf0f4; color: #8c1f4c; }
     .muted { color: #777; }
+
+    /* Buttons */
+    .action-btn {
+      border: 2px solid transparent; 
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color .15s ease-in-out, transform .05s ease-in-out;
+    }
+    .action-btn:active { transform: translateY(1px); }
+
+    /* Continue (draft) */
+    .btn-continue {
+      background: #ffe6ee;
+      color: #8c1f4c;      
+      border-color: #ffccd9; 
+    }
+    .btn-continue:hover { background: #ffccd9; }
+
+    /* View (submitted) */
+    .btn-view {
+      background: #e1faed;
+      color: #1f7a4b;     
+      border-color: #c9f2da; 
+    }
+    .btn-view:hover { background: #c9f2da; }
+
+    /* Modal */
+    .modal {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.4); z-index: 1000; padding: 24px;
+    }
+    .modal.open { display: flex; }
+    .modal-dialog {
+      background: #fff; border-radius: 10px; max-width: 980px; width: 100%;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px; background: #faf0f4; color: #8c1f4c;
+    }
+    .modal-body { padding: 18px; max-height: 75vh; overflow: auto; }
+    .meta { font-size: 13px; color: #666; margin-bottom: 10px; }
+
+
+    .section-title {
+      margin: 18px 0 10px;
+      color: #8c1f4c;
+      background: #faf0f4;          
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .field-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+    }
+    @media (max-width: 800px) { .field-grid { grid-template-columns: 1fr; } }
+
+    .kv .k { font-weight: 600; font-size: 13px; color: #444; }
+    .kv .v { font-size: 14px; color: #000; word-break: break-word; }
+    .block {
+      border: 1px solid #eee; border-radius: 6px; padding: 10px; background: #fcfcfc;
+      white-space: pre-wrap;
+    }
+
+    /* Close button */
+    .close-btn {
+      background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c;  /* updated */
+      border-radius: 6px; padding: 6px 12px; font-weight: 700; cursor: pointer;
+    }
+    .close-btn:hover { background: #ffe6ee; }
   </style>
 
   <!-- Firebase SDKs -->
@@ -44,27 +117,123 @@
             <th>Status</th>
             <th>Created</th>
             <th>Updated</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="appsBody">
-          <tr><td colspan="7" class="muted">Loading...</td></tr>
+          <tr><td colspan="8" class="muted">Loading...</td></tr>
         </tbody>
       </table>
     </div>
   </main>
 
+  <!-- View Application Modal -->
+  <div id="viewModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <strong>Application ID:</strong> <span id="modalAppId"></span>
+        </div>
+        <button id="modalClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <h3 class="section-title">Start here</h3>
+        <div id="modalStartFields" class="field-grid"></div>
+
+        <h3 class="section-title">Criteria</h3>
+        <div id="modalCriteriaFields"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function goBack() {
-      window.location.href = "applicantdashboard.html";
+    function goBack() { window.location.href = "applicantdashboard.html"; }
+
+    
+    function continueApplication(id) {
+      sessionStorage.setItem('continueApplicationId', id);
+      window.location.href = `applicationform.html?application=${encodeURIComponent(id)}`;
     }
 
+    
+    const modalEl = document.getElementById('viewModal');
+    const modalClose = document.getElementById('modalClose');
+    modalClose.onclick = () => closeModal();
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    function openModal() { modalEl.classList.add('open'); modalEl.setAttribute('aria-hidden', 'false'); }
+    function closeModal() { modalEl.classList.remove('open'); modalEl.setAttribute('aria-hidden', 'true'); }
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
     function fmt(ts) {
       try {
         if (!ts) return "-";
         if (ts.toDate) return ts.toDate().toLocaleString();
-        // ISO string
         return new Date(ts).toLocaleString();
       } catch { return "-"; }
+    }
+    function kv(label, value) {
+      return `<div class="kv"><div class="k">${esc(label)}</div><div class="v">${esc(value || '-')}</div></div>`;
+    }
+    function block(label, value) {
+      const safe = esc(value || '');
+      return `<div class="kv" style="margin-bottom:10px">
+                <div class="k" style="margin-bottom:6px">${esc(label)}</div>
+                <div class="block">${safe || '-'}</div>
+              </div>`;
+    }
+
+    // 
+    async function viewApp(id) {
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('applications').doc(id).get();
+        if (!doc.exists) { alert("Application not found."); return; }
+        const d = doc.data();
+
+        // Header info
+        document.getElementById('modalAppId').textContent = id;
+
+        // Start here fields 
+        const startHtml = [
+          kv('Category', d.category),
+          kv('Award', d.awards_choice),
+          kv('Name', d.name),
+          kv('Website', d.website),
+          kv('Email Address', d.email),
+          kv('Mobile Number', d.mobile_number),
+          kv('Address', d.address),
+          kv('Instagram URL', d.instagram_url),
+          kv('LinkedIn URL', d.linkedin_url),
+          kv('Stage', d.stage),
+          kv('Status', d.status),
+          kv('Created', fmt(d.createdAt)),
+          kv('Updated', fmt(d.updatedAt))
+        ].join('');
+        document.getElementById('modalStartFields').innerHTML = startHtml;
+
+        // Criteria fields 
+        const critHtml = [
+          block('Tell us about yourself', d.tell_us_about_yourself),
+          block('Tell us about your work', d.tell_us_about_your_work),
+          block('What inspired you to do this work?', d.what_inspired_you),
+          block('What makes what you do special or unique?', d.what_makes_you_unique),
+          block('What has been your greatest challenge & how have you addressed this', d.greatest_challenge),
+          block('What have been your top 3 greatest achievements in the past 12 months', d.top_achievements),
+          block('Why were these achievements significant and what do you attribute your achievements to', d.achievements_significance),
+          block('What is your big picture vision for the work you are doing', d.big_picture_vision),
+          block('Why should you be recognised in this category', d.recognition_reason),
+          kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No')
+        ].join('');
+        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
+
+        openModal();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load application: " + err.message);
+      }
     }
 
     firebase.auth().onAuthStateChanged(async user => {
@@ -75,7 +244,6 @@
       }
       try {
         const db = firebase.firestore();
-        // Fetch all apps for this user (user_id field)
         const snap = await db.collection('applications')
           .where('user_id', '==', user.uid)
           .get();
@@ -83,13 +251,19 @@
         body.innerHTML = "";
 
         if (snap.empty) {
-          body.innerHTML = `<tr><td colspan="7" class="muted">No applications found.</td></tr>`;
+          body.innerHTML = `<tr><td colspan="8" class="muted">No applications found.</td></tr>`;
           return;
         }
 
         // Render rows
         snap.docs.forEach(doc => {
           const d = doc.data();
+          const stage = (d.stage || "draft").toLowerCase();
+          const isSubmitted = stage === "submitted";
+          const label = isSubmitted ? "VIEW" : "CONTINUE";
+          const handler = isSubmitted ? `viewApp('${doc.id}')` : `continueApplication('${doc.id}')`;
+          const btnClass = isSubmitted ? "btn-view" : "btn-continue";
+
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${doc.id}</td>
@@ -99,11 +273,12 @@
             <td>${d.status || "-"}</td>
             <td>${fmt(d.createdAt)}</td>
             <td>${fmt(d.updatedAt)}</td>
+            <td><button class="action-btn ${btnClass}" onclick="${handler}">${label}</button></td>
           `;
           body.appendChild(tr);
         });
       } catch (err) {
-        body.innerHTML = `<tr><td colspan="7" class="muted">Error: ${err.message}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="8" class="muted">Error: ${err.message}</td></tr>`;
         console.error(err);
       }
     });
