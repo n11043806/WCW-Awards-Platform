@@ -231,8 +231,27 @@ document.addEventListener('DOMContentLoaded', function() {
           </label>
           <label>Name:<br><input type="text" name="name" required></label>
           <label>Website:<br><input type="text" name="website"></label>
+          <label>Which Awards would you want to enter?:<br>
+            <select name="award" required>
+              <option value="">Select award</option>
+              <option>WCWA Americas</option>
+              <option>WCWA Middle East & North Africa (MENA)</option>
+              <option>WCWA Czech Republic</option>
+              <option>WCWA South Africa</option>
+              <option>WCWA Global 2025</option>
+            </select>
+          </label>
           <label>Email:<br><input type="email" name="email" required></label>
-          <label>Number:<br><input type="text" name="number"></label>
+          <label>Mobile Number:<br>
+            <input id="phone" type="tel" name="number" required>
+            <!-- Integrate intl-tel-input JS for country code picker -->
+          </label>
+          <label>Address:<br>
+            <input id="address" type="text" name="address" required>
+            <!-- Integrate Google Places Autocomplete JS for address -->
+          </label>
+          <label>Instagram profile page URL:<br><input type="text" name="instagram"></label>
+          <label>LinkedIn profile page URL (if applicable):<br><input type="text" name="linkedin"></label>
           <label>Tell us about yourself:<br><textarea name="about_yourself" required></textarea></label>
           <label>Tell us about your work:<br><textarea name="about_work" required></textarea></label>
           <label>What inspired you to do this work?:<br><textarea name="inspiration" required></textarea></label>
@@ -290,5 +309,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+<script>
+  // Initialize intl-tel-input
+  var input = document.querySelector("#phone");
+  if (input) {
+    window.intlTelInput(input, {
+      initialCountry: "auto",
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+    });
+  }
+  // Initialize Google Places Autocomplete
+  var addressInput = document.getElementById('address');
+  if (addressInput) {
+    var autocomplete = new google.maps.places.Autocomplete(addressInput);
+  }
 </script>
 </html>
