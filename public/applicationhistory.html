@@ -199,6 +199,7 @@
         // Start here fields 
         const startHtml = [
           kv('Category', d.category),
+          kv('Subcategory', d.subcategory || "-"),
           kv('Award', d.awards_choice),
           kv('Name', d.name),
           kv('Website', d.website),
@@ -210,7 +211,9 @@
           kv('Stage', d.stage),
           kv('Status', d.status),
           kv('Created', fmt(d.createdAt)),
-          kv('Updated', fmt(d.updatedAt))
+          kv('Updated', fmt(d.updatedAt)),
+          (d.subcategory_title ? kv('Subcategory Title', d.subcategory_title) : ''),
+          (d.subcategory_description ? kv('Subcategory Info', d.subcategory_description) : '')
         ].join('');
         document.getElementById('modalStartFields').innerHTML = startHtml;
 

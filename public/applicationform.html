@@ -79,6 +79,9 @@
       gap: 10px;                    
       flex-wrap: wrap;
     }
+    .subcat-info { margin-top: 8px; }
+    .subcat-title { color: #8c1f4c; font-weight: 700; }
+    .subcat-desc { color: #444; margin-top: 4px; }
   </style>
   <!-- Add Firebase SDKs  -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
@@ -370,15 +373,20 @@
       if (!form) return;
       const data = await getApplicationData();
       if (!data) return;
-      setVal(form, 'category', data.category);
-      setVal(form, 'name', data.name);
-      setVal(form, 'website', data.website);
-      setVal(form, 'award', data.awards_choice);
-      setVal(form, 'email', data.email);
-      setVal(form, 'mobile', data.mobile_number);
-      setVal(form, 'address', data.address);
-      setVal(form, 'instagram', data.instagram_url);
-      setVal(form, 'linkedin', data.linkedin_url);
+      const setVal = (id, value) => { const el = form.querySelector('#' + id); if (el) el.value = value ?? ''; };
+
+      setVal('category', data.category);
+      ensureSubcategoryUI();
+      populateSubcategoryUI(data.category || '', data.subcategory || '');
+
+      setVal('name', data.name);
+      setVal('website', data.website);
+      setVal('award', data.awards_choice);
+      setVal('email', data.email);
+      setVal('mobile', data.mobile_number);
+      setVal('address', data.address);
+      setVal('instagram', data.instagram_url);
+      setVal('linkedin', data.linkedin_url);
     }
     async function hydrateCriteriaForm() {
       const form = document.getElementById('criteriaForm');
@@ -402,8 +410,14 @@
 
     function collectStartHere(form) {
       const val = id => (form.querySelector('#' + id)?.value || '');
+      const category = val('category');
+      const subcategory = val('subcategory');
+      const meta = findSubcatMeta(category, subcategory);
       return {
-        category: val('category'),
+        category,
+        subcategory,
+        subcategory_title: meta?.title || '',
+        subcategory_description: meta?.desc || '',
         name: val('name'),
         website: val('website'),
         awards_choice: val('award'),
@@ -437,23 +451,15 @@
       const form = document.getElementById('startHereForm');
       if (!form) throw new Error('Start Here form not found');
 
+      await ensureApplicationDoc();
       const payload = {
         ...collectStartHere(form),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         stage: 'draft',
         user_id: currentUser.uid,
-        applicant_id: currentUser.uid,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        applicant_id: currentUser.uid
       };
-      if (!applicationId) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-
-      if (!applicationId) {
-        const docRef = await db().collection('applications').add(payload); // auto-ID
-        applicationId = docRef.id;
-        return docRef.id;
-      } else {
-        await db().collection('applications').doc(applicationId).set(payload, { merge: true });
-        return applicationId;
-      }
+      await firebase.firestore().collection('applications').doc(applicationId).set(payload, { merge: true });
     }
 
     // 
@@ -507,6 +513,14 @@
 
       // Prefill with last-saved data
       hydrateStartHereForm();
+
+      // Wire category change → refresh subcats
+      const catEl = document.getElementById('category');
+      if (catEl) {
+        ensureSubcategoryUI();
+        populateSubcategoryUI(catEl.value || '', null);
+        catEl.onchange = () => populateSubcategoryUI(catEl.value, null);
+      }
     }
 
     // CRITERIA handlers
@@ -556,191 +570,268 @@
       // Prefill with last-saved data
       hydrateCriteriaForm();
     }
-  </script>
-  <script>
-</script>
 
-<script>
-(function initContinueApplication() {
-  try {
-    const qs = new URLSearchParams(location.search);
-    const idFromUrl = qs.get('application');
-    const idFromSession = sessionStorage.getItem('continueApplicationId');
-    const id = idFromUrl || idFromSession;
-
-    if (!id) return; // new-application flow
-
-    sessionStorage.removeItem('continueApplicationId');
-    applicationId = id;
-
-    // Show tabs and default to Start Here
-    const dates = document.getElementById('datesSection');
-    const tabs = document.getElementById('tabSection');
-    if (dates) dates.style.display = 'none';
-    if (tabs) tabs.style.display = 'block';
-
-    const tabStart = document.getElementById('tabStart');
-    const tabCriteria = document.getElementById('tabCriteria');
-    const tabContent = document.getElementById('tabContent');
-
-    tabStart?.classList.add('active');
-    if (tabCriteria) {
-      tabCriteria.disabled = false; 
-      tabCriteria.classList.remove('active');
-    }
-
-    if (tabContent) {
-      tabContent.innerHTML = typeof startHereContent !== 'undefined' ? startHereContent : '';
-      if (typeof setUpStartHereTab === 'function') setUpStartHereTab();
-    }
-
-    if (typeof hydrateStartHereForm === 'function') hydrateStartHereForm();
-  } catch (e) {
-    console.error('Failed to initialize continued application', e);
-  }
-})();
-</script>
-<script>
-
-function pvSet(id, v) { const el = document.getElementById(id); if (el) el.value = v ?? ''; }
-function pvGet(id) { const el = document.getElementById(id); return el ? el.value || '' : ''; }
-
-function collectPreviewStartHere() {
-  return {
-    category: pvGet('pv_category'),
-    name: pvGet('pv_name'),
-    website: pvGet('pv_website'),
-    awards_choice: pvGet('pv_award'),
-    email: pvGet('pv_email'),
-    mobile_number: pvGet('pv_mobile'),
-    address: pvGet('pv_address'),
-    instagram_url: pvGet('pv_instagram'),
-    linkedin_url: pvGet('pv_linkedin')
-  };
-}
-function collectPreviewCriteria() {
-  return {
-    tell_us_about_yourself: pvGet('pv_about_yourself'),
-    tell_us_about_your_work: pvGet('pv_about_work'),
-    what_inspired_you: pvGet('pv_inspiration'),
-    what_makes_you_unique: pvGet('pv_unique'),
-    greatest_challenge: pvGet('pv_challenge'),
-    top_achievements: pvGet('pv_achievements'),
-    achievements_significance: pvGet('pv_significance'),
-    big_picture_vision: pvGet('pv_vision'),
-    recognition_reason: pvGet('pv_recognition'),
-    eligibility: !!document.getElementById('pv_confirm_eligibility')?.checked
-  };
-}
-
-async function openPreviewModal() {
-  const startForm = document.getElementById('startHereForm');
-  const criteriaForm = document.getElementById('criteriaForm');
-  let startData = startForm ? collectStartHere(startForm) : {};
-  let critData = criteriaForm ? collectCriteria(criteriaForm) : {};
-
-  // If fields are empty and we have an applicationId, try to hydrate from Firestore
-  if (applicationId) {
-    const data = await getApplicationData();
-    if (data) {
-      startData = { ...startData, 
-        category: startData.category || data.category,
-        name: startData.name || data.name,
-        website: startData.website || data.website,
-        awards_choice: startData.awards_choice || data.awards_choice,
-        email: startData.email || data.email,
-        mobile_number: startData.mobile_number || data.mobile_number,
-        address: startData.address || data.address,
-        instagram_url: startData.instagram_url || data.instagram_url,
-        linkedin_url: startData.linkedin_url || data.linkedin_url
-      };
-      critData = { ...critData,
-        tell_us_about_yourself: critData.tell_us_about_yourself || data.tell_us_about_yourself,
-        tell_us_about_your_work: critData.tell_us_about_your_work || data.tell_us_about_your_work,
-        what_inspired_you: critData.what_inspired_you || data.what_inspired_you,
-        what_makes_you_unique: critData.what_makes_you_unique || data.what_makes_you_unique,
-        greatest_challenge: critData.greatest_challenge || data.greatest_challenge,
-        top_achievements: critData.top_achievements || data.top_achievements,
-        achievements_significance: critData.achievements_significance || data.achievements_significance,
-        big_picture_vision: critData.big_picture_vision || data.big_picture_vision,
-        recognition_reason: critData.recognition_reason || data.recognition_reason,
-        eligibility: typeof critData.eligibility === 'boolean' ? critData.eligibility : !!data.eligibility
-      };
-    }
-  }
-
-  // Fill preview inputs
-  pvSet('pv_category', startData.category);
-  pvSet('pv_award', startData.awards_choice);
-  pvSet('pv_name', startData.name);
-  pvSet('pv_website', startData.website);
-  pvSet('pv_email', startData.email);
-  pvSet('pv_mobile', startData.mobile_number);
-  pvSet('pv_address', startData.address);
-  pvSet('pv_instagram', startData.instagram_url);
-  pvSet('pv_linkedin', startData.linkedin_url);
-
-  pvSet('pv_about_yourself', critData.tell_us_about_yourself);
-  pvSet('pv_about_work', critData.tell_us_about_your_work);
-  pvSet('pv_inspiration', critData.what_inspired_you);
-  pvSet('pv_unique', critData.what_makes_you_unique);
-  pvSet('pv_challenge', critData.greatest_challenge);
-  pvSet('pv_achievements', critData.top_achievements);
-  pvSet('pv_significance', critData.achievements_significance);
-  pvSet('pv_vision', critData.big_picture_vision);
-  pvSet('pv_recognition', critData.recognition_reason);
-  const pvcb = document.getElementById('pv_confirm_eligibility');
-  if (pvcb) pvcb.checked = !!critData.eligibility;
-
-  const pvSubmit = document.getElementById('previewSubmit');
-  const pvCheck = document.getElementById('pv_confirm_eligibility');
-  if (pvSubmit && pvCheck) {
-    pvSubmit.disabled = !pvCheck.checked;
-    pvCheck.onchange = () => { pvSubmit.disabled = !pvCheck.checked; };
-  }
-
-  // Open
-  document.getElementById('previewModal').classList.add('open');
-  document.getElementById('previewModal').setAttribute('aria-hidden','false');
-}
-
-function closePreviewModal() {
-  const el = document.getElementById('previewModal');
-  el.classList.remove('open');
-  el.setAttribute('aria-hidden','true');
-}
-
-document.getElementById('previewClose')?.addEventListener('click', closePreviewModal);
-document.getElementById('previewModal')?.addEventListener('click', (e) => {
-  if (e.target.id === 'previewModal') closePreviewModal();
-});
-
-// Submit from preview 
-document.getElementById('previewSubmit')?.addEventListener('click', async () => {
-  try {
-    if (!currentUser) throw new Error('Not signed in');
-    await ensureApplicationDoc();
-
-    const payload = {
-      ...collectPreviewStartHere(),
-      ...collectPreviewCriteria(),
-      stage: 'submitted',
-      status: 'submitted',
-      submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      user_id: currentUser.uid,
-      applicant_id: currentUser.uid
+    // --- Category → Subcategory Map (value, title, desc) ---
+    const CATEGORY_MAP = {
+      "BUSINESS AWARDS": [
+        { value: "BUSINESS OF THE YEAR", title: "WOMEN CHANGING THE WORLD - BUSINESS OF THE YEAR", desc: "This award recognises exceptional women in business" },
+        { value: "MICRO BUSINESS OF THE YEAR", title: "WOMEN CHANGING THE WORLD - MICRO BUSINESS OF THE YEAR", desc: "This award recognises exceptional women in micro business" },
+        { value: "SMALL BUSINESS OF THE YEAR", title: "WOMEN CHANGING THE WORLD - SMALL BUSINESS OF THE YEAR", desc: "This award recognises exceptional women in small business" },
+        { value: "SOCIAL ENTERPRISE AWARD", title: "WOMEN CHANGING THE WORLD SOCIAL ENTERPRISE AWARD", desc: "This award recognises individuals who are making a difference as a social enterprise founder or team" }
+      ],
+      "IMPACT AWARDS": [
+        { value: "ADVOCACY IMPACT", title: "ADVOCACY IMPACT", desc: "" },
+        { value: "CULTURAL DIVERSITY AND INCLUSION IMPACT", title: "WOMEN CHANGING THE WORLD - DIVERSITY AND INCLUSION IMPACT AWARD", desc: "This award recognises exceptional women that are changing the World in diversity and inclusion initiatives" },
+        { value: "DISABILITY INCLUSION IMPACT", title: "DISABILITY INCLUSION IMPACT", desc: "" },
+        { value: "GENDER EMPOWERMENT", title: "GENDER EMPOWERMENT", desc: "" },
+        { value: "GENDER EQUALITY", title: "GENDER EQUALITY", desc: "" },
+        { value: "GLOBAL IMPACT", title: "WOMEN CHANGING THE WORLD – GLOBAL IMPACT", desc: "This award recognises exceptional women that are changing the world in global initiatives" },
+        { value: "HUMAN RIGHTS", title: "HUMAN RIGHTS", desc: "" },
+        { value: "HUMANITARIAN IMPACT", title: "WOMEN CHANGING THE WORLD - HUMANITARIAN IMPACT", desc: "This award recognises exceptional women that are changing the world in humanitarian initiatives" },
+        { value: "RURAL AND REGIONAL AREAS IMPACT", title: "WOMEN CHANGING THE WORLD IN RURAL AND REGIONAL AREAS IMPACT AWARD", desc: "This award recognises rural, remote & regional women that have achieved outstanding results" },
+        { value: "VOLUNTEER OF THE YEAR", title: "VOLUNTEER OF THE YEAR", desc: "" },
+        { value: "YOUTH IMPACT", title: "YOUTH IMPACT", desc: "" }
+      ],
+      "INDUSTRY AWARDS": [
+        { value: "COACH OF THE YEAR", title: "WOMEN CHANGING THE WORLD COACH OF THE YEAR", desc: "This award recognises exceptional women that are changing the World through coaching and mentoring" },
+        { value: "HEALTHTECH INNOVATION", title: "HEALTHTECH INNOVATION", desc: "" },
+        { value: "INNOVATION AWARD", title: "WOMEN CHANGING THE WORLD INNOVATION AWARD", desc: "This award recognises women that have a creative, scalable, interesting and innovative idea, innovation or concept to change the world" },
+        { value: "TECH INNOVATION", title: "TECH INNOVATION", desc: "" },
+        { value: "WELLNESS & WELLBEING PROGRAMS", title: "WELLNESS & WELLBEING PROGRAMS", desc: "" },
+        { value: "WELLNESS & WELLBEING SERVICES", title: "WELLNESS & WELLBEING SERVICES", desc: "" },
+        { value: "WOMAN IN CORPORATE & PUBLIC SECTOR", title: "WOMEN CHANGING THE WORLD IN THE PUBLIC SECTOR", desc: "This award recognises exceptional women that are changing the World through public sector roles" },
+        { value: "WOMAN IN CREATIVE INDUSTRIES (INACTIVE FOR ENTRANTS)", title: "WOMEN CHANGING THE WORLD IN CREATIVE INDUSTRIES", desc: "This award recognises exceptional women that are changing the world in creative fields" },
+        { value: "WOMAN IN CREATIVE INDUSTRIES", title: "WOMAN IN CREATIVE INDUSTRIES", desc: "This award recognises exceptional women sharing their creativity with the world" },
+        { value: "WOMAN IN EDUCATION - CHILDREN'S EDUCATION", title: "WOMAN IN EDUCATION - CHILDREN'S EDUCATION", desc: "" },
+        { value: "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION", title: "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION", desc: "" },
+        { value: "WOMAN IN FASHION & TEXTLIES", title: "WOMAN IN FASHION & TEXTLIES", desc: "This award recognises exceptional women in fashion" },
+        { value: "WOMAN IN LITERATURE - CHILDRENS BOOKS", title: "WOMAN IN LITERATURE - CHILDRENS BOOKS", desc: "" },
+        { value: "WOMAN IN PERSONAL SERVICES", title: "WOMAN IN PERSONAL SERVICES", desc: "" },
+        { value: "WOMAN IN SCIENCE", title: "WOMEN CHANGING THE WORLD IN SCIENCE", desc: "This award recognises exceptional women that are changing the World in Science" },
+        { value: "WOMAN IN THERAPY & CONSELLING SERVICES", title: "WOMAN IN THERAPY & CONSELLING SERVICES", desc: "" },
+        { value: "WOMAN IN TRAVEL, RETREATS AND EVENTS", title: "WOMAN IN TRAVEL, RETREATS AND EVENTS AWARD", desc: "" },
+        { value: "WOMAN IN ACADEMIC", title: "WOMEN CHANGING THE WORLD IN EDUCATION", desc: "This award recognises exceptional women in Education that are changing the World" },
+        { value: "WOMAN IN AGRICULTURE & FARMING", title: "WOMEN CHANGING THE WORLD IN AGRICULTURE & FARMING", desc: "This award recognises exceptional women that are changing the World through agriculture and farming" },
+        { value: "WOMAN IN ADULT EDUCATION & TRAINING", title: "WOMEN IN EDUCATION - ADULT EDUCATION & TRAINING", desc: "" },
+        { value: "WOMAN IN ENGINEERING", title: "WOMEN CHANGING THE WORLD IN ENGINEERING", desc: "This award recognises exceptional women that are changing the World in engineering fields" },
+        { value: "WOMAN IN FINANCE", title: "WOMEN CHANGING THE WORLD IN FINANCE", desc: "This award recognises exceptional women that are changing the World in Finance" },
+        { value: "WOMAN IN FOOD AND BEVERGAES", title: "WOMEN CHANGING THE WORLD IN FOOD AND BEVERAGES", desc: "This award recognises exceptional women that are changing the World through food and beverage fields" },
+        { value: "WOMAN IN HEALTH", title: "WOMEN CHANGING THE WORLD IN HEALTH", desc: "This award recognises exceptional women that are changing the World in Health" },
+        { value: "WOMAN IN JOURNALISM AND MEDIA", title: "WOMEN CHANGING THE WORLD IN JOURNALISM AND MEDIA", desc: "This award recognises exceptional women that are changing the World in Journalism and Media" },
+        { value: "WOMAN IN LAW", title: "WOMEN CHANGING THE WORLD IN LAW", desc: "This award recognises exceptional women that are changing the world through law" },
+        { value: "WOMAN IN LITERATIRE", title: "WOMEN CHANGING THE WORLD IN LITERATURE", desc: "This award recognises women committed to changing the world through the power of writing" },
+        { value: "WOMAN IN PROFESSIONAL SERVICES", title: "WOMAN IN PROFESSIONAL SERVICES", desc: "This award recognises exceptional women in professional service roles" },
+        { value: "WOMAN IN SPORT", title: "WOMEN CHANGING THE WORLD IN SPORT", desc: "This award recognises exceptional women that are changing the World in sport" },
+        { value: "WOMAN IN SUSTAINABILITY", title: "WOMEN CHANGING THE WORLD IN SUSTAINABILITY", desc: "This award recognises women committed to changing the world through sustainable and eco-friendly practices, advocacy or awareness" },
+        { value: "WOMAN IN TECH", title: "WOMEN CHANGING THE WORLD IN TECH", desc: "This award recognises women changing the world through the introduction or improvement of an idea, method, technology, process or application" }
+      ],
+      "LEADERSHIP AWARDS": [
+        { value: "BIG IDEA", title: "EMERGING LEADER OF THE YEAR", desc: "This award recognises exceptional women in emerging leadership roles (women under 35)" },
+        { value: "DISABILITY LEADERSHIP AWARD", title: "WOMEN CHANGING THE WORLD – DISABILITY LEADERSHIP AWARD", desc: "This award recognises exceptional disabled women leaders that are changing the world" },
+        { value: "FIRST NATIONS LEADERSHIP", title: "WOMEN CHANGING THE WORLD - FIRST NATIONS LEADERSHIP AWARD", desc: "This award recognises First Nations Women that are changing the world. *Must be First Nations to be eligible" },
+        { value: "LEADER OF THE YEAR", title: "LEADER OF THE YEAR", desc: "This award recognises exceptional women in leadership roles" },
+        { value: "LGBTQI+ LEADERSHIP AWARD", title: "WOMEN CHANGING THE WORLD – LGBTQI+ LEADERSHIP AWARD", desc: "This award recognises exceptional LGBTQI+ leaders that are changing the world" },
+        { value: "MIGRANT LEADERSHIP AWARD", title: "WOMEN CHANGING THE WORLD - MIGRANT LEADERSHIP AWARD", desc: "This award recognises Migrant leaders that are changing the world" },
+        { value: "TECH LEADER OF THE YEAR", title: "TECH LEADER OF THE YEAR AWARD", desc: "" },
+        { value: "THOUGHT LEADER OF THE YEAR", title: "THOUGHT LEADER OF THE YEAR", desc: "This award recognises exceptional women Thought Leaders sharing their knowledge with the world" }
+      ],
+      "PEOPLE'S CHOICE": [
+        { value: "People's Choice - BUSINESS", title: "People's Choice - BUSINESS", desc: "Most popular business making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - DIVERSITY AND INCLUSION", title: "People's Choice - DIVERSITY AND INCLUSION", desc: "Most popular diversity and inclusion focused business making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - EDUCATION", title: "People's Choice - EDUCATION", desc: "Most popular education business or organisation making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - ENVIRONMENTAL IMPACT", title: "People's Choice - ENVIRONMENTAL IMPACT", desc: "Most popular environmental impact business or organisation making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - GENDER EQUALITY", title: "People's Choice - GENDER EQUALITY", desc: "Most popular organisation making a difference by taking action or raising awareness for gender equality" },
+        { value: "People's Choice - GLOBAL IMPACT", title: "People's Choice - GLOBAL IMPACT", desc: "Most popular global impact business or organisation making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - HEALTH & WELLBEING", title: "People's Choice - HEALTH & WELLBEING", desc: "Most popular health and wellbeing business or organisation making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - HUMANITARIAN IMPACT", title: "People's Choice - HUMANITARIAN IMPACT", desc: "Most popular humanitarian business or organisation making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - LOCAL COMMUNITY", title: "People's Choice - LOCAL COMMUNITY", desc: "Most popular local community focused business or organisation making a difference as determined by people’s choice voting" },
+        { value: "People's Choice - NON PROFIT", title: "People's Choice - NON PROFIT", desc: "Most popular non-profit or charity organisation making a difference" },
+        { value: "People's Choice - SOCIAL ENTERPRISE", title: "People's Choice - SOCIAL ENTERPRISE", desc: "Most popular social enterprise business making a difference" }
+      ],
+      "WOMAN OF THE YEAR AWARDS": [
+        { value: "CHANGEMAKER", title: "WOMEN CHANGING THE WORLD - CHANGEMAKER", desc: "This award recognises exceptional women who are changing the world and are deserving of a larger platform" },
+        { value: "COMPANY OF THE YEAR", title: "COMPANY CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional companies changing the world for women and girls" },
+        { value: "EMERGING ENTREPRENEUR OF THE YEAR", title: "EMERGING ENTREPRENEUR OF THE YEAR", desc: "This award recognises exceptional entrepreneurs changing the world (under 2 years in business)" },
+        { value: "EMERGING LEADER OF THE YEAR", title: "WOMEN CHANGING THE WORLD - EMERGING LEADER OF THE YEAR", desc: "This award recognises exceptional women in emerging leadership roles (women under 35)" },
+        { value: "EMERGING WOMAN", title: "EMERGING WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women that are changing the World (working in the current field for less than 2 years)" },
+        { value: "ENTREPRENEUR OF THE YEAR", title: "ENTREPRENEUR OF THE YEAR", desc: "This award recognises exceptional entrepreneurs changing the world" },
+        { value: "GIRL OF THE YEAR", title: "GIRL CHANGING THE WORLD OF THE YEAR 2023", desc: "This award recognises exceptional girls changing the world (under 12 years)" },
+        { value: "HALL OF FAME", title: "HALL OF FAME WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women who are changing the World (working in the current field for 20 years+)" },
+        { value: "RISING STAR", title: "RISING STAR WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women who are changing the World (working in the current field for less than 5 years)" },
+        { value: "WOMAN OF THE YEAR AWARD", title: "WOMAN OF THE YEAR AWARD", desc: "" },
+        { value: "WOMAN CHANING THE WORLD", title: "WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women who are changing the World (working in the current field for less than 20 years)" },
+        { value: "YOUNG WOMAN OF THE YEAR", title: "YOUNG WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional young women changing the world (under 25 years)" }
+      ]
     };
 
-    await db().collection('applications').doc(applicationId).set(payload, { merge: true });
-    alert('Application submitted successfully.');
-    applicationId = null;
-    window.location.href = 'applicantdashboard.html';
-  } catch (err) {
-    console.error(err);
-    alert('Failed to submit application: ' + err.message);
-  }
-});
-</script>
+    function getSubcats(category) {
+      return CATEGORY_MAP[category] || [];
+    }
+    function findSubcatMeta(category, subValue) {
+      return getSubcats(category).find(s => s.value === subValue) || null;
+    }
+
+    // Inject/update Subcategory UI in Start here
+    function ensureSubcategoryUI() {
+      const catEl = document.getElementById('category');
+      if (!catEl) return;
+
+      // Create container once if missing
+      let wrap = document.getElementById('subcategoryContainer');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'form-group';
+        wrap.id = 'subcategoryContainer';
+        wrap.innerHTML = `
+          <label for="subcategory">Sub Category</label>
+          <select id="subcategory"></select>
+          <div class="subcat-info">
+            <div id="subcatTitle" class="subcat-title"></div>
+            <div id="subcatDesc" class="subcat-desc"></div>
+          </div>
+        `;
+        // Insert right after the category field
+        catEl.closest('.form-group')?.after(wrap);
+      }
+      return wrap;
+    }
+
+    function populateSubcategoryUI(category, selected) {
+      const wrap = ensureSubcategoryUI();
+      const select = document.getElementById('subcategory');
+      const titleEl = document.getElementById('subcatTitle');
+      const descEl = document.getElementById('subcatDesc');
+      if (!wrap || !select) return;
+
+      const options = getSubcats(category);
+      if (!category || options.length === 0) {
+        wrap.style.display = 'none';
+        select.innerHTML = '';
+        titleEl.textContent = '';
+        descEl.textContent = '';
+        return;
+      }
+
+      wrap.style.display = 'block';
+      select.innerHTML = `<option value="">Select sub category</option>` + options.map(o => `<option value="${o.value}">${o.value}</option>`).join('');
+      if (selected) select.value = selected;
+
+      const meta = findSubcatMeta(category, select.value);
+      titleEl.textContent = meta?.title || '';
+      descEl.textContent = meta?.desc || '';
+
+      // Change listener
+      select.onchange = () => {
+        const m = findSubcatMeta(category, select.value);
+        titleEl.textContent = m?.title || '';
+        descEl.textContent = m?.desc || '';
+      };
+    }
+
+    // Update StartHere setup to wire category change
+    function setUpStartHereTab() {
+      const saveBtn = document.getElementById('saveStartHereBtn');
+      const nextBtn = document.getElementById('saveNextBtn');
+
+      if (saveBtn) {
+        saveBtn.onclick = async function () {
+          try {
+            await saveStartHereToFirestore();
+            alert('Application saved as draft.');
+          } catch (err) {
+            console.error(err);
+            alert('Failed to save application: ' + err.message);
+          }
+        };
+      }
+
+      if (nextBtn) {
+        nextBtn.onclick = async function () {
+          try {
+            await saveStartHereToFirestore();
+            const critTab = document.getElementById('tabCriteria');
+            if (critTab) {
+              critTab.disabled = false;
+              critTab.click();
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Failed to save application: ' + err.message);
+          }
+        };
+      }
+
+      // Prefill with last-saved data
+      hydrateStartHereForm();
+
+      // Wire category change → refresh subcats
+      const catEl = document.getElementById('category');
+      if (catEl) {
+        ensureSubcategoryUI();
+        populateSubcategoryUI(catEl.value || '', null);
+        catEl.onchange = () => populateSubcategoryUI(catEl.value, null);
+      }
+    }
+
+    // Extend StartHere collect/hydrate to include subcategory
+    function collectStartHere(form) {
+      const val = id => (form.querySelector('#' + id)?.value || '');
+      const category = val('category');
+      const subcategory = val('subcategory');
+      const meta = findSubcatMeta(category, subcategory);
+      return {
+        category,
+        subcategory,
+        subcategory_title: meta?.title || '',
+        subcategory_description: meta?.desc || '',
+        name: val('name'),
+        website: val('website'),
+        awards_choice: val('award'),
+        email: val('email'),
+        mobile_number: val('mobile'),
+        address: val('address'),
+        instagram_url: val('instagram'),
+        linkedin_url: val('linkedin')
+      };
+    }
+
+    async function hydrateStartHereForm() {
+      const form = document.getElementById('startHereForm');
+      if (!form) return;
+      const data = await getApplicationData();
+      if (!data) return;
+      const setVal = (id, value) => { const el = form.querySelector('#' + id); if (el) el.value = value ?? ''; };
+
+      setVal('category', data.category);
+      // Build subcategory UI and select value
+      ensureSubcategoryUI();
+      populateSubcategoryUI(data.category || '', data.subcategory || '');
+
+      setVal('name', data.name);
+      setVal('website', data.website);
+      setVal('award', data.awards_choice);
+      setVal('email', data.email);
+      setVal('mobile', data.mobile_number);
+      setVal('address', data.address);
+      setVal('instagram', data.instagram_url);
+      setVal('linkedin', data.linkedin_url);
+    }
+
+    // Ensure any save to Firestore keeps subcategory fields
+    async function saveStartHereToFirestore() {
+      if (!currentUser) throw new Error('Not signed in');
+      const form = document.getElementById('startHereForm');
+      if (!form) throw new Error('Start Here form not found');
+
+      await ensureApplicationDoc();
+      const payload = {
+        ...collectStartHere(form),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        stage: 'draft',
+        user_id: currentUser.uid,
+        applicant_id: currentUser.uid
+      };
+      await firebase.firestore().collection('applications').doc(applicationId).set(payload, { merge: true });
+    }
+  </script>
 </body>
-</html>
