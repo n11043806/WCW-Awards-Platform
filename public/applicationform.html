@@ -79,15 +79,56 @@
       gap: 10px;                    
       flex-wrap: wrap;
     }
-    .subcat-info { margin-top: 8px; }
-    .subcat-title { color: #8c1f4c; font-weight: 700; }
-    .subcat-desc { color: #444; margin-top: 4px; }
+
+    .upload-card { border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fcfcfc; }
+    .file-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filename { font-size: 14px; color: #555; }
+    .preview-image { 
+      display:none; 
+      width: 360px;        
+      height: 360px;         
+      object-fit: cover;    
+      border: 1px solid #eee; 
+      border-radius: 6px; 
+    }
+
+  
+  .file-row input[type="file"] {
+    font-size: 18px;           
+    line-height: 1.4;
+  }
+  .file-row input[type="file"]::file-selector-button {
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+  }
+  .file-row input[type="file"]::-webkit-file-upload-button {
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+  }
+  .preview-image {
+    display: none;
+    width: 400px;
+    height: 40px;
+    object-fit: cover;
+    border: 1px solid #eee;
+    border-radius: 6px;
+  }
   </style>
   <!-- Add Firebase SDKs  -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
-  
+  <script src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 </head>
 <body>
@@ -122,6 +163,7 @@
       <div class="tab-list">
         <button class="tab active" id="tabStart">Start here</button>
         <button class="tab" id="tabCriteria" disabled>Criteria</button>
+        <button class="tab" id="tabAttachments" disabled>Attachments</button>
       </div>
       <div id="tabContent" class="tab-content"></div>
     </div>
@@ -151,6 +193,12 @@
           </select>
         </div>
         <div>
+          <label>Subcategory</label>
+          <select id="pv_subcategory">
+            <option value="">Select subcategory</option>
+          </select>
+        </div>
+        <div>
           <label>Award</label>
           <select id="pv_award">
             <option value="">Select award</option>
@@ -172,16 +220,15 @@
 
       <h3 class="preview-title">Criteria</h3>
       <div>
-        <div class="form-group"><label>Tell us about yourself</label><textarea id="pv_about_yourself" rows="3"></textarea></div>
-        <div class="form-group"><label>Tell us about your work</label><textarea id="pv_about_work" rows="3"></textarea></div>
-        <div class="form-group"><label>What inspired you?</label><textarea id="pv_inspiration" rows="4"></textarea></div>
-        <div class="form-group"><label>What makes you unique?</label><textarea id="pv_unique" rows="4"></textarea></div>
-        <div class="form-group"><label>Greatest challenge</label><textarea id="pv_challenge" rows="6"></textarea></div>
-        <div class="form-group"><label>Top achievements (last 12 months)</label><textarea id="pv_achievements" rows="5"></textarea></div>
-        <div class="form-group"><label>Why achievements significant?</label><textarea id="pv_significance" rows="4"></textarea></div>
-        <div class="form-group"><label>Big picture vision</label><textarea id="pv_vision" rows="6"></textarea></div>
-        <div class="form-group"><label>Why should you be recognised?</label><textarea id="pv_recognition" rows="6"></textarea></div>
-
+        <div class="form-group"><label>Tell us about yourself</label><span class="word-count" id="pv_count_about_yourself">0/150</span><textarea id="pv_about_yourself" rows="3"></textarea></div>
+        <div class="form-group"><label>Tell us about your work</label><span class="word-count" id="pv_count_about_work">0/150</span><textarea id="pv_about_work" rows="3"></textarea></div>
+        <div class="form-group"><label>What inspired you to do this work?</label><span class="word-count" id="pv_count_inspiration">0/200</span><textarea id="pv_inspiration" rows="4"></textarea></div>
+        <div class="form-group"><label>What makes what you do special or unique?</label><span class="word-count" id="pv_count_unique">0/200</span><textarea id="pv_unique" rows="4"></textarea></div>
+        <div class="form-group"><label>What has been your greatest challenge & how have you addressed this?</label><span class="word-count" id="pv_count_challenge">0/500</span><textarea id="pv_challenge" rows="6"></textarea></div>
+        <div class="form-group"><label>What have been your top 3 greatest achievements in the past 12 months?</label><span class="word-count" id="pv_count_achievements">0/300</span><textarea id="pv_achievements" rows="5"></textarea></div>
+        <div class="form-group"><label>Why were these achievements significant and what do you attribute your achievements to?</label><span class="word-count" id="pv_count_significance">0/200</span><textarea id="pv_significance" rows="4"></textarea></div>
+        <div class="form-group"><label>What is your big picture vision for the work you are doing?</label><span class="word-count" id="pv_count_vision">0/500</span><textarea id="pv_vision" rows="6"></textarea></div>
+        <div class="form-group"><label>Why should you be recognised in this category?</label><span class="word-count" id="pv_count_recognition">0/500</span><textarea id="pv_recognition" rows="6"></textarea></div>
         <div class="eligibility-check">
           <input type="checkbox" id="pv_confirm_eligibility" />
           <label for="pv_confirm_eligibility" style="font-size: 0.98rem; font-weight: 400;">
@@ -193,9 +240,27 @@
   </div>
 </div>
   <script>
-    function goBack() {
-      window.location.href = "applicantdashboard.html";
-    }
+  function goBack() { window.location.href = "applicantdashboard.html"; }
+
+  let applicationId = null;
+  let currentUser = null;
+
+    // Pick up the doc id from URL or sessionStorage
+    (function initApplicationId() {
+      try {
+        const qs = new URLSearchParams(location.search);
+        const id = qs.get('application') || sessionStorage.getItem('continueApplicationId');
+        if (id) {
+          applicationId = id;
+          sessionStorage.removeItem('continueApplicationId');
+        }
+      } catch (e) {
+        console.warn('Failed to init application id', e);
+      }
+    })();
+
+    // Track auth user
+    firebase.auth().onAuthStateChanged(u => { currentUser = u || null; });
 
     // Tab content templates
     const startHereContent = `
@@ -210,6 +275,12 @@
             <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
             <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
             <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="subcategory">Subcategory</label>
+          <select id="subcategory" name="subcategory" disabled>
+            <option value="">Select subcategory</option>
           </select>
         </div>
         <div class="form-group">
@@ -313,40 +384,87 @@
         </div>
         <div class="form-actions">
           <button type="button" class="action-btn btn-view" id="saveCriteriaBtn">Save</button>
-          <button type="button" class="action-btn btn-view" id="previewBtn">Preview</button>
+          <button type="button" class="action-btn btn-view" id="saveCriteriaNextBtn">Save & Next</button>
         </div>
       </form>
     `;
 
-    // Single source of truth for state
-    let applicationId = null;
-    let currentUser = null;
-    firebase.auth().onAuthStateChanged(u => { currentUser = u; });
+    // Attachments tab content 
+    const attachmentsContent = `
+      <section>
+        <h2 style="margin-top:0; color:#8c1f4c; background:#faf0f4; padding:10px 12px; border-radius:6px;">
+          Attach your photo
+        </h2>
+        <div>
+          <p style="margin:0 0 10px 0;">Materials to be supplied</p>
+          <p style="margin:0 0 8px 0; font-weight:600;">HIGH RESOLUTION PHOTO TO BE ATTACHED TO YOUR ENTRY FORM</p>
+          <ul style="padding-left:20px; margin-top:6px;">
+            <li>The photo file should be named with your name and business name (e.g., Katy Garner, AusMumpreneur).</li>
+            <li>This photo should be just yourself without other people in it unless you are entering as a partnership or team.</li>
+            <li>Please no text, logos or montages.</li>
+            <li>If you are a finalist this photo will be used for the digital screen at the awards night so please use a good quality image you would be proud to share.</li>
+            <li>Your photo is part of your application and must be included to be eligible. Maximum file size is 5MB per piece.</li>
+          </ul>
+        </div>
 
-    // Show tab section on Start Entry
-    document.getElementById('start-entry-btn').onclick = function() {
-      document.getElementById('datesSection').style.display = 'none';
-      document.getElementById('tabSection').style.display = 'block';
-      document.getElementById('tabContent').innerHTML = startHereContent;
-      setUpStartHereTab();
-    };
+        <div class="upload-card" style="margin-top:14px;">
+          <div class="file-row">
+            <input type="file" id="att_photo" accept="image/*" />
+            <!-- Removed duplicate filename label -->
+            <!-- <span class="filename" id="att_file_name">No file chosen</span> -->
+          </div>
+          <div style="margin-top:10px">
+            <img id="att_preview" class="preview-image" alt="Selected photo preview" />
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top:14px;">
+          <button type="button" class="action-btn btn-view" id="att_save_btn">Save</button>
+          <button type="button" class="action-btn btn-view" id="attachmentsPreviewBtn">Preview</button>
+        </div>
+      </section>
+    `;
 
     // Tabs
     document.getElementById('tabStart').onclick = function() {
       document.getElementById('tabStart').classList.add('active');
       document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabAttachments').classList.remove('active');
       document.getElementById('tabContent').innerHTML = startHereContent;
       setUpStartHereTab();
     };
     document.getElementById('tabCriteria').onclick = function() {
       document.getElementById('tabStart').classList.remove('active');
       document.getElementById('tabCriteria').classList.add('active');
+      document.getElementById('tabAttachments').classList.remove('active');
       document.getElementById('tabContent').innerHTML = criteriaContent;
       setUpCriteriaTab();
     };
+    document.getElementById('tabAttachments').onclick = function() {
+      document.getElementById('tabStart').classList.remove('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabAttachments').classList.add('active');
+      document.getElementById('tabContent').innerHTML = attachmentsContent;
+      setUpAttachmentsTab();
+    };
 
-    // Helpers
     const db = () => firebase.firestore();
+
+    // ensure the application doc exists (creates draft if needed)
+    async function ensureApplicationDoc() {
+      if (applicationId) return;
+      if (!currentUser) throw new Error('Not signed in');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const ref = await db().collection('applications').add({
+        user_id: currentUser.uid,
+        applicant_id: currentUser.uid,
+        stage: 'draft',
+        status: 'draft',
+        createdAt: now,
+        updatedAt: now
+      });
+      applicationId = ref.id;
+    }
 
     function allInputsDisabled(rootEl) {
       const els = (rootEl || document).querySelectorAll('input, select, textarea, button');
@@ -368,25 +486,134 @@
       const el = form.querySelector('#' + id);
       if (el) el.value = value ?? '';
     }
+
+    const SUBCATEGORIES = {
+      "BUSINESS AWARDS": [
+        "BUSINESS OF THE YEAR",
+        "MICRO BUSINESS OF THE YEAR",
+        "SMALL BUSINESS OF THE YEAR",
+        "SOCIAL ENTERPRISE AWARD"
+      ],
+      "IMPACT AWARDS": [
+        "ADVOCACY IMPACT",
+        "CULTURAL DIVERSITY AND INCLUSION IMPACT",
+        "DISABILITY INCLUSION IMPACT",
+        "GENDER EMPOWERMENT",
+        "GENDER EQUALITY",
+        "GLOBAL IMPACT",
+        "HUMAN RIGHTS",
+        "HUMANITARIAN IMPACT",
+        "RURAL AND REGIONAL AREAS IMPACT",
+        "VOLUNTEER OF THE YEAR",
+        "YOUTH IMPACT"
+      ],
+      "INDUSTRY AWARDS": [
+        "COACH OF THE YEAR",
+        "HEALTHTECH INNOVATION",
+        "INNOVATION AWARD",
+        "TECH INNOVATION",
+        "WELLNESS & WELLBEING PROGRAMS",
+        "WELLNESS & WELLBEING SERVICES",
+        "WOMAN IN CORPORATE & PUBLIC SECTOR",
+        "WOMAN IN CREATIVE INDUSTRIES (INACTIVE FOR ENTRANTS)",
+        "WOMAN IN CREATIVE INDUSTRIES",
+        "WOMAN IN EDUCATION - CHILDREN'S EDUCATION",
+        "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION",
+        "WOMAN IN FASHION & TEXTLIES",
+        "WOMAN IN LITERATURE - CHILDRENS BOOKS",
+        "WOMAN IN PERSONAL SERVICES",
+        "WOMAN IN SCIENCE",
+        "WOMAN IN THERAPY & CONSELLING SERVICES",
+        "WOMAN IN TRAVEL, RETREATS AND EVENTS",
+        "WOMAN IN ACADEMIC",
+        "WOMAN IN AGRICULTURE & FARMING",
+        "WOMAN IN ADULT EDUCATION & TRAINING",
+        "WOMAN IN ENGINEERING",
+        "WOMAN IN FINANCE",
+        "WOMAN IN FOOD AND BEVERGAES",
+        "WOMAN IN HEALTH",
+        "WOMAN IN JOURNALISM AND MEDIA",
+        "WOMAN IN LAW",
+        "WOMAN IN LITERATIRE",
+        "WOMAN IN PROFESSIONAL SERVICES",
+        "WOMAN IN SCIENCE",
+        "WOMAN IN SPORT",
+        "WOMAN IN SUSTAINABILITY",
+        "WOMAN IN TECH"
+      ],
+      "LEADERSHIP AWARDS": [
+        "BIG IDEA - EMERGING LEADER OF THE YEAR",
+        "DISABILITY LEADERSHIP AWARD",
+        "FIRST NATIONS LEADERSHIP",
+        "LEADER OF THE YEAR",
+        "LGBTQI+ LEADERSHIP AWARD",
+        "MIGRANT LEADERSHIP AWARD",
+        "TECH LEADER OF THE YEAR",
+        "THOUGHT LEADER OF THE YEAR"
+      ],
+      "PEOPLE'S CHOICE": [
+        "People's Choice - BUSINESS",
+        "People's Choice - DIVERSITY AND INCLUSION",
+        "People's Choice - EDUCATION",
+        "People's Choice - ENVIRONMENTAL IMPACT",
+        "People's Choice - GENDER EQUALITY",
+        "People's Choice - GLOBAL IMPACT",
+        "People's Choice - HEALTH & WELLBEING",
+        "People's Choice - HUMANITARIAN IMPACT",
+        "People's Choice - LOCAL COMMUNITY",
+        "People's Choice - NON PROFIT",
+        "People's Choice - SOCIAL ENTERPRISE"
+      ],
+      "WOMAN OF THE YEAR AWARDS": [
+        "CHANGEMAKER",
+        "COMPANY OF THE YEAR",
+        "EMERGING ENTREPRENEUR OF THE YEAR",
+        "EMERGING LEADER OF THE YEAR",
+        "EMERGING WOMAN",
+        "ENTREPRENEUR OF THE YEAR",
+        "GIRL OF THE YEAR",
+        "HALL OF FAME",
+        "RISING STAR",
+        "WOMAN OF THE YEAR AWARD",
+        "WOMAN CHANGING THE WORLD",
+        "YOUNG WOMAN OF THE YEAR"
+      ]
+    };
+
+// populate a subcategory from category
+    function fillSubcategorySelect(selectEl, category, selectedValue = '') {
+      if (!selectEl) return;
+      const list = SUBCATEGORIES[category] || [];
+      selectEl.innerHTML = '';
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select subcategory';
+      selectEl.appendChild(def);
+      list.forEach(sc => {
+        const opt = document.createElement('option');
+        opt.value = sc;
+        opt.textContent = sc;
+        selectEl.appendChild(opt);
+      });
+      selectEl.disabled = list.length === 0;
+      if (selectedValue) selectEl.value = selectedValue;
+    }
+
     async function hydrateStartHereForm() {
       const form = document.getElementById('startHereForm');
       if (!form) return;
       const data = await getApplicationData();
       if (!data) return;
-      const setVal = (id, value) => { const el = form.querySelector('#' + id); if (el) el.value = value ?? ''; };
-
-      setVal('category', data.category);
-      ensureSubcategoryUI();
-      populateSubcategoryUI(data.category || '', data.subcategory || '');
-
-      setVal('name', data.name);
-      setVal('website', data.website);
-      setVal('award', data.awards_choice);
-      setVal('email', data.email);
-      setVal('mobile', data.mobile_number);
-      setVal('address', data.address);
-      setVal('instagram', data.instagram_url);
-      setVal('linkedin', data.linkedin_url);
+      setVal(form, 'category', data.category);
+      fillSubcategorySelect(form.querySelector('#subcategory'), data.category, data.subcategory);
+      setVal(form, 'name', data.name);
+      setVal(form, 'website', data.website);
+      setVal(form, 'award', data.awards_choice);
+      setVal(form, 'email', data.email);
+      setVal(form, 'mobile', data.mobile_number);
+      setVal(form, 'address', data.address);
+      setVal(form, 'instagram', data.instagram_url);
+      setVal(form, 'linkedin', data.linkedin_url);
     }
     async function hydrateCriteriaForm() {
       const form = document.getElementById('criteriaForm');
@@ -410,14 +637,9 @@
 
     function collectStartHere(form) {
       const val = id => (form.querySelector('#' + id)?.value || '');
-      const category = val('category');
-      const subcategory = val('subcategory');
-      const meta = findSubcatMeta(category, subcategory);
       return {
-        category,
-        subcategory,
-        subcategory_title: meta?.title || '',
-        subcategory_description: meta?.desc || '',
+        category: val('category'),
+        subcategory: val('subcategory'),           
         name: val('name'),
         website: val('website'),
         awards_choice: val('award'),
@@ -428,7 +650,6 @@
         linkedin_url: val('linkedin')
       };
     }
-
     function collectCriteria(form) {
       const val = id => (form.querySelector('#' + id)?.value || '');
       return {
@@ -441,397 +662,461 @@
         achievements_significance: val('significance'),
         big_picture_vision: val('vision'),
         recognition_reason: val('recognition'),
-        eligibility: !!form.querySelector('#confirm-eligibility')?.checked
+        eligibility: form.querySelector('#confirm-eligibility')?.checked ? true : false
       };
     }
 
-    // Create/update Start Here data and keep the same document
-    async function saveStartHereToFirestore() {
-      if (!currentUser) throw new Error('Not signed in');
-      const form = document.getElementById('startHereForm');
-      if (!form) throw new Error('Start Here form not found');
+    // Attachments tab
+    function setUpAttachmentsTab() {
+      const fileInput = document.getElementById('att_photo');
+      const img = document.getElementById('att_preview');
+      const saveBtn = document.getElementById('att_save_btn');
+      const previewBtn = document.getElementById('attachmentsPreviewBtn');
 
-      await ensureApplicationDoc();
-      const payload = {
-        ...collectStartHere(form),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        stage: 'draft',
-        user_id: currentUser.uid,
-        applicant_id: currentUser.uid
-      };
-      await firebase.firestore().collection('applications').doc(applicationId).set(payload, { merge: true });
+      // preview image
+      fileInput?.addEventListener('change', () => {
+        const f = fileInput.files && fileInput.files[0];
+        if (f) {
+          const url = URL.createObjectURL(f);
+          img.src = url;
+          img.style.display = 'inline-block';
+        } else {
+          img.removeAttribute('src');
+          img.style.display = 'none';
+        }
+      });
+
+      // Save button
+      saveBtn?.addEventListener('click', () => {
+        alert('The image saving function is not implemented.');
+      });
+
+      previewBtn?.addEventListener('click', async () => {
+        try { await openPreviewModal(); }
+        catch (e) { console.error(e); alert('Failed to open preview: ' + e.message); }
+      });
     }
 
-    // 
-    async function ensureApplicationDoc() {
-      if (applicationId) return applicationId;
-      if (!currentUser) throw new Error('Not signed in');
-      const base = {
-        stage: 'draft',
-        user_id: currentUser.uid,
-        applicant_id: currentUser.uid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      const docRef = await db().collection('applications').add(base);
-      applicationId = docRef.id;
-      return applicationId;
-    }
-
-    // START HERE handlers
-    function setUpStartHereTab() {
-      const saveBtn = document.getElementById('saveStartHereBtn');
-      const nextBtn = document.getElementById('saveNextBtn');
-
-      if (saveBtn) {
-        saveBtn.onclick = async function () {
-          try {
-            await saveStartHereToFirestore();
-            alert('Application saved as draft.');
-          } catch (err) {
-            console.error(err);
-            alert('Failed to save application: ' + err.message);
-          }
-        };
-      }
-
-      if (nextBtn) {
-        nextBtn.onclick = async function () {
-          try {
-            await saveStartHereToFirestore();
-            const critTab = document.getElementById('tabCriteria');
-            if (critTab) {
-              critTab.disabled = false;
-              critTab.click();
-            }
-          } catch (err) {
-            console.error(err);
-            alert('Failed to save application: ' + err.message);
-          }
-        };
-      }
-
-      // Prefill with last-saved data
-      hydrateStartHereForm();
-
-      // Wire category change → refresh subcats
-      const catEl = document.getElementById('category');
-      if (catEl) {
-        ensureSubcategoryUI();
-        populateSubcategoryUI(catEl.value || '', null);
-        catEl.onchange = () => populateSubcategoryUI(catEl.value, null);
-      }
-    }
-
-    // CRITERIA handlers
-    function setUpCriteriaTab() {
-      const saveBtn = document.getElementById('saveCriteriaBtn');
-      const checkbox = document.getElementById('confirm-eligibility');
-      const previewBtn = document.getElementById('previewBtn');
-
-      if (saveBtn) {
-        saveBtn.onclick = async function () {
-          try {
-            if (!currentUser) throw new Error('Not signed in');
-            const form = document.getElementById('criteriaForm');
-            if (!form) throw new Error('Criteria form not found');
-
-            await ensureApplicationDoc();
-            const payload = {
-              ...collectCriteria(form),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              stage: 'draft'
-            };
-            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
-            alert('Criteria saved as draft.');
-          } catch (err) {
-            console.error(err);
-            alert('Failed to save criteria: ' + err.message);
-          }
-        };
-      }
-
-      // Open preview 
-      if (previewBtn) {
-        previewBtn.onclick = async function () {
-          try {
-            await openPreviewModal();
-          } catch (err) {
-            console.error(err);
-            alert('Failed to open preview: ' + err.message);
-          }
-        };
-      }
-
-      if (checkbox) {
-        checkbox.onchange = () => {};
-      }
-
-      // Prefill with last-saved data
-      hydrateCriteriaForm();
-    }
-
-    // --- Category → Subcategory Map (value, title, desc) ---
-    const CATEGORY_MAP = {
-      "BUSINESS AWARDS": [
-        { value: "BUSINESS OF THE YEAR", title: "WOMEN CHANGING THE WORLD - BUSINESS OF THE YEAR", desc: "This award recognises exceptional women in business" },
-        { value: "MICRO BUSINESS OF THE YEAR", title: "WOMEN CHANGING THE WORLD - MICRO BUSINESS OF THE YEAR", desc: "This award recognises exceptional women in micro business" },
-        { value: "SMALL BUSINESS OF THE YEAR", title: "WOMEN CHANGING THE WORLD - SMALL BUSINESS OF THE YEAR", desc: "This award recognises exceptional women in small business" },
-        { value: "SOCIAL ENTERPRISE AWARD", title: "WOMEN CHANGING THE WORLD SOCIAL ENTERPRISE AWARD", desc: "This award recognises individuals who are making a difference as a social enterprise founder or team" }
-      ],
-      "IMPACT AWARDS": [
-        { value: "ADVOCACY IMPACT", title: "ADVOCACY IMPACT", desc: "" },
-        { value: "CULTURAL DIVERSITY AND INCLUSION IMPACT", title: "WOMEN CHANGING THE WORLD - DIVERSITY AND INCLUSION IMPACT AWARD", desc: "This award recognises exceptional women that are changing the World in diversity and inclusion initiatives" },
-        { value: "DISABILITY INCLUSION IMPACT", title: "DISABILITY INCLUSION IMPACT", desc: "" },
-        { value: "GENDER EMPOWERMENT", title: "GENDER EMPOWERMENT", desc: "" },
-        { value: "GENDER EQUALITY", title: "GENDER EQUALITY", desc: "" },
-        { value: "GLOBAL IMPACT", title: "WOMEN CHANGING THE WORLD – GLOBAL IMPACT", desc: "This award recognises exceptional women that are changing the world in global initiatives" },
-        { value: "HUMAN RIGHTS", title: "HUMAN RIGHTS", desc: "" },
-        { value: "HUMANITARIAN IMPACT", title: "WOMEN CHANGING THE WORLD - HUMANITARIAN IMPACT", desc: "This award recognises exceptional women that are changing the world in humanitarian initiatives" },
-        { value: "RURAL AND REGIONAL AREAS IMPACT", title: "WOMEN CHANGING THE WORLD IN RURAL AND REGIONAL AREAS IMPACT AWARD", desc: "This award recognises rural, remote & regional women that have achieved outstanding results" },
-        { value: "VOLUNTEER OF THE YEAR", title: "VOLUNTEER OF THE YEAR", desc: "" },
-        { value: "YOUTH IMPACT", title: "YOUTH IMPACT", desc: "" }
-      ],
-      "INDUSTRY AWARDS": [
-        { value: "COACH OF THE YEAR", title: "WOMEN CHANGING THE WORLD COACH OF THE YEAR", desc: "This award recognises exceptional women that are changing the World through coaching and mentoring" },
-        { value: "HEALTHTECH INNOVATION", title: "HEALTHTECH INNOVATION", desc: "" },
-        { value: "INNOVATION AWARD", title: "WOMEN CHANGING THE WORLD INNOVATION AWARD", desc: "This award recognises women that have a creative, scalable, interesting and innovative idea, innovation or concept to change the world" },
-        { value: "TECH INNOVATION", title: "TECH INNOVATION", desc: "" },
-        { value: "WELLNESS & WELLBEING PROGRAMS", title: "WELLNESS & WELLBEING PROGRAMS", desc: "" },
-        { value: "WELLNESS & WELLBEING SERVICES", title: "WELLNESS & WELLBEING SERVICES", desc: "" },
-        { value: "WOMAN IN CORPORATE & PUBLIC SECTOR", title: "WOMEN CHANGING THE WORLD IN THE PUBLIC SECTOR", desc: "This award recognises exceptional women that are changing the World through public sector roles" },
-        { value: "WOMAN IN CREATIVE INDUSTRIES (INACTIVE FOR ENTRANTS)", title: "WOMEN CHANGING THE WORLD IN CREATIVE INDUSTRIES", desc: "This award recognises exceptional women that are changing the world in creative fields" },
-        { value: "WOMAN IN CREATIVE INDUSTRIES", title: "WOMAN IN CREATIVE INDUSTRIES", desc: "This award recognises exceptional women sharing their creativity with the world" },
-        { value: "WOMAN IN EDUCATION - CHILDREN'S EDUCATION", title: "WOMAN IN EDUCATION - CHILDREN'S EDUCATION", desc: "" },
-        { value: "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION", title: "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION", desc: "" },
-        { value: "WOMAN IN FASHION & TEXTLIES", title: "WOMAN IN FASHION & TEXTLIES", desc: "This award recognises exceptional women in fashion" },
-        { value: "WOMAN IN LITERATURE - CHILDRENS BOOKS", title: "WOMAN IN LITERATURE - CHILDRENS BOOKS", desc: "" },
-        { value: "WOMAN IN PERSONAL SERVICES", title: "WOMAN IN PERSONAL SERVICES", desc: "" },
-        { value: "WOMAN IN SCIENCE", title: "WOMEN CHANGING THE WORLD IN SCIENCE", desc: "This award recognises exceptional women that are changing the World in Science" },
-        { value: "WOMAN IN THERAPY & CONSELLING SERVICES", title: "WOMAN IN THERAPY & CONSELLING SERVICES", desc: "" },
-        { value: "WOMAN IN TRAVEL, RETREATS AND EVENTS", title: "WOMAN IN TRAVEL, RETREATS AND EVENTS AWARD", desc: "" },
-        { value: "WOMAN IN ACADEMIC", title: "WOMEN CHANGING THE WORLD IN EDUCATION", desc: "This award recognises exceptional women in Education that are changing the World" },
-        { value: "WOMAN IN AGRICULTURE & FARMING", title: "WOMEN CHANGING THE WORLD IN AGRICULTURE & FARMING", desc: "This award recognises exceptional women that are changing the World through agriculture and farming" },
-        { value: "WOMAN IN ADULT EDUCATION & TRAINING", title: "WOMEN IN EDUCATION - ADULT EDUCATION & TRAINING", desc: "" },
-        { value: "WOMAN IN ENGINEERING", title: "WOMEN CHANGING THE WORLD IN ENGINEERING", desc: "This award recognises exceptional women that are changing the World in engineering fields" },
-        { value: "WOMAN IN FINANCE", title: "WOMEN CHANGING THE WORLD IN FINANCE", desc: "This award recognises exceptional women that are changing the World in Finance" },
-        { value: "WOMAN IN FOOD AND BEVERGAES", title: "WOMEN CHANGING THE WORLD IN FOOD AND BEVERAGES", desc: "This award recognises exceptional women that are changing the World through food and beverage fields" },
-        { value: "WOMAN IN HEALTH", title: "WOMEN CHANGING THE WORLD IN HEALTH", desc: "This award recognises exceptional women that are changing the World in Health" },
-        { value: "WOMAN IN JOURNALISM AND MEDIA", title: "WOMEN CHANGING THE WORLD IN JOURNALISM AND MEDIA", desc: "This award recognises exceptional women that are changing the World in Journalism and Media" },
-        { value: "WOMAN IN LAW", title: "WOMEN CHANGING THE WORLD IN LAW", desc: "This award recognises exceptional women that are changing the world through law" },
-        { value: "WOMAN IN LITERATIRE", title: "WOMEN CHANGING THE WORLD IN LITERATURE", desc: "This award recognises women committed to changing the world through the power of writing" },
-        { value: "WOMAN IN PROFESSIONAL SERVICES", title: "WOMAN IN PROFESSIONAL SERVICES", desc: "This award recognises exceptional women in professional service roles" },
-        { value: "WOMAN IN SPORT", title: "WOMEN CHANGING THE WORLD IN SPORT", desc: "This award recognises exceptional women that are changing the World in sport" },
-        { value: "WOMAN IN SUSTAINABILITY", title: "WOMEN CHANGING THE WORLD IN SUSTAINABILITY", desc: "This award recognises women committed to changing the world through sustainable and eco-friendly practices, advocacy or awareness" },
-        { value: "WOMAN IN TECH", title: "WOMEN CHANGING THE WORLD IN TECH", desc: "This award recognises women changing the world through the introduction or improvement of an idea, method, technology, process or application" }
-      ],
-      "LEADERSHIP AWARDS": [
-        { value: "BIG IDEA", title: "EMERGING LEADER OF THE YEAR", desc: "This award recognises exceptional women in emerging leadership roles (women under 35)" },
-        { value: "DISABILITY LEADERSHIP AWARD", title: "WOMEN CHANGING THE WORLD – DISABILITY LEADERSHIP AWARD", desc: "This award recognises exceptional disabled women leaders that are changing the world" },
-        { value: "FIRST NATIONS LEADERSHIP", title: "WOMEN CHANGING THE WORLD - FIRST NATIONS LEADERSHIP AWARD", desc: "This award recognises First Nations Women that are changing the world. *Must be First Nations to be eligible" },
-        { value: "LEADER OF THE YEAR", title: "LEADER OF THE YEAR", desc: "This award recognises exceptional women in leadership roles" },
-        { value: "LGBTQI+ LEADERSHIP AWARD", title: "WOMEN CHANGING THE WORLD – LGBTQI+ LEADERSHIP AWARD", desc: "This award recognises exceptional LGBTQI+ leaders that are changing the world" },
-        { value: "MIGRANT LEADERSHIP AWARD", title: "WOMEN CHANGING THE WORLD - MIGRANT LEADERSHIP AWARD", desc: "This award recognises Migrant leaders that are changing the world" },
-        { value: "TECH LEADER OF THE YEAR", title: "TECH LEADER OF THE YEAR AWARD", desc: "" },
-        { value: "THOUGHT LEADER OF THE YEAR", title: "THOUGHT LEADER OF THE YEAR", desc: "This award recognises exceptional women Thought Leaders sharing their knowledge with the world" }
-      ],
-      "PEOPLE'S CHOICE": [
-        { value: "People's Choice - BUSINESS", title: "People's Choice - BUSINESS", desc: "Most popular business making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - DIVERSITY AND INCLUSION", title: "People's Choice - DIVERSITY AND INCLUSION", desc: "Most popular diversity and inclusion focused business making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - EDUCATION", title: "People's Choice - EDUCATION", desc: "Most popular education business or organisation making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - ENVIRONMENTAL IMPACT", title: "People's Choice - ENVIRONMENTAL IMPACT", desc: "Most popular environmental impact business or organisation making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - GENDER EQUALITY", title: "People's Choice - GENDER EQUALITY", desc: "Most popular organisation making a difference by taking action or raising awareness for gender equality" },
-        { value: "People's Choice - GLOBAL IMPACT", title: "People's Choice - GLOBAL IMPACT", desc: "Most popular global impact business or organisation making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - HEALTH & WELLBEING", title: "People's Choice - HEALTH & WELLBEING", desc: "Most popular health and wellbeing business or organisation making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - HUMANITARIAN IMPACT", title: "People's Choice - HUMANITARIAN IMPACT", desc: "Most popular humanitarian business or organisation making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - LOCAL COMMUNITY", title: "People's Choice - LOCAL COMMUNITY", desc: "Most popular local community focused business or organisation making a difference as determined by people’s choice voting" },
-        { value: "People's Choice - NON PROFIT", title: "People's Choice - NON PROFIT", desc: "Most popular non-profit or charity organisation making a difference" },
-        { value: "People's Choice - SOCIAL ENTERPRISE", title: "People's Choice - SOCIAL ENTERPRISE", desc: "Most popular social enterprise business making a difference" }
-      ],
-      "WOMAN OF THE YEAR AWARDS": [
-        { value: "CHANGEMAKER", title: "WOMEN CHANGING THE WORLD - CHANGEMAKER", desc: "This award recognises exceptional women who are changing the world and are deserving of a larger platform" },
-        { value: "COMPANY OF THE YEAR", title: "COMPANY CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional companies changing the world for women and girls" },
-        { value: "EMERGING ENTREPRENEUR OF THE YEAR", title: "EMERGING ENTREPRENEUR OF THE YEAR", desc: "This award recognises exceptional entrepreneurs changing the world (under 2 years in business)" },
-        { value: "EMERGING LEADER OF THE YEAR", title: "WOMEN CHANGING THE WORLD - EMERGING LEADER OF THE YEAR", desc: "This award recognises exceptional women in emerging leadership roles (women under 35)" },
-        { value: "EMERGING WOMAN", title: "EMERGING WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women that are changing the World (working in the current field for less than 2 years)" },
-        { value: "ENTREPRENEUR OF THE YEAR", title: "ENTREPRENEUR OF THE YEAR", desc: "This award recognises exceptional entrepreneurs changing the world" },
-        { value: "GIRL OF THE YEAR", title: "GIRL CHANGING THE WORLD OF THE YEAR 2023", desc: "This award recognises exceptional girls changing the world (under 12 years)" },
-        { value: "HALL OF FAME", title: "HALL OF FAME WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women who are changing the World (working in the current field for 20 years+)" },
-        { value: "RISING STAR", title: "RISING STAR WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women who are changing the World (working in the current field for less than 5 years)" },
-        { value: "WOMAN OF THE YEAR AWARD", title: "WOMAN OF THE YEAR AWARD", desc: "" },
-        { value: "WOMAN CHANING THE WORLD", title: "WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional women who are changing the World (working in the current field for less than 20 years)" },
-        { value: "YOUNG WOMAN OF THE YEAR", title: "YOUNG WOMAN CHANGING THE WORLD OF THE YEAR", desc: "This award recognises exceptional young women changing the world (under 25 years)" }
-      ]
-    };
-
-    function getSubcats(category) {
-      return CATEGORY_MAP[category] || [];
-    }
-    function findSubcatMeta(category, subValue) {
-      return getSubcats(category).find(s => s.value === subValue) || null;
-    }
-
-    // Inject/update Subcategory UI in Start here
-    function ensureSubcategoryUI() {
-      const catEl = document.getElementById('category');
-      if (!catEl) return;
-
-      // Create container once if missing
-      let wrap = document.getElementById('subcategoryContainer');
-      if (!wrap) {
-        wrap = document.createElement('div');
-        wrap.className = 'form-group';
-        wrap.id = 'subcategoryContainer';
-        wrap.innerHTML = `
-          <label for="subcategory">Sub Category</label>
-          <select id="subcategory"></select>
-          <div class="subcat-info">
-            <div id="subcatTitle" class="subcat-title"></div>
-            <div id="subcatDesc" class="subcat-desc"></div>
-          </div>
-        `;
-        // Insert right after the category field
-        catEl.closest('.form-group')?.after(wrap);
-      }
-      return wrap;
-    }
-
-    function populateSubcategoryUI(category, selected) {
-      const wrap = ensureSubcategoryUI();
-      const select = document.getElementById('subcategory');
-      const titleEl = document.getElementById('subcatTitle');
-      const descEl = document.getElementById('subcatDesc');
-      if (!wrap || !select) return;
-
-      const options = getSubcats(category);
-      if (!category || options.length === 0) {
-        wrap.style.display = 'none';
-        select.innerHTML = '';
-        titleEl.textContent = '';
-        descEl.textContent = '';
-        return;
-      }
-
-      wrap.style.display = 'block';
-      select.innerHTML = `<option value="">Select sub category</option>` + options.map(o => `<option value="${o.value}">${o.value}</option>`).join('');
-      if (selected) select.value = selected;
-
-      const meta = findSubcatMeta(category, select.value);
-      titleEl.textContent = meta?.title || '';
-      descEl.textContent = meta?.desc || '';
-
-      // Change listener
-      select.onchange = () => {
-        const m = findSubcatMeta(category, select.value);
-        titleEl.textContent = m?.title || '';
-        descEl.textContent = m?.desc || '';
-      };
-    }
-
-    // Update StartHere setup to wire category change
-    function setUpStartHereTab() {
-      const saveBtn = document.getElementById('saveStartHereBtn');
-      const nextBtn = document.getElementById('saveNextBtn');
-
-      if (saveBtn) {
-        saveBtn.onclick = async function () {
-          try {
-            await saveStartHereToFirestore();
-            alert('Application saved as draft.');
-          } catch (err) {
-            console.error(err);
-            alert('Failed to save application: ' + err.message);
-          }
-        };
-      }
-
-      if (nextBtn) {
-        nextBtn.onclick = async function () {
-          try {
-            await saveStartHereToFirestore();
-            const critTab = document.getElementById('tabCriteria');
-            if (critTab) {
-              critTab.disabled = false;
-              critTab.click();
-            }
-          } catch (err) {
-            console.error(err);
-            alert('Failed to save application: ' + err.message);
-          }
-        };
-      }
-
-      // Prefill with last-saved data
-      hydrateStartHereForm();
-
-      // Wire category change → refresh subcats
-      const catEl = document.getElementById('category');
-      if (catEl) {
-        ensureSubcategoryUI();
-        populateSubcategoryUI(catEl.value || '', null);
-        catEl.onchange = () => populateSubcategoryUI(catEl.value, null);
-      }
-    }
-
-    // Extend StartHere collect/hydrate to include subcategory
-    function collectStartHere(form) {
-      const val = id => (form.querySelector('#' + id)?.value || '');
-      const category = val('category');
-      const subcategory = val('subcategory');
-      const meta = findSubcatMeta(category, subcategory);
-      return {
-        category,
-        subcategory,
-        subcategory_title: meta?.title || '',
-        subcategory_description: meta?.desc || '',
-        name: val('name'),
-        website: val('website'),
-        awards_choice: val('award'),
-        email: val('email'),
-        mobile_number: val('mobile'),
-        address: val('address'),
-        instagram_url: val('instagram'),
-        linkedin_url: val('linkedin')
-      };
-    }
-
-    async function hydrateStartHereForm() {
-      const form = document.getElementById('startHereForm');
-      if (!form) return;
+    // open preview modal
+    async function openPreviewModal() {
+      const modal = document.getElementById('previewModal');
+      if (!modal) return;
       const data = await getApplicationData();
       if (!data) return;
-      const setVal = (id, value) => { const el = form.querySelector('#' + id); if (el) el.value = value ?? ''; };
 
-      setVal('category', data.category);
-      // Build subcategory UI and select value
-      ensureSubcategoryUI();
-      populateSubcategoryUI(data.category || '', data.subcategory || '');
+      const awardName = data.awards_choice || '';
+      const categoryName = data.category || '';
+      const subcatName = data.subcategory || '';
 
-      setVal('name', data.name);
-      setVal('website', data.website);
-      setVal('award', data.awards_choice);
-      setVal('email', data.email);
-      setVal('mobile', data.mobile_number);
-      setVal('address', data.address);
-      setVal('instagram', data.instagram_url);
-      setVal('linkedin', data.linkedin_url);
-    }
+      // Category + Subcategory
+      document.getElementById('pv_category').value = categoryName;
+      // populate preview subcategories from category, then set value
+      fillSubcategorySelect(document.getElementById('pv_subcategory'), categoryName, subcatName);
 
-    // Ensure any save to Firestore keeps subcategory fields
-    async function saveStartHereToFirestore() {
-      if (!currentUser) throw new Error('Not signed in');
-      const form = document.getElementById('startHereForm');
-      if (!form) throw new Error('Start Here form not found');
-
-      await ensureApplicationDoc();
-      const payload = {
-        ...collectStartHere(form),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        stage: 'draft',
-        user_id: currentUser.uid,
-        applicant_id: currentUser.uid
+      // If user changes category in preview, refresh subcategories
+      document.getElementById('pv_category').onchange = (e) => {
+        fillSubcategorySelect(document.getElementById('pv_subcategory'), e.target.value, '');
       };
-      await firebase.firestore().collection('applications').doc(applicationId).set(payload, { merge: true });
+
+      document.getElementById('pv_award').value = awardName;
+      document.getElementById('pv_name').value = data.name || '';
+      document.getElementById('pv_website').value = data.website || '';
+      document.getElementById('pv_email').value = data.email || '';
+      document.getElementById('pv_mobile').value = data.mobile_number || '';
+      document.getElementById('pv_address').value = data.address || '';
+      document.getElementById('pv_instagram').value = data.instagram_url || '';
+      document.getElementById('pv_linkedin').value = data.linkedin_url || '';
+
+      document.getElementById('pv_about_yourself').value = data.tell_us_about_yourself || '';
+      document.getElementById('pv_about_work').value = data.tell_us_about_your_work || '';
+      document.getElementById('pv_inspiration').value = data.what_inspired_you || '';
+      document.getElementById('pv_unique').value = data.what_makes_you_unique || '';
+      document.getElementById('pv_challenge').value = data.greatest_challenge || '';
+      document.getElementById('pv_achievements').value = data.top_achievements || '';
+      document.getElementById('pv_significance').value = data.achievements_significance || '';
+      document.getElementById('pv_vision').value = data.big_picture_vision || '';
+      document.getElementById('pv_recognition').value = data.recognition_reason || '';
+
+      const cb = document.getElementById('pv_confirm_eligibility');
+      if (cb) cb.checked = !!data.eligibility;
+      
+      setUpPreviewWordCount();
+      bindPreviewValidation();
+      updatePreviewSubmitState();
+
+      // Show modal
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
     }
+
+    function closePreviewModal() {
+      const modal = document.getElementById('previewModal');
+      if (!modal) return;
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    // Close button
+    document.getElementById('previewClose')?.addEventListener('click', closePreviewModal);
+
+   
+    const _previewModalEl = document.getElementById('previewModal');
+    _previewModalEl?.addEventListener('click', (e) => {
+      if (e.target === _previewModalEl) closePreviewModal();
+    });
+
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && _previewModalEl?.classList.contains('open')) {
+        closePreviewModal();
+      }
+    });
+
+    // ---- Preview validation ----
+    const PREVIEW_REQUIRED_IDS = [
+      'pv_award',
+      'pv_name',
+      'pv_email',
+      'pv_mobile',
+      'pv_about_yourself',
+      'pv_about_work',
+      'pv_inspiration',
+      'pv_unique',
+      'pv_challenge',
+      'pv_achievements',
+      'pv_significance',
+      'pv_vision',
+      'pv_recognition'
+    ];
+
+    function getPreviewVal(id) {
+      const el = document.getElementById(id);
+      return (el && typeof el.value === 'string') ? el.value.trim() : '';
+    }
+
+    function previewRequiredOk() {
+      const allFilled = PREVIEW_REQUIRED_IDS.every(id => getPreviewVal(id).length > 0);
+      const eligible = !!document.getElementById('pv_confirm_eligibility')?.checked;
+      return allFilled && eligible;
+    }
+
+    function updatePreviewSubmitState() {
+      const btn = document.getElementById('previewSubmit');
+      if (btn) btn.disabled = !previewRequiredOk();
+    }
+
+    function bindPreviewValidation() {
+      const wire = (id, evt = 'input') => {
+        const el = document.getElementById(id);
+        if (!el || el.dataset.bound === '1') return;
+        el.addEventListener(evt, updatePreviewSubmitState);
+        el.dataset.bound = '1';
+      };
+
+      PREVIEW_REQUIRED_IDS.forEach(id => wire(id, 'input'));
+      wire('pv_confirm_eligibility', 'change');
+
+      ['pv_category','pv_subcategory','pv_award','pv_website','pv_address','pv_instagram','pv_linkedin']
+        .forEach(id => wire(id, 'change'));
+    }
+
+    // Collect all preview values into the Firestore shape
+    function collectPreviewData() {
+      return {
+        category: getPreviewVal('pv_category'),
+        subcategory: getPreviewVal('pv_subcategory'),
+        awards_choice: getPreviewVal('pv_award'),
+        name: getPreviewVal('pv_name'),
+        website: getPreviewVal('pv_website'),
+        email: getPreviewVal('pv_email'),
+        mobile_number: getPreviewVal('pv_mobile'),
+        address: getPreviewVal('pv_address'),
+        instagram_url: getPreviewVal('pv_instagram'),
+        linkedin_url: getPreviewVal('pv_linkedin'),
+        tell_us_about_yourself: getPreviewVal('pv_about_yourself'),
+        tell_us_about_your_work: getPreviewVal('pv_about_work'),
+        what_inspired_you: getPreviewVal('pv_inspiration'),
+        what_makes_you_unique: getPreviewVal('pv_unique'),
+        greatest_challenge: getPreviewVal('pv_challenge'),
+        top_achievements: getPreviewVal('pv_achievements'),
+        achievements_significance: getPreviewVal('pv_significance'),
+        big_picture_vision: getPreviewVal('pv_vision'),
+        recognition_reason: getPreviewVal('pv_recognition'),
+        eligibility: !!document.getElementById('pv_confirm_eligibility')?.checked
+      };
+    }
+
+    // NEW: submit previewed application
+    document.getElementById('previewSubmit').onclick = async function() {
+      const modal = document.getElementById('previewModal');
+      if (!modal) return;
+
+      // Validate from preview inputs (edits in preview count)
+      if (!previewRequiredOk()) {
+        return alert('Please complete all required fields and confirm eligibility.');
+      }
+
+      // Confirm submission
+      const confirmed = confirm('Are you sure you want to submit your application? This cannot be undone.');
+      if (!confirmed) return;
+
+      try {
+        const payload = collectPreviewData();
+        await db().collection('applications').doc(applicationId).set({
+          ...payload,
+          submitted: true,
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        alert('Application submitted successfully!');
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(() => { window.location.href = 'applicantdashboard.html'; }, 2000);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to submit application: ' + err.message);
+      }
+    };
+
+    // update word count displays
+    function updateWordCounts(formId, counts) {
+      for (const [id, count] of Object.entries(counts)) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+
+        if (!el.dataset.max) {
+          const m = el.textContent.match(/\/\s*(\d+)/);
+          if (m) el.dataset.max = m[1];
+        }
+
+        const max = el.dataset.max;
+        el.textContent = max ? `${count}/${max}` : String(count);
+      }
+    }
+
+    // word count
+    function setUpWordCount(formId, textAreas) {
+      const form = document.getElementById(formId);
+      if (!form) return;
+
+      const countWords = (s) => s.trim().split(/\s+/).filter(Boolean).length;
+
+      const getMaxFor = (id) => {
+        const span = document.getElementById('count_' + id);
+        if (!span) return Infinity;
+        if (!span.dataset.max) {
+          const m = span.textContent.match(/\/\s*(\d+)/);
+          if (m) span.dataset.max = m[1];
+        }
+        return Number(span.dataset.max || Infinity);
+      };
+
+      const clampToMax = (ta, max) => {
+        const words = ta.value.trim().split(/\s+/).filter(Boolean);
+        if (words.length > max) {
+          ta.value = words.slice(0, max).join(' ');
+          if (typeof ta.selectionStart === 'number') {
+            ta.selectionStart = ta.selectionEnd = ta.value.length;
+          }
+        }
+      };
+
+      textAreas.forEach((id) => {
+        const ta = form.querySelector('#' + id);
+        const spanId = 'count_' + id;
+        if (!ta || !document.getElementById(spanId)) return;
+
+        const update = () => {
+          const max = getMaxFor(id);
+          clampToMax(ta, max);
+          const count = countWords(ta.value);
+          updateWordCounts(formId, { [spanId]: count });
+        };
+
+        // Prevent adding a new word when already at max 
+        ta.addEventListener('keydown', (e) => {
+          const max = getMaxFor(id);
+          const atMax = countWords(ta.value) >= max;
+          const addingWordKey = e.key === ' ' || e.key === 'Enter';
+          const replacing = ta.selectionStart !== ta.selectionEnd; // allow replace
+          if (atMax && addingWordKey && !replacing) {
+            e.preventDefault();
+          }
+        });
+
+        ta.addEventListener('input', update);
+
+        // Initialize once
+        update();
+      });
+    }
+
+    // Start Here tab
+    function setUpStartHereTab() {
+      const form = document.getElementById('startHereForm');
+      if (!form) return;
+      form.reset();
+
+      // Subcategory population
+      const cat = form.querySelector('#category');
+      const sub = form.querySelector('#subcategory');
+      cat.addEventListener('change', () => {
+        // reset subcategory when category changes
+        fillSubcategorySelect(sub, cat.value, '');
+      });
+
+      hydrateStartHereForm();
+
+      // Save / Save & Next 
+      const saveBtn = document.getElementById('saveStartHereBtn');
+      const nextBtn = document.getElementById('saveNextBtn');
+
+      async function saveStartHereToFirestore() {
+        if (!currentUser) throw new Error('Not signed in');
+        await ensureApplicationDoc();
+        const payload = {
+          ...collectStartHere(form),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          stage: 'draft'
+        };
+        await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+      }
+
+      if (saveBtn) {
+        saveBtn.onclick = async () => {
+          try { await saveStartHereToFirestore(); alert('Saved.'); }
+          catch (e) { console.error(e); alert('Failed to save: ' + e.message); }
+        };
+      }
+      if (nextBtn) {
+        nextBtn.onclick = async () => {
+          try {
+            await saveStartHereToFirestore();
+            const critTab = document.getElementById('tabCriteria');
+            const attTab = document.getElementById('tabAttachments');
+            if (critTab) critTab.disabled = false;
+            if (attTab) attTab.disabled = false;
+            critTab?.click();
+          } catch (e) {
+            console.error(e); alert('Failed to save: ' + e.message);
+          }
+        };
+      }
+    }
+
+    // Criteria tab
+    function setUpCriteriaTab() {
+      const form = document.getElementById('criteriaForm');
+      if (!form) return;
+      form.reset();
+      hydrateCriteriaForm();
+      setUpWordCount('criteriaForm', ['about_yourself', 'about_work', 'inspiration', 'unique', 'challenge', 'achievements', 'significance', 'vision', 'recognition'], {
+        count_about_yourself: 0,
+        count_about_work: 0,
+        count_inspiration: 0,
+        count_unique: 0,
+        count_challenge: 0,
+        count_achievements: 0,
+        count_significance: 0,
+        count_vision: 0,
+        count_recognition: 0
+      });
+    }
+
+    // Word limit in Preview 
+    function setUpPreviewWordCount() {
+      const ids = [
+        'pv_about_yourself','pv_about_work','pv_inspiration','pv_unique',
+        'pv_challenge','pv_achievements','pv_significance','pv_vision','pv_recognition'
+      ];
+
+      const countWords = (s) => s.trim().split(/\s+/).filter(Boolean).length;
+
+      const getSpan = (id) => {
+        const suffix = id.replace(/^pv_/, '');
+        return document.getElementById('pv_count_' + suffix);
+      };
+
+      const getMaxFor = (id) => {
+        const span = getSpan(id);
+        if (!span) return Infinity;
+        if (!span.dataset.max) {
+          const m = span.textContent.match(/\/\s*(\d+)/);
+          if (m) span.dataset.max = m[1];
+        }
+        return Number(span.dataset.max || Infinity);
+      };
+
+      const clampToMax = (ta, max) => {
+        const words = ta.value.trim().split(/\s+/).filter(Boolean);
+        if (words.length > max) {
+          ta.value = words.slice(0, max).join(' ');
+          if (typeof ta.selectionStart === 'number') {
+            ta.selectionStart = ta.selectionEnd = ta.value.length;
+          }
+        }
+      };
+
+      ids.forEach((id) => {
+        const ta = document.getElementById(id);
+        const span = getSpan(id);
+        if (!ta || !span) return;
+
+        if (ta.dataset.pvBound === '1') {
+          const max = getMaxFor(id);
+          clampToMax(ta, max);
+          span.textContent = `${countWords(ta.value)}/${max}`;
+          return;
+        }
+
+        const update = () => {
+          const max = getMaxFor(id);
+          clampToMax(ta, max);
+          const count = countWords(ta.value);
+          span.textContent = `${count}/${max}`;
+        };
+
+        // Block adding a new word at max 
+        ta.addEventListener('keydown', (e) => {
+          const max = getMaxFor(id);
+          const atMax = countWords(ta.value) >= max;
+          const addingWordKey = e.key === ' ' || e.key === 'Enter';
+          const replacing = ta.selectionStart !== ta.selectionEnd;
+          if (atMax && addingWordKey && !replacing) e.preventDefault();
+        });
+
+        ta.addEventListener('input', update);
+        ta.dataset.pvBound = '1';
+        update();
+      });
+    }
+
+    // Init
+    (async () => {
+      const data = await getApplicationData();
+      if (data) {
+        document.getElementById('tabSection').style.display = 'block';
+        document.getElementById('datesSection').style.display = 'none';
+
+        // Ensure the Start here form is actually rendered
+        document.getElementById('tabContent').innerHTML = startHereContent;
+
+        // Enable the other tabs when continuing
+        const critTab = document.getElementById('tabCriteria');
+        const attTab = document.getElementById('tabAttachments');
+        if (critTab) critTab.disabled = false;
+        if (attTab) attTab.disabled = false;
+
+        hydrateStartHereForm();
+        setUpStartHereTab();
+      } else {
+        document.getElementById('tabContent').innerHTML = startHereContent;
+        setUpStartHereTab();
+      }
+    })();
   </script>
 </body>
+</html>
