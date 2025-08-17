@@ -80,6 +80,12 @@
       background-color: #b8235a;
     }
 
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .applications-list {
       margin-top: 15px;
     }
@@ -108,16 +114,17 @@
     <div class="dashboard-section">
       <h2>Submit a New Application</h2>
       <p>Ready to apply for an award? Click below to start your submission.</p>
-      <button onclick="startNewApplication()">Start New Application</button>
+      <div class="button-row">
+        <button onclick="startNewApplication()">Start New Application</button>
+        <button onclick="testEmailMessage()">Test Email Message</button>
+      </div>
     </div>
 
     <!-- Section 2: View Existing Applications -->
     <div class="dashboard-section">
-      <h2>Your Submitted Applications</h2>
-      <p>Below is a list of applications you have submitted:</p>
-      <ul class="applications-list" id="applicationsList">
-        <li>Loading your applications...</li>
-      </ul>
+      <h2>Your Applications</h2>
+      <p>View a history of your applications and their status.</p>
+      <button onclick="viewApplications()">View My Applications</button>
     </div>
 
     <!-- Section 3: Manage Profile (optional) -->
@@ -153,6 +160,16 @@
       window.location.href = "applicationform.html";
     }
 
+   
+    function testEmailMessage() {
+      // empty
+    }
+
+    // Redirect to history page
+    function viewApplications() {
+      window.location.href = "applicationhistory.html";
+    }
+
     // Placeholder for profile editing
     function editProfile() {
       alert("Profile management coming soon!");
@@ -161,32 +178,9 @@
     // Personalize dashboard and load applications
     firebase.auth().onAuthStateChanged(user => {
       const welcomeEl = document.getElementById("welcomeMessage");
-      const list = document.getElementById("applicationsList");
-
       if (user) {
         const name = user.displayName || user.email || "User";
         welcomeEl.textContent = `Welcome, ${name}!`;
-
-        const db = firebase.firestore();
-        db.collection("applications").where("userId", "==", user.uid)
-          .get()
-          .then(querySnapshot => {
-            list.innerHTML = "";
-            if (querySnapshot.empty) {
-              list.innerHTML = "<li>No applications have been submitted yet.</li>";
-            } else {
-              querySnapshot.forEach(doc => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.textContent = `Application: ${data.title || "Untitled"} - Status: ${data.status || "Pending"}`;
-                list.appendChild(li);
-              });
-            }
-          })
-          .catch(error => {
-            list.innerHTML = `<li>Error loading applications: ${error.message}</li>`;
-          });
-
       } else {
         window.location.href = "signin.html";
       }
