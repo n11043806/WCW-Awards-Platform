@@ -124,6 +124,55 @@
     .filter-group h4 { margin: 0 0 8px; color: #8c1f4c; font-size: 14px; }
     .chk { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
     .filters-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+    .sort-dropdown {
+      position: relative;
+      display: inline-block;
+      margin-left: 10px;
+    }
+    .sort-btn {
+      background: #fff;
+      color: #572338;
+      border: 2px solid #572338;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 100px;
+      text-align: left;
+    }
+    .sort-btn:after {
+      content: "▼";
+      float: right;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    .sort-list {
+      display: none;
+      position: absolute;
+      top: 110%;
+      left: 0;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-width: 120px;
+      z-index: 10;
+    }
+    .sort-list.open { display: block; }
+    .sort-list button {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 15px;
+      color: #572338;
+      cursor: pointer;
+    }
+    .sort-list button:hover {
+      background: #f0e4e9;
+    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -142,8 +191,19 @@
     <div class="container">
       <div class="list-header">
         <h2>Application History</h2>
-        <!-- changed btn style -->
-        <button id="openFilter" class="action-btn btn-filter">Filter</button>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="sort-dropdown" id="sortDropdown">
+            <button class="sort-btn" id="sortBtn">SORT BY: -select-</button>
+            <div class="sort-list" id="sortList">
+              <button data-sort="none">-select-</button>
+              <button data-sort="asc">Application ID Ascending</button>
+              <button data-sort="desc">Application ID Descending</button>
+              <button data-sort="updated_desc">Updated (Newest first)</button>
+              <button data-sort="updated_asc">Updated (Oldest first)</button>
+            </div>
+          </div>
+          <button id="openFilter" class="action-btn btn-filter">Filter</button>
+        </div>
       </div>
       <table>
         <thead>
@@ -153,7 +213,6 @@
             <th>Subcategory</th>
             <th>Award</th>
             <th>Stage</th>
-            <th>Status</th>
             <th>Created</th>
             <th>Updated</th>
             <th>Action</th>
@@ -381,7 +440,7 @@
       }
     };
 
-    // ===== Filters =====
+    // Filters 
     const KNOWN_CATEGORIES = [
       'BUSINESS AWARDS','IMPACT AWARDS','INDUSTRY AWARDS','LEADERSHIP AWARDS',"PEOPLE'S CHOICE",'WOMAN OF THE YEAR AWARDS'
     ];
@@ -518,47 +577,99 @@
       applyFiltersAndRender();
     });
 
-    function renderTable(items) {
-      const body = document.getElementById('appsBody');
-      if (!items.length) {
-        body.innerHTML = `<tr><td colspan="10" class="muted">No applications match your filters.</td></tr>`;
-        return;
-      }
-      body.innerHTML = '';
-      items.forEach(({id, d}) => {
-        const stage = (d.stage || 'draft').toLowerCase();
-        const isSubmitted = stage === 'submitted';
-        const isWithdrawn = stage === 'withdrawn';
+    // Sorting
+let SORT_MODE = 'none'; 
 
-        const label = isSubmitted ? 'VIEW' : 'CONTINUE';
-        const handler = isSubmitted ? `viewApp('${id}')` : `continueApplication('${id}')`;
-        const btnClass = isSubmitted ? 'btn-view' : 'btn-continue';
+const sortBtn = document.getElementById('sortBtn');
+const sortList = document.getElementById('sortList');
+const sortDropdown = document.getElementById('sortDropdown');
 
-        const delLabel = isSubmitted ? 'WITHDRAW' : 'DELETE';
-        const delType = isSubmitted ? 'withdraw' : 'delete';
-        const delBtn = isWithdrawn
-          ? `<span class="muted">WITHDRAWN</span>`
-          : `<button class="action-btn btn-danger" onclick="openConfirm('${delType}','${id}')">${delLabel}</button>`;
+sortBtn.onclick = function(e) {
+  sortList.classList.toggle('open');
+};
 
-        const tr = document.createElement('tr');
-        tr.id = 'row_' + id;
-        tr.innerHTML = `
-          <td>${id}</td>
-          <td>${d.category || '-'}</td>
-          <td>${d.subcategory || '-'}</td>
-          <td>${d.awards_choice || '-'}</td>
-          <td>${d.stage || '-'}</td>
-          <td>${d.status || '-'}</td>
-          <td>${fmt(d.createdAt)}</td>
-          <td>${fmt(d.updatedAt)}</td>
-          <td><button class="action-btn ${btnClass}" onclick="${handler}">${label}</button></td>
-          <td>${delBtn}</td>
-        `;
-        body.appendChild(tr);
-      });
-    }
+sortList.onclick = function(e) {
+  if (e.target.tagName === 'BUTTON') {
+    SORT_MODE = e.target.dataset.sort;
+    sortBtn.textContent = 'SORT BY: ' + (
+      SORT_MODE === 'asc' ? 'Application ID Ascending' :
+      SORT_MODE === 'desc' ? 'Application ID Descending' :
+      SORT_MODE === 'updated_desc' ? 'Updated (Newest to Oldest)' :
+      SORT_MODE === 'updated_asc' ? 'Updated (Oldest to Newest)' :
+      '-select-'
+    );
+    sortList.classList.remove('open');
+    applyFiltersAndRender();
+  }
+};
 
-    // ===== Load and wire table =====
+// Close dropdown if clicking outside
+document.addEventListener('click', function(e) {
+  if (!sortDropdown.contains(e.target)) {
+    sortList.classList.remove('open');
+  }
+});
+
+function renderTable(items) {
+  const body = document.getElementById('appsBody');
+  if (!items.length) {
+    body.innerHTML = `<tr><td colspan="10" class="muted">No applications match your filters.</td></tr>`;
+    return;
+  }
+
+  let sorted = [...items];
+  if (SORT_MODE === 'asc') {
+    sorted.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  } else if (SORT_MODE === 'desc') {
+    sorted.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+  } else if (SORT_MODE === 'updated_desc') {
+    sorted.sort((a, b) => {
+      const ta = a.d.updatedAt?.toMillis?.() ?? new Date(a.d.updatedAt).getTime() ?? 0;
+      const tb = b.d.updatedAt?.toMillis?.() ?? new Date(b.d.updatedAt).getTime() ?? 0;
+      return tb - ta;
+    });
+  } else if (SORT_MODE === 'updated_asc') {
+    sorted.sort((a, b) => {
+      const ta = a.d.updatedAt?.toMillis?.() ?? new Date(a.d.updatedAt).getTime() ?? 0;
+      const tb = b.d.updatedAt?.toMillis?.() ?? new Date(b.d.updatedAt).getTime() ?? 0;
+      return ta - tb;
+    });
+  }
+
+  body.innerHTML = '';
+  sorted.forEach(({id, d}) => {
+    const stage = (d.stage || 'draft').toLowerCase();
+    const isSubmitted = stage === 'submitted';
+    const isWithdrawn = stage === 'withdrawn';
+
+    const label = isSubmitted ? 'VIEW' : 'CONTINUE';
+    const handler = isSubmitted ? `viewApp('${id}')` : `continueApplication('${id}')`;
+    const btnClass = isSubmitted ? 'btn-view' : 'btn-continue';
+
+    const delLabel = isSubmitted ? 'WITHDRAW' : 'DELETE';
+    const delType = isSubmitted ? 'withdraw' : 'delete';
+    const delBtn = isWithdrawn
+      ? `<span class="muted">WITHDRAWN</span>`
+      : `<button class="action-btn btn-danger" onclick="openConfirm('${delType}','${id}')">${delLabel}</button>`;
+
+    const tr = document.createElement('tr');
+    tr.id = 'row_' + id;
+    tr.innerHTML = `
+      <td>${id}</td>
+      <td>${d.category || '-'}</td>
+      <td>${d.subcategory || '-'}</td>
+      <td>${d.awards_choice || '-'}</td>
+      <td>${d.stage || '-'}</td>
+      <td>${fmt(d.createdAt)}</td>
+      <td>${fmt(d.updatedAt)}</td>
+      <td><button class="action-btn ${btnClass}" onclick="${handler}">${label}</button></td>
+      <td>${delBtn}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+    // Load and wire table 
     firebase.auth().onAuthStateChanged(async user => {
       const body = document.getElementById('appsBody');
       if (!user) { window.location.href = "signin.html"; return; }
