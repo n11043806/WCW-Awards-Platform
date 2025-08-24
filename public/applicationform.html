@@ -85,11 +85,12 @@
     .filename { font-size: 14px; color: #555; }
     .preview-image { 
       display:none; 
-      width: 360px;        
-      height: 360px;         
-      object-fit: cover;    
-      border: 1px solid #eee; 
-      border-radius: 6px; 
+      max-width: 100%;
+      max-height: 400px;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid #eee;
+      border-radius: 6px;
     }
 
   
@@ -117,9 +118,10 @@
   }
   .preview-image {
     display: none;
-    width: 400px;
-    height: 40px;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    object-fit: contain;
     border: 1px solid #eee;
     border-radius: 6px;
   }
@@ -459,7 +461,6 @@
         user_id: currentUser.uid,
         applicant_id: currentUser.uid,
         stage: 'draft',
-        status: 'draft',
         createdAt: now,
         updatedAt: now
       });
