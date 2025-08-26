@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Details</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fafafa; color: #333; margin: 0; }
+    .container { max-width: 400px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px #eee; }
+    h2 { color: #d62d83; }
+    label { display: block; margin-top: 18px; }
+    input { width: 100%; padding: 8px; margin-top: 6px; border: 1px solid #ccc; border-radius: 4px; }
+    button { margin-top: 24px; padding: 10px 20px; background: #d62d83; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #b8235a; }
+    .success { color: green; margin-top: 18px; }
+    .error { color: red; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Payment Details</h2>
+    <form id="paymentForm">
+      <label for="cardName">Name on Card</label>
+      <input type="text" id="cardName" required />
+
+      <label for="cardNumber">Card Number</label>
+      <input type="text" id="cardNumber" maxlength="19" required />
+
+      <label for="expiry">Expiry Date (MM/YY)</label>
+      <input type="text" id="expiry" maxlength="5" required />
+
+      <label for="cvc">CVC</label>
+      <input type="text" id="cvc" maxlength="4" required />
+
+      <button type="submit">Submit Payment</button>
+    </form>
+    <div id="message"></div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script>
+    // Save payment details to Firestore
+    document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const cardName = document.getElementById('cardName').value.trim();
+      const cardNumber = document.getElementById('cardNumber').value.trim();
+      const expiry = document.getElementById('expiry').value.trim();
+      const cvc = document.getElementById('cvc').value.trim();
+      const messageDiv = document.getElementById('message');
+
+      // Validation
+      if (!cardName || !cardNumber || !expiry || !cvc) {
+        messageDiv.textContent = "Please fill in all fields.";
+        messageDiv.className = "error";
+        return;
+      }
+      if (!/^[A-Za-z\s]+$/.test(cardName)) {
+        messageDiv.textContent = "Name on card must contain only letters and spaces.";
+        messageDiv.className = "error";
+        return;
+      }
+      if (!/^\d{13,19}$/.test(cardNumber.replace(/\s+/g, ''))) {
+        messageDiv.textContent = "Card number must be 13-19 digits.";
+        messageDiv.className = "error";
+        return;
+      }
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
+        messageDiv.textContent = "Expiry date must be in MM/YY format.";
+        messageDiv.className = "error";
+        return;
+      }
+      if (!/^\d{3,4}$/.test(cvc)) {
+        messageDiv.textContent = "CVC must be 3 or 4 digits.";
+        messageDiv.className = "error";
+        return;
+      }
+
+      // Get current user
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        messageDiv.textContent = "You must be signed in to submit payment.";
+        messageDiv.className = "error";
+        return;
+      }
+
+      try {
+        await firebase.firestore().collection('payments').add({
+          user_id: user.uid,
+          cardName,
+          cardNumber,
+          expiry,
+          cvc,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        messageDiv.textContent = "Payment details saved successfully!";
+        messageDiv.className = "success";
+        document.getElementById('paymentForm').reset();
+      } catch (err) {
+        messageDiv.textContent = "Error saving payment: " + err.message;
+        messageDiv.className = "error";
+      }
+    });
+  </script>
+</body>
+</html>
