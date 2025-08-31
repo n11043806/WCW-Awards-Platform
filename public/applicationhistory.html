@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Applications - WCW Awards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
     header { background-color: #d7336f; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
@@ -121,7 +122,7 @@
     .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
     @media (max-width: 800px) { .filters-grid { grid-template-columns: 1fr; } }
     .filter-group { border: 1px solid #eee; padding: 10px; border-radius: 6px; background: #fcfcfc; }
-    .filter-group h4 { margin: 0 0 8px; color: #8c1f4c; font-size: 14px; }
+    .filter-group h4 { margin: 0 0 8px; color: #8c1f4c; font-size: 16px; }
     .chk { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
     .filters-actions { display: flex; gap: 10px; margin-top: 10px; }
 
@@ -173,6 +174,213 @@
     .sort-list button:hover {
       background: #f0e4e9;
     }
+
+    .user-menu-container { display: flex; align-items: center; gap: 10px; position: relative; }
+    .user-fullname {
+      font-weight: 600;
+      color: #fff;
+      font-size: 16px;
+    }
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .user-circle:hover {
+      background: #5f386d;
+    }
+    .back-btn { background-color: white; color: #d7336f; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .back-btn:hover { background-color: #ffe6ee; }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 30px;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 160px;
+      z-index: 100;
+      flex-direction: column;
+    }
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .user-dropdown button:hover {
+      background: #ffe6ee;
+    }
+    .user-dropdown.open {
+      display: flex;
+    }
+    .material-symbols-outlined {
+      color: #b8235a;
+      vertical-align: middle;
+    }
+
+    /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+      .container {
+        background: #1e1e1e;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      }
+      .section-title {
+        background: #2c2c2c;
+        color: #e0e0e0;
+      }
+      table {
+        background: #1e1e1e;
+        color: #e0e0e0;
+      }
+      th {
+        background: #2c2c2c;
+        color: #e0e0e0;
+      }
+      .btn-danger {
+        background: #581010;
+        color: #fff;
+        border: 2px solid #652b2b;
+      }
+      .btn-danger:hover {
+        background: #d73434;
+        color: #fff;
+        border: 2px solid #c62828;
+      }
+      .user-dropdown {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .btn-continue {
+        background: #5a1f2e;
+        color: #ffe6ee;      
+        border-color: #7a2a3d; 
+      }
+      .btn-continue:hover {
+        background: #ffccd9;
+        color: #572338;      
+        border-color: #ff99b3;
+      }
+      .btn-view {
+        background: #5a1f2e;
+        color: #ffe6ee;
+        border: 2px solid #7a2a3d;
+      }
+      .btn-view:hover {
+        background: #ffccd9;
+        color: #572338;
+        border-color: #ff99b3;
+      }
+      .sort-btn {
+        background: #5a1f2e;
+        color: #ffe6ee;
+        border: 2px solid #7a2a3d;
+      }
+      .sort-btn:after {
+        content: "";
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid #ffe6ee;
+        margin-left: 5px;
+      }
+      .sort-list button {
+        color: #ffe6ee;
+      }
+      .sort-dropdown .sort-list {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }      
+      .sort-btn:hover {
+        background: #ffccd9;
+        color: #572338;
+        border-color: #ff99b3;
+      }
+      .btn-filter {
+        background: #5a1f2e;
+        color: #ffe6ee;
+        border: 2px solid #7a2a3d;
+      }
+      .btn-filter:hover {
+        background: #ffccd9;
+        color: #572338;
+        border-color: #ff99b3;
+      }      
+      .filter-dropdown {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .close-btn {
+        background: #5a1f2e;
+        color: #ffe6ee;
+        border: 2px solid #7a2a3d;
+      }
+      .close-btn:hover {
+        background: #ffccd9;
+        color: #572338;
+        border-color: #ff99b3;
+      }
+      .filter-dropdown {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .filter-group {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .filter-group h4 {
+        color: #ff99b3;
+      }
+      .modal-header {
+        background: #2c2c2c;
+        color: #ff99b3;
+        border-bottom: 1px solid #444;
+      }
+      .modal-body {
+        background: #1e1e1e;        
+      }
+      .section-title {
+        background: #2c2c2c;
+        color: #ff99b3;
+      }
+      .kv .k {
+        color: #ff99b3;
+      }
+      .kv .v {
+        color: #e0e0e0;
+      }
+      .block {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -183,8 +391,25 @@
 </head>
 <body>
   <header>
-    <h1>My Applications</h1>
-    <button class="back-btn" onclick="goBack()">Back</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <h1 style="margin:0;">My Applications</h1>
+      <div class="user-menu-container">
+        <span id="userFullName" class="user-fullname"></span>
+        <button id="userCircle" class="user-circle"></button>
+        <button class="back-btn" onclick="goBack()">Back</button>
+      </div>
+    </div>
+    <div id="userDropdown" class="user-dropdown">
+      <button onclick="showProfile()">
+        Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+      </button>
+      <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+        Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+      </button>
+      <button onclick="logout()">
+        Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -297,8 +522,49 @@
   </div>
 
   <script>
-    function goBack() { window.location.href = "applicantdashboard.html"; }
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      }).catch((error) => {
+        alert("Error signing out: " + error.message);
+      });
+    }
+    function showProfile() {
+      window.location.href = "applicantprofile.html";
+    }
+    function goBack() { 
+      window.location.href = "applicantdashboard.html"; 
+    }
 
+    firebase.auth().onAuthStateChanged(user => {
+      const fullNameEl = document.getElementById("userFullName");
+      const circleEl = document.getElementById("userCircle");
+      if (user) {
+        const name = user.displayName || user.email || "User";
+        fullNameEl.textContent = name;
+        let initials = "U";
+        if (user.displayName) {
+          initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+        } else if (user.email) {
+          initials = user.email[0].toUpperCase();
+        }
+        circleEl.textContent = initials;
+
+        // Dark mode check from Firestore
+        firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists && doc.data().darkMode === "enabled") {
+            document.body.classList.add("dark-mode");
+          } else {
+            document.body.classList.remove("dark-mode");
+          }
+        }).catch(() => {
+          document.body.classList.remove("dark-mode");
+        });
+
+      } else {
+        window.location.href = "signin.html";
+      }
+    });
     
     function continueApplication(id) {
       sessionStorage.setItem('continueApplicationId', id);
@@ -359,7 +625,6 @@
           kv('Instagram URL', d.instagram_url),
           kv('LinkedIn URL', d.linkedin_url),
           kv('Stage', d.stage),
-          kv('Status', d.status),
           kv('Created', fmt(d.createdAt)),
           kv('Updated', fmt(d.updatedAt))
         ].join('');
@@ -426,7 +691,6 @@
         } else {
           await db.collection('applications').doc(id).set({
             stage: 'withdrawn',
-            status: 'withdrawn',
             withdrawnAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -685,6 +949,16 @@ function renderTable(items) {
         console.error(err);
       }
     });
+const userCircle = document.getElementById("userCircle");
+const userDropdown = document.getElementById("userDropdown");
+userCircle.onclick = function(e) {
+  userDropdown.classList.toggle("open");
+};
+document.addEventListener("click", function(e) {
+  if (!userCircle.contains(e.target) && !userDropdown.contains(e.target)) {
+    userDropdown.classList.remove("open");
+  }
+});    
   </script>
 </body>
 </html>
