@@ -7,6 +7,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
+    /* overriding browser mode */
+    body:not(.dark-mode) {
+      background-color: #f4f4f4 !important;
+      color: #333 !important;
+    }
+
+    body:not(.dark-mode) .container,
+    body:not(.dark-mode) .dates-section,
+    body:not(.dark-mode) .section-title,
+    body:not(.dark-mode) .block,
+    body:not(.dark-mode) .modal-dialog,
+    body:not(.dark-mode) .modal-header,
+    body:not(.dark-mode) .modal-body {
+      background: #fff !important;
+      color: #333 !important;
+    }
+
+    body:not(.dark-mode) .section-title {
+      background: #faf0f4 !important;
+      color: #8c1f4c !important;
+    }
+
+    body:not(.dark-mode) .block {
+      background: #fcfcfc !important;
+      color: #333 !important;
+      border: 1px solid #eee !important;
+    }
+
+    body:not(.dark-mode) .dashboard-section {
+      background: white !important;
+      color: #333 !important;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1) !important;
+    }
+
+    body:not(.dark-mode) .user-dropdown {
+      background: #fff0f6 !important;
+      border: 1px solid #b8235a !important;
+    }
     header { background-color: #d7336f; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
     header h1 { margin: 0; font-size: 24px; }
     .back-btn { background-color: white; color: #d7336f; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
