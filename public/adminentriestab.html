@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Entries - WCW Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      color: #333;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d62d83;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+    }
+
+    header {
+      background-color: #d62d83;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: #d62d83;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #ffe6ee;
+    }
+
+    h2.section-title {
+      margin-top: 30px;
+      color: #d62d83;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .controls input {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 70%;
+    }
+
+    .controls select, .controls button {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .controls button {
+      background-color: #d62d83;
+      color: white;
+      font-weight: bold;
+    }
+
+    .controls button:hover {
+      background-color: #b8235a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #fafafa;
+      color: #d62d83;
+    }
+
+    .action-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #d62d83;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .action-btn:hover {
+      background-color: #b8235a;
+    }
+
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 300px;
+      text-align: center;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+        main {
+      padding: 40px 30px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      margin: 30px auto;
+      max-width: none;
+      width: 100%;
+    }
+
+    h2 {
+      color: #d7336f;
+      margin-top: 0;
+    }
+
+    .manage-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .manage-btn {
+      background: #d7336f;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .manage-btn:hover {
+      background: #b8235a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    th {
+      background: #faf0f4;
+      color: #8c1f4c;
+    }
+
+    .muted {
+      color: #777;
+    }
+
+    .action-btn {
+      border: 2px solid transparent;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color .15s ease-in-out, transform .05s ease-in-out;
+    }
+
+    .action-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-view {
+      background: #e1faed;
+      color: #1f7a4b;
+      border-color: #c9f2da;
+    }
+
+    .btn-view:hover {
+      background: #c9f2da;
+    }
+
+    .btn-danger {
+      background: #eca1a1;
+      color: #572338;
+      border: 2px solid #eca1a1;
+    }
+
+    .btn-danger:hover {
+      background: #572338;
+      color: #f0e4e9;
+      border: 2px solid #f0e4e9;
+    }
+
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.4);
+      z-index: 1000;
+      padding: 24px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: #fff;
+      border-radius: 10px;
+      max-width: 980px;
+      width: 100%;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: #faf0f4;
+      color: #8c1f4c;
+    }
+
+    .modal-body {
+      padding: 18px;
+      max-height: 75vh;
+      overflow: auto;
+    }
+
+    .section-title {
+      margin: 18px 0 10px;
+      color: #8c1f4c;
+      background: #faf0f4;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+    }
+
+    @media (max-width: 800px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kv .k {
+      font-weight: 600;
+      font-size: 13px;
+      color: #444;
+    }
+
+    .kv .v {
+      font-size: 14px;
+      color: #000;
+      word-break: break-word;
+    }
+
+    .block {
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 10px;
+      background: #fcfcfc;
+      white-space: pre-wrap;
+    }
+
+    .close-btn {
+      background: #fff;
+      color: #8c1f4c;
+      border: 2px solid #8c1f4c;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      background: #ffe6ee;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #popup h3 {
+      margin-bottom: 20px;
+      color: #d62d83;
+      font-size: 20px;
+    }
+
+    #popup select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #popup button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    #popup button:first-of-type {
+      background-color: #d62d83;
+      color: white;
+    }
+
+    #popup button:last-of-type {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html" class="active">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <h1>Entries Management</h1>
+      <button class="logout-btn" onclick="logout()">Log Out</button>
+    </header>
+
+    <main>
+      <div class="container">
+        <h2>Manage Entries</h2>
+        
+        <!-- Management Buttons -->
+        <div class="manage-buttons">
+          <button class="manage-btn" onclick="alert('Start Entry functionality will be implemented')">Start Entry</button>
+          <button class="manage-btn" onclick="alert('Edit From functionality will be implemented')">Edit Form</button>
+          <button class="manage-btn" onclick="bulkExport()">Bulk Export</button>
+        </div>
+
+        <!-- Entries Table -->
+        <table>
+          <thead>
+            <tr>
+              <th>Application ID</th>
+              <th>Full Name</th>
+              <th>Status</th>
+              <th>Category</th>
+              <th>Subcategory</th>
+              <th>Updated</th>
+              <th>Submitted</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="entriesBody">
+            <tr><td colspan="9" class="muted">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- View Application Modal -->
+  <div id="viewModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <strong>Application ID:</strong> <span id="modalAppId"></span>
+        </div>
+        <button id="modalClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <h3 class="section-title">Start here</h3>
+        <div id="modalStartFields" class="field-grid"></div>
+
+        <h3 class="section-title">Criteria</h3>
+        <div id="modalCriteriaFields"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Include xlsx library -->
+
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+
+    // Modal functionality
+    const modalEl = document.getElementById('viewModal');
+    const modalClose = document.getElementById('modalClose');
+    modalClose.onclick = () => closeModal();
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    
+    function openModal() { 
+      modalEl.classList.add('open'); 
+      modalEl.setAttribute('aria-hidden', 'false'); 
+    }
+    
+    function closeModal() { 
+      modalEl.classList.remove('open'); 
+      modalEl.setAttribute('aria-hidden', 'true'); 
+    }
+
+    // Utility functions
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function fmt(ts) {
+      try {
+        if (!ts) return "-";
+        if (ts.toDate) return ts.toDate().toLocaleDateString();
+        return new Date(ts).toLocaleDateString();
+      } catch { return "-"; }
+    }
+
+    function kv(label, value) {
+      return `<div class="kv"><div class="k">${esc(label)}</div><div class="v">${esc(value || '-')}</div></div>`;
+    }
+
+    function block(label, value) {
+      const safe = esc(value || '');
+      return `<div class="kv" style="margin-bottom:10px">
+                <div class="k" style="margin-bottom:6px">${esc(label)}</div>
+                <div class="block">${safe || '-'}</div>
+              </div>`;
+    }
+
+    // View application details
+    async function viewApp(id) {
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('applications').doc(id).get();
+        if (!doc.exists) { alert("Application not found."); return; }
+        const d = doc.data();
+
+        // Header info
+        document.getElementById('modalAppId').textContent = id;
+
+        // Start here fields 
+        const startHtml = [
+          kv('Category', d.category),
+          kv('Subcategory', d.subcategory),
+          kv('Award', d.awards_choice),
+          kv('Name', d.name),
+          kv('Website', d.website),
+          kv('Email Address', d.email),
+          kv('Mobile Number', d.mobile_number),
+          kv('Address', d.address),
+          kv('Instagram URL', d.instagram_url),
+          kv('LinkedIn URL', d.linkedin_url),
+          kv('Status', d.status),
+          kv('Created', fmt(d.createdAt)),
+          kv('Updated', fmt(d.updatedAt))
+        ].join('');
+        document.getElementById('modalStartFields').innerHTML = startHtml;
+
+        // Criteria fields 
+        const critHtml = [
+          block('Tell us about yourself', d.tell_us_about_yourself),
+          block('Tell us about your work', d.tell_us_about_your_work),
+          block('What inspired you to do this work?', d.what_inspired_you),
+          block('What makes what you do special or unique?', d.what_makes_you_unique),
+          block('What has been your greatest challenge & how have you addressed this', d.greatest_challenge),
+          block('What have been your top 3 greatest achievements in the past 12 months', d.top_achievements),
+          block('Why were these achievements significant and what do you attribute your achievements to', d.achievements_significance),
+          block('What is your big picture vision for the work you are doing', d.big_picture_vision),
+          block('Why should you be recognised in this category', d.recognition_reason),
+          kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No')
+        ].join('');
+        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
+
+        openModal();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load application: " + err.message);
+      }
+    }
+
+    // Load all applications
+    firebase.auth().onAuthStateChanged(async user => {
+      const body = document.getElementById('entriesBody');
+      if (!user) { 
+        window.location.href = "signin.html"; 
+        return; 
+      }
+
+      // Check if user is admin
+      try {
+        const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
+        if (!userDoc.exists || userDoc.data().role !== "admin") {
+          window.location.href = "unauthorized.html";
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        window.location.href = "signin.html";
+        return;
+      }
+
+      // Load all applications
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+
+        if (snap.empty) {
+          body.innerHTML = `<tr><td colspan="9" class="muted">No applications found.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = '';
+        snap.docs.forEach(doc => {
+          const id = doc.id;
+          const d = doc.data();
+          const stage = (d.stage || 'draft').toLowerCase();
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${id}</td>
+            <td>${d.name || '-'}</td>
+            <td><span class="muted">${d.stage || 'draft'}</span></td>
+            <td>${d.category || '-'}</td>
+            <td>${d.subcategory || '-'}</td>
+            <td>${fmt(d.updatedAt)}</td>
+            <td>${d.stage === 'submitted' ? fmt(d.submittedAt || d.updatedAt) : '-'}</td>
+            <td>${d.email || '-'}</td>
+            <td>
+              <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
+            </td>
+          `;
+          body.appendChild(tr);
+        });
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="9" class="muted">Error: ${err.message}</td></tr>`;
+        console.error(err);
+      }
+    });
+
+    async function bulkExport() {
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+
+        if (snap.empty) {
+          alert('No applications found to export.');
+          return;
+        }
+
+        const applications = snap.docs.map(doc => {
+          const data = doc.data();
+          return {
+            'Applicant ID': doc.id,
+            'Full Name': data.name || '-',
+            'Award': data.awards_choice || '-',
+            'Status': data.stage || 'draft',
+            'Category': data.category || '-',
+            'Subcategory': data.subcategory || '-',
+            'Updated': data.updatedAt?.toDate().toLocaleDateString() || '-',
+            'Submitted': data.submittedAt?.toDate().toLocaleDateString() || '-',
+            'Email': data.email || '-',
+            'Mobile Number': data.mobile_number || '-',
+            'Website': data.website || '-',
+            'Instagram URL': data.instagram_url || '-',
+            'LinkedIn URL': data.linkedin_url || '-',
+            'Q1: Tell us about yourself': data.tell_us_about_yourself || '-',
+            'Q2: Tell us about your work': data.tell_us_about_your_work || '-',
+            'Q3: What inspired you to do this work?': data.what_inspired_you || '-',
+            'Q4: What makes what you do special or unique?': data.what_makes_you_unique || '-',
+            'Q5: What has been your greatest challenge & how have you addressed this?': data.greatest_challenge || '-',
+            'Q6: What have been your top 3 greatest achievements in the past 12 months?': data.top_achievements || '-',
+            'Q7: Why were these achievements significant and what do you attribute your achievements to?': data.achievements_significance || '-',
+            'Q8: What is your big picture vision for the work you are doing?': data.big_picture_vision || '-',
+            'Q9: Why should you be recognised in this category?': data.recognition_reason || '-',
+            'Eligibility confirmed': data.eligibility ? 'Yes' : 'No'  
+          };
+        });
+
+        // Create a worksheet and workbook
+        const worksheet = XLSX.utils.json_to_sheet(applications);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
+
+        // Generate Excel file and trigger download
+        const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+        const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Applications.xlsx';
+        link.click();
+
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error exporting applications:', error);
+        alert('Failed to export applications: ' + error.message);
+      }
+    }
+
+    // Helper function to convert string to ArrayBuffer
+    function s2ab(s) {
+      const buf = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
+    }
+  </script>
+</body>
+</html>
