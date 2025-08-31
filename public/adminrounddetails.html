@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WCW Admin – Round Details</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      color: #333;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d62d83;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+    .main-content {
+      margin-left: 220px;
+      padding: 40px;
+    }
+    h1 {
+      color: #d62d83;
+      font-size: 28px;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .radio-group {
+    margin-top: -10px; /* small top space from heading */
+    display: flex;
+    gap: 40px; /* controls space between options */
+    }
+    
+    .radio-group label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px; /* tight spacing between radio and label text */
+    font-weight: normal;
+    font-size: 14px;
+    }
+
+    .radio-group input[type="radio"] {
+    transform: scale(1.2);
+    }
+
+    .buttons {
+      margin-top: 30px;
+    }
+
+    button {
+      background-color: #d62d83;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #b8235a;
+    }
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      max-width: 700px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="#">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <h1>Rounds → <span id="roundNameDisplay">WCW25</span></h1>
+
+    <form id="roundForm">
+      <label for="season">Season</label>
+      <input type="number" id="season" required value="2025" />
+
+      <label for="roundName">Name</label>
+      <input type="text" id="roundName" required placeholder="e.g. WCW25" />
+
+      <label>Round type</label>
+      <div class="radio-group">
+        <label><input type="radio" name="roundType" value="entry" checked /> Entry round</label>
+        <label><input type="radio" name="roundType" value="judging" /> Judging round</label>
+        <label><input type="radio" name="roundType" value="feedback" /> Feedback round</label>
+      </div>
+
+      <label for="startDate">Starts</label>
+      <input type="datetime-local" id="startDate" required />
+
+      <label for="endDate">Ends</label>
+      <input type="datetime-local" id="endDate" required />
+
+      <label for="resubmissionDate">Review / resubmission ends</label>
+      <input type="datetime-local" id="resubmissionDate" required />
+
+      <div class="buttons">
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Firebase scripts -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <script>
+    const db = firebase.firestore();
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "signin.html";
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        const roundName = params.get("round");
+        if (roundName) {
+          document.getElementById("roundNameDisplay").textContent = roundName;
+          document.getElementById("roundName").value = roundName;
+        }
+      }
+    });
+
+    document.getElementById("roundForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const round = {
+        season: document.getElementById("season").value,
+        name: document.getElementById("roundName").value,
+        roundType: document.querySelector("input[name='roundType']:checked").value,
+        startDate: new Date(document.getElementById("startDate").value),
+        endDate: new Date(document.getElementById("endDate").value),
+        resubmissionEnds: new Date(document.getElementById("resubmissionDate").value),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection("rounds").add(round);
+        alert("Round saved successfully!");
+        document.getElementById("roundForm").reset();
+      } catch (err) {
+        console.error("Error saving round:", err);
+        alert("Failed to save round.");
+      }
+    });
+  </script>
+</body>
+</html>

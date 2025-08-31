@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New User - WCW Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fafafa;
+      color: #333;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d62d83;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin-bottom: 15px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #d62d83;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .role-options {
+      margin-bottom: 20px;
+    }
+
+    .role-options label {
+      display: block;
+      font-weight: 400;
+    }
+
+    .button-group {
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-save {
+      background-color: #d62d83;
+      color: white;
+      margin-right: 10px;
+    }
+
+    .btn-cancel {
+      background-color: #444;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="#">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <h1>Users → New user</h1>
+
+    <form id="newUserForm">
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" placeholder="Enter full name" required />
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="Enter email address" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" required />
+
+      <label for="confirmPassword">Password Confirmation</label>
+      <input type="password" id="confirmPassword" placeholder="Confirm password" required />
+
+      <div class="role-options">
+        <label><input type="checkbox" value="Entrant" /> Entrant</label>
+        <label><input type="checkbox" value="Judge" /> Judge</label>
+        <label><input type="checkbox" value="Lead judge" /> Lead judge</label>
+        <label><input type="checkbox" value="Program manager" /> Program manager</label>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn btn-save">Save</button>
+        <button type="button" class="btn btn-cancel" onclick="window.location.href='adminusertab.html'">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js"></script>
+
+  <script>
+    // Firebase config (REPLACE with your actual config)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function logout() {
+      auth.signOut().then(() => window.location.href = "signin.html");
+    }
+
+    document.getElementById("newUserForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      const roles = Array.from(document.querySelectorAll('.role-options input:checked')).map(cb => cb.value);
+
+      try {
+        // Create user
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+
+        // Save user profile
+        await db.collection("users").doc(uid).set({
+          fullName,
+          email,
+          roles,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("User created successfully!");
+        window.location.href = "adminusertab.html";
+
+      } catch (err) {
+        console.error("Error creating user:", err);
+        alert("Error: " + err.message);
+      }
+    });
+  </script>
+
+</body>
+</html>

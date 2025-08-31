@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invite Users - WCW Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d62d83;
+      padding: 20px;
+      color: white;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #d62d83;
+      font-size: 26px;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .roles {
+      margin-top: 20px;
+    }
+
+    .roles label {
+      display: block;
+      font-weight: normal;
+    }
+
+    .message-box {
+      margin-top: 20px;
+    }
+
+    .send-btn {
+      margin-top: 20px;
+      background-color: #d62d83;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .send-btn:hover {
+      background-color: #b8235a;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="#">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <h1>Users &rarr; Invite users</h1>
+
+    <label>Email address</label>
+    <input type="text" id="emailInput" placeholder="Enter an email address..." />
+
+    <div class="roles">
+      <label><input type="checkbox" value="Applicant"> Entrant</label>
+      <label><input type="checkbox" value="Judge"> Judge</label>
+    </div>
+
+    <div class="message-box">
+      <label>Message (optional)</label>
+      <textarea rows="8" placeholder="Write a custom message..."></textarea>
+    </div>
+
+    <button class="send-btn">Send Invite</button>
+  </div>
+</body>
+</html>
