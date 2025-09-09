@@ -95,22 +95,49 @@
   </header>
 
   <main>
-    <div class="dashboard-section">
-      <h2>Assigned Applications</h2>
-      <p>View the list of applications assigned to you for evaluation.</p>
-      <button onclick="alert('Assigned applications coming soon')">View Applications</button>
-    </div>
-
-    <div class="dashboard-section">
-      <h2>Submit Scores & Feedback</h2>
-      <p>Provide your feedback and scores for each application.</p>
-      <button onclick="alert('Scoring module coming soon')">Start Reviewing</button>
-    </div>
-
-    <div class="dashboard-section">
-      <h2>Review History</h2>
-      <p>Check your past evaluations and scoring history.</p>
-      <button onclick="alert('Review history coming soon')">View History</button>
+    <div class="dashboard-section" style="max-width:1100px;">
+  <h2 style="color:#d7336f;margin-bottom:0.5em;">Judging information</h2>
+      <div style="background:#ffe6ee;padding:18px 24px;border-radius:8px;margin-bottom:30px;">
+        <b>Some tips to help you get started:</b>
+        <ol style="margin-top:10px;">
+          <li>Clicking on the entry name will take you into the entry view.</li>
+          <li>When you click into an entry, you will see all the details entered by the entrant on the left side of the page. On the right side, is where you put in your score and comments.</li>
+          <li>If you wish to abstain from judging for any reason, check the box on top on the right side and you can skip scoring that entry.</li>
+          <li>The <i>Comments</i> box can be seen by organisers and may be used publicly.</li>
+          <li>Once you have scored all criteria, hit 'Save & next' to move to the next entry.</li>
+          <li>The status 'to be scored' refers to an entry that is yet to be scored.</li>
+          <li>The status 'in progress' refers to an entry that hasn't had all the criteria scored yet (but has commenced).</li>
+          <li>The status 'complete' refers to an entry that has had all criteria scored and is therefore completed.</li>
+          <li>You can also view/download a PDF for each entry for offline use.</li>
+        </ol>
+      </div>
+      <div class="list-header" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:18px;">
+        <div class="sort-dropdown" id="sortDropdown">
+          <button id="sortBtn" class="sort-btn">SORT BY</button>
+          <div id="sortList" class="sort-list">
+            <button data-sort="asc">Application Name Asc</button>
+            <button data-sort="desc">Application Name Desc</button>
+            <button data-sort="updated_desc">Last Updated Desc</button>
+            <button data-sort="updated_asc">Last Updated Asc</button>
+          </div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:separate;border-spacing:0 10px;">
+        <thead>
+          <tr style="background:#faf0f4;">
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Application ID</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Name</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Category</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Subcategory</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Status</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Last Updated</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="appsBody">
+          <!-- Table rows will be rendered by JS -->
+        </tbody>
+      </table>
     </div>
   </main>
 
@@ -133,7 +160,65 @@
       });
     }
 
-    firebase.auth().onAuthStateChanged(user => {
+    // Table rendering and sort logic for assigned applications
+    let ALL_APPS = [];
+    let SORT_MODE = 'none';
+
+    function renderTable(items) {
+      const body = document.getElementById('appsBody');
+      if (!items.length) {
+        body.innerHTML = `<tr><td colspan="6" class="muted" style="padding:24px 0;text-align:center;font-size:16px;">No assigned applications found.</td></tr>`;
+        return;
+      }
+      let sorted = [...items];
+      if (SORT_MODE === 'asc') {
+        sorted.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+      } else if (SORT_MODE === 'desc') {
+        sorted.sort((a, b) => String(b.name).localeCompare(String(a.name)));
+      } else if (SORT_MODE === 'updated_desc') {
+        sorted.sort((a, b) => b.updated - a.updated);
+      } else if (SORT_MODE === 'updated_asc') {
+        sorted.sort((a, b) => a.updated - b.updated);
+      }
+      body.innerHTML = '';
+      sorted.forEach(({id, name, category, subcategory, judgeStatus, updated}) => {
+        body.innerHTML += `
+          <tr style="background:#fff;border-radius:8px;box-shadow:0 0 8px rgba(0,0,0,0.04);">
+            <td style="padding:12px 16px;">${id}</td>
+            <td style="padding:12px 16px;">${name}</td>
+            <td style="padding:12px 16px;">${category}</td>
+            <td style="padding:12px 16px;">${subcategory}</td>
+            <td style="padding:12px 16px;">${judgeStatus}</td>
+            <td style="padding:12px 16px;">${updated ? new Date(updated).toLocaleString() : '-'}</td>
+            <td style="padding:12px 16px;"><button class="action-btn btn-view" onclick="viewEntry('${id}')">View</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    document.getElementById('sortBtn').onclick = function(e) {
+      document.getElementById('sortList').classList.toggle('open');
+    };
+    document.getElementById('sortList').onclick = function(e) {
+      if (e.target.tagName === 'BUTTON') {
+        SORT_MODE = e.target.dataset.sort;
+        document.getElementById('sortBtn').textContent = 'SORT BY: ' + e.target.textContent;
+        document.getElementById('sortList').classList.remove('open');
+        renderTable(ALL_APPS);
+      }
+    };
+    document.addEventListener('click', function(e) {
+      if (!document.getElementById('sortDropdown').contains(e.target)) {
+        document.getElementById('sortList').classList.remove('open');
+      }
+    });
+
+    function viewEntry(id) {
+      alert('View details for application ' + id);
+    }
+
+    // Fetch assigned applications from Firestore
+    firebase.auth().onAuthStateChanged(async user => {
       if (user) {
         const uid = user.uid;
         firebase.firestore().collection("users").doc(uid).get()
@@ -147,6 +232,45 @@
           }).catch(error => {
             console.error("Failed to fetch judge name:", error);
           });
+
+        // Fetch all judge docs for this judge
+        try {
+          const judgeQuery = await firebase.firestore().collection('judge').where('judgeid', '==', uid).get();
+          let judgeAssignments = [];
+          judgeQuery.forEach(doc => {
+            const data = doc.data();
+            if (data.AssignedApplication) {
+              judgeAssignments.push({
+                appId: data.AssignedApplication,
+                judgeStatus: data.status || '-' // status from judge doc
+              });
+            }
+          });
+          // Remove duplicates by appId
+          const uniqueAssignments = Array.from(new Map(judgeAssignments.map(a => [a.appId, a])).values());
+          // Fetch details for each application
+          const appPromises = uniqueAssignments.map(a =>
+            firebase.firestore().collection('applications').doc(a.appId).get()
+          );
+          const appDocs = await Promise.all(appPromises);
+          ALL_APPS = appDocs.map((doc, i) => {
+            if (!doc.exists) return null;
+            const d = doc.data();
+            return {
+              id: doc.id,
+              name: d.name || '-',
+              category: d.category || '-',
+              subcategory: d.subcategory || '-',
+              judgeStatus: uniqueAssignments[i].judgeStatus,
+              updated: d.updated || null
+            };
+          }).filter(Boolean);
+          renderTable(ALL_APPS);
+        } catch (err) {
+          console.error('Error fetching assigned applications:', err);
+          ALL_APPS = [];
+          renderTable(ALL_APPS);
+        }
       } else {
         window.location.href = "signin.html";
       }
