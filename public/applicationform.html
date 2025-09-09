@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Application Form - WCW Awards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
+    header { background-color: #d7336f; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 24px; }
+    .back-btn { background-color: white; color: #d7336f; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .back-btn:hover { background-color: #ffe6ee; }
+    main { padding: 40px 30px; }
+    .dates-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 800px; margin: 30px auto; }
+    .dates-section h2, .dates-section h3, .dates-section h4 { color: #d7336f; }
+    .dates-section ul { font-size: 16px; }
+    .dates-section p { font-size: 16px; }
+    .start-entry-btn { padding: 12px 20px; background-color: #d7336f; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    .start-entry-btn:hover { background-color: #b8235a; }
+    .tab-list { display: flex; gap: 0; margin: 40px auto 0 auto; max-width: 800px; }
+    .tab { flex: 1; padding: 16px 0; text-align: center; font-size: 18px; font-weight: 500; border: none; cursor: pointer; background: #888; color: #fff; border-radius: 6px 6px 0 0; margin-right: 2px; }
+    .tab.active { background: #b8235a; color: #fff; }
+    .tab-content { background: white; min-height: 200px; border-radius: 0 0 10px 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; padding: 30px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+    .form-group textarea { resize: vertical; }
+    .word-count { font-size: 13px; color: #888; float: right; }
+    .eligibility-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+    .submit-btn { padding: 12px 20px; background-color: #d7336f; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+    /* Preview modal */
+.preview-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.4); z-index: 1000; padding: 24px; }
+.preview-modal.open { display: flex; }
+.preview-dialog { background: #fff; border-radius: 10px; max-width: 980px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden; }
+.preview-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #faf0f4; color: #8c1f4c; }
+.preview-body { padding: 18px; max-height: 75vh; overflow: auto; }
+.preview-title { margin: 18px 0 10px; color: #8c1f4c; background: #faf0f4; padding: 8px 12px; border-radius: 6px; }
+.preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+@media (max-width: 800px) { .preview-grid { grid-template-columns: 1fr; } }
+.preview-actions { display: flex; gap: 10px; }
+.preview-close { background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+.preview-close:hover { background: #ffe6ee; }
+.preview-submit { background: #d7336f; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+.preview-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    .preview-grid > div {
+      display: flex;
+      align-items: center;
+      gap: 8px;              
+    }
+    .preview-grid label {
+      min-width: 150px;   
+      font-weight: 600;
+      color: #000;
+    }
+    .preview-grid label::after {
+      content: ":";         
+      margin-left: 4px;    
+    }
+
+    
+    .action-btn {
+      border: 2px solid transparent;
+      border-radius: 4px;
+      padding: 8px 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color .15s ease-in-out, transform .05s ease-in-out;
+    }
+    .action-btn:active { transform: translateY(1px); }
+    .btn-view { background: #e1faed; color: #1f7a4b; border-color: #c9f2da; }
+    .btn-view:hover { background: #c9f2da; }
+
+    .form-actions {
+      margin-top: 12px;              
+      display: flex;
+      gap: 10px;                    
+      flex-wrap: wrap;
+    }
+
+    .upload-card { border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fcfcfc; }
+    .file-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filename { font-size: 14px; color: #555; }
+    .preview-image { 
+      display:none; 
+      max-width: 100%;
+      max-height: 400px;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid #eee;
+      border-radius: 6px;
+    }
+
+  
+  .file-row input[type="file"] {
+    font-size: 18px;           
+    line-height: 1.4;
+  }
+  .file-row input[type="file"]::file-selector-button {
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+  }
+  .file-row input[type="file"]::-webkit-file-upload-button {
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+  }
+  .preview-image {
+    display: none;
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    object-fit: contain;
+    border: 1px solid #eee;
+    border-radius: 6px;
+  }
+    .user-menu-container { display: flex; align-items: center; gap: 10px; position: relative; }
+    .user-fullname {
+      font-weight: 600;
+      color: #fff;
+      font-size: 16px;
+    }
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .user-circle:hover {
+      background: #5f386d;
+    }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 30px;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 160px;
+      z-index: 100;
+      flex-direction: column;
+    }
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .user-dropdown button:hover {
+      background: #ffe6ee;
+    }
+    .user-dropdown.open {
+      display: flex;
+    }
+    .material-symbols-outlined {
+      color: #b8235a;
+      vertical-align: middle;
+    }
+    
+    /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+      .container {
+        background: #1e1e1e;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      }
+      .section-title {
+        background: #2c2c2c;
+        color: #e0e0e0;
+      }
+      .user-dropdown {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .tab-content {
+        background: #222 !important;
+        color: #eee !important;
+      }
+      .dates-section {
+        background: #222 !important;
+        color: #eee !important;
+      }
+      .form-group {
+        background: #222 !important;
+        color: #eee !important;
+      }
+      .textarea {
+        background: #222 !important;
+        color: #eee !important;
+      }
+      .word-count {
+        color: #bbb !important;
+      }
+      .eligibility-check {
+        color: #bbb !important;
+      }
+      .btn-view {
+        background: #0d601f !important;
+        color: #dfebe5 !important;
+        border-color: #267754 !important;
+      }
+      .btn-view:hover {
+        background: #309267 !important;
+      }
+      .submit-btn {
+        background: #b8235a !important;
+        color: #fff !important;
+      }
+      .submit-btn:disabled {
+        background: #555 !important;
+        color: #888 !important;
+        cursor: not-allowed !important;
+      } 
+      .preview-dialog {
+        background: #333 !important;
+        color: #dfebe5 !important;
+        border: 1px solid #555 !important;
+      }
+      .preview-header {
+        background: #444 !important;
+        color: #8c1f4c !important;
+        padding: 12px 16px;
+        border-bottom: 1px solid #555 !important;
+      }
+      .preview-header strong {
+        color: #f986b6 !important;
+        font-size: 1.5em;
+        font-weight: 600;
+      }
+      .preview-actions {
+        background: #444 !important;
+        color: #dfebe5 !important;
+        padding: 12px 16px;
+        border-top: 1px solid #555 !important;
+      }
+      .preview-submit {
+        background: #b8235a !important;
+        color: #fff !important;
+        padding: 12px 16px;
+        border: none !important;
+        cursor: pointer !important;
+      }
+      .preview-submit:disabled {
+        background: #555 !important;
+        color: #888 !important;
+        cursor: not-allowed !important;
+      }
+      .preview-close {
+        background: #b8235a !important;
+        color: #fff !important;
+        padding: 12px 16px;
+        border: none !important;
+        cursor: pointer !important;
+      }
+      .preview-close:hover {
+        background: #d7336f !important;
+      }
+
+      body.dark-mode .tab-content,
+      body.dark-mode .form-group,
+      body.dark-mode .dates-section,
+      body.dark-mode .upload-card {
+        background: #2c2c2c !important;
+        color: #eee !important;
+      }
+
+      body.dark-mode .form-group label,
+      body.dark-mode .preview-title {
+        color: #f986b6 !important;
+        font-weight: 600;
+      }
+
+      body.dark-mode .form-group input,
+      body.dark-mode .form-group select,
+      body.dark-mode .form-group textarea {
+        background: #222 !important;
+        color: #eee !important;
+        border: 1px solid #444 !important;
+      }
+
+      body.dark-mode .word-count {
+        color: #ffb6d5 !important; 
+      }
+
+      body.dark-mode .action-btn,
+      body.dark-mode .submit-btn,
+      body.dark-mode .preview-close,
+      body.dark-mode .preview-submit,
+      body.dark-mode .start-entry-btn {
+        background: #b8235a !important;
+        color: #fff !important;
+        border: none !important;
+        font-weight: 600;
+      }
+
+      body.dark-mode .action-btn:hover,
+      body.dark-mode .submit-btn:hover,
+      body.dark-mode .preview-close:hover,
+      body.dark-mode .preview-submit:hover,
+      body.dark-mode .start-entry-btn:hover {
+        background: #d7336f !important;
+        color: #fff !important;
+      }
+
+      body.dark-mode .tab.active {
+        background: #b8235a !important;
+        color: #fff !important;
+      }
+      
+    .preview-title {
+      color: #f989b8 !important;
+      background: #ffe6ee !important;
+      font-weight: 700;
+      font-size: 1.4em;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 18px;
+    }
+
+    .preview-grid > div {
+      background: #2c2c2c !important;
+      padding: 8px !important;
+      border-radius: 6px !important;
+    }
+
+    .preview-grid label {
+      color: #f78db9 !important;
+      font-weight: 600;
+    }
+
+    .preview-grid input,
+    .preview-grid select {
+      background: #222 !important;
+      color: #eee !important;
+      border: 1px solid #444 !important;
+      padding: 6px 8px !important;
+      border-radius: 4px !important;
+    }
+
+    .preview-body {
+      background: #2c2c2c !important;
+      color: #eee !important;
+    }
+
+    body.dark-mode .preview-title {
+      color: #fff !important;           
+      background: #333 !important;      
+      border: 1px solid #555 !important;
+      font-weight: 700;
+      font-size: 1.4em;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 18px;
+    }
+   
+    body.dark-mode .preview-dialog {
+      background: #2c2c2c !important;
+      color: #eee !important;
+    }
+
+    body.dark-mode .preview-body {
+      background: #2c2c2c !important;
+      color: #eee !important;
+    }}
+  </style>
+  <!-- Add Firebase SDKs  -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+</head>
+<body>
+  <header>
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+    <h1 style="margin:0;">WCW Awards Application</h1>
+    <div class="user-menu-container">
+      <span id="userFullName" class="user-fullname"></span>
+      <button id="userCircle" class="user-circle"></button>
+      <button class="back-btn" onclick="goBack()">Back</button>
+    </div>
+  </div>
+  <div id="userDropdown" class="user-dropdown">
+    <button onclick="showProfile()">
+      Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+    </button>
+    <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+      Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+    </button>
+    <button onclick="logout()">
+      Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+    </button>
+  </div>
+</header>
+  <main>
+    <div class="dates-section" id="datesSection">
+      <h2>Dates</h2>
+      <ul style="margin-bottom: 1.5em;">
+        <li>Please note the entry deadline, this date is final and there will be no extensions provided.</li>
+        <li>You may edit your entry after submitting, up until the entry deadline for your region.</li>
+        <li>Please make sure all your personal details are entered accurately, including contact details.</li>
+        <li>You are eligible to enter more than one category, as long as the work submitted meets the criteria.</li>
+      </ul>
+      <p style="font-style: italic; margin-bottom: 1.5em;">* You can use the ‘copy’ feature to create a copy of your entry and change the category as required.</p>
+      <h3>IMPORTANT DATES</h3>
+      <h4>GLOBAL:</h4>
+      <p>All nominations have now closed for 2025<br>
+      Finalists in all categories announced - 17 FEBRUARY 2025</p>
+      <p>People’s Choice Voting starts - 24 FEBRUARY 2025<br>
+      People’s Choice Voting ends - 10 MARCH 2025</p>
+      <p>Winners Announced Global Awards & Summit - London 2-3 APRIL 2025</p>
+      <p>For any questions, please contact <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a></p>
+      <h3>Support</h3>
+      <p>If you have any questions on the entry process, please contact the organisers by email to <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a></p>
+      <button class="start-entry-btn" id="start-entry-btn">Start Entry</button>
+    </div>
+    <div id="tabSection" style="display:none;">
+      <!-- Only show Start Here tab at first -->
+      <div class="tab-list">
+        <button class="tab active" id="tabStart">Start here</button>
+        <button class="tab" id="tabCriteria" disabled>Criteria</button>
+        <button class="tab" id="tabAttachments" disabled>Attachments</button>
+      </div>
+      <div id="tabContent" class="tab-content"></div>
+    </div>
+  </main>
+  <div id="previewModal" class="preview-modal" aria-hidden="true">
+  <div class="preview-dialog">
+    <div class="preview-header">
+      <strong>Preview your application</strong>
+      <div class="preview-actions">
+        <button id="previewClose" class="preview-close">Close</button>
+        <button id="previewSubmit" class="preview-submit" disabled>Submit Application</button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <h3 class="preview-title">Start here</h3>
+      <div class="preview-grid">
+        <div>
+          <label>Category</label>
+          <select id="pv_category">
+            <option value="">Select category</option>
+            <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
+            <option value="IMPACT AWARDS">IMPACT AWARDS</option>
+            <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
+            <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
+            <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
+            <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
+          </select>
+        </div>
+        <div>
+          <label>Subcategory</label>
+          <select id="pv_subcategory">
+            <option value="">Select subcategory</option>
+          </select>
+        </div>
+        <div>
+          <label>Award</label>
+          <select id="pv_award">
+            <option value="">Select award</option>
+            <option value="WCWA Americas">WCWA Americas</option>
+            <option value="WCWA Middle East & North Africa (MENA)">WCWA Middle East & North Africa (MENA)</option>
+            <option value="WCWA Czech Republic">WCWA Czech Republic</option>
+            <option value="WCWA South Africa">WCWA South Africa</option>
+            <option value="WCWA Global 2025">WCWA Global 2025</option>
+          </select>
+        </div>
+        <div><label>Name</label><input id="pv_name" type="text"></div>
+        <div><label>Website</label><input id="pv_website" type="text"></div>
+        <div><label>Email</label><input id="pv_email" type="email"></div>
+        <div><label>Mobile Number</label><input id="pv_mobile" type="tel"></div>
+        <div><label>Address</label><input id="pv_address" type="text"></div>
+        <div><label>Instagram URL</label><input id="pv_instagram" type="text"></div>
+        <div><label>LinkedIn URL</label><input id="pv_linkedin" type="text"></div>
+      </div>
+
+      <h3 class="preview-title">Criteria</h3>
+      <div>
+        <div class="form-group"><label>Tell us about yourself</label><span class="word-count" id="pv_count_about_yourself">0/150</span><textarea id="pv_about_yourself" rows="3"></textarea></div>
+        <div class="form-group"><label>Tell us about your work</label><span class="word-count" id="pv_count_about_work">0/150</span><textarea id="pv_about_work" rows="3"></textarea></div>
+        <div class="form-group"><label>What inspired you to do this work?</label><span class="word-count" id="pv_count_inspiration">0/200</span><textarea id="pv_inspiration" rows="4"></textarea></div>
+        <div class="form-group"><label>What makes what you do special or unique?</label><span class="word-count" id="pv_count_unique">0/200</span><textarea id="pv_unique" rows="4"></textarea></div>
+        <div class="form-group"><label>What has been your greatest challenge & how have you addressed this?</label><span class="word-count" id="pv_count_challenge">0/500</span><textarea id="pv_challenge" rows="6"></textarea></div>
+        <div class="form-group"><label>What have been your top 3 greatest achievements in the past 12 months?</label><span class="word-count" id="pv_count_achievements">0/300</span><textarea id="pv_achievements" rows="5"></textarea></div>
+        <div class="form-group"><label>Why were these achievements significant and what do you attribute your achievements to?</label><span class="word-count" id="pv_count_significance">0/200</span><textarea id="pv_significance" rows="4"></textarea></div>
+        <div class="form-group"><label>What is your big picture vision for the work you are doing?</label><span class="word-count" id="pv_count_vision">0/500</span><textarea id="pv_vision" rows="6"></textarea></div>
+        <div class="form-group"><label>Why should you be recognised in this category?</label><span class="word-count" id="pv_count_recognition">0/500</span><textarea id="pv_recognition" rows="6"></textarea></div>
+        <div class="eligibility-check">
+          <input type="checkbox" id="pv_confirm_eligibility" />
+          <label for="pv_confirm_eligibility" style="font-size: 0.98rem; font-weight: 400;">
+            I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  <script>
+  function logout() {
+    firebase.auth().signOut().then(() => {
+      window.location.href = "signin.html";
+    }).catch((error) => {
+      alert("Error signing out: " + error.message);
+    });
+  }
+  function showProfile() { window.location.href = "applicantprofile.html";}
+  function goBack() { window.location.href = "applicantdashboard.html"; }
+
+  let applicationId = null;
+  let currentUser = null;
+
+    // Pick up the doc id from URL or sessionStorage
+    (function initApplicationId() {
+      try {
+        const qs = new URLSearchParams(location.search);
+        const id = qs.get('application') || sessionStorage.getItem('continueApplicationId');
+        if (id) {
+          applicationId = id;
+          sessionStorage.removeItem('continueApplicationId');
+        }
+      } catch (e) {
+        console.warn('Failed to init application id', e);
+      }
+    })();
+
+    // Track auth user
+    firebase.auth().onAuthStateChanged(u => { currentUser = u || null; });
+
+    
+  firebase.auth().onAuthStateChanged(user => {
+    const fullNameEl = document.getElementById("userFullName");
+    const circleEl = document.getElementById("userCircle");
+    if (user) {
+      const name = user.displayName || user.email || "User";
+      fullNameEl.textContent = name;
+      let initials = "U";
+      if (user.displayName) {
+        initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+      } else if (user.email) {
+        initials = user.email[0].toUpperCase();
+      }
+      circleEl.textContent = initials;
+
+      // Dark mode check from Firestore
+      firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+        if (doc.exists && doc.data().darkMode === "enabled") {
+          document.body.classList.add("dark-mode");
+        } else {
+          document.body.classList.remove("dark-mode");
+        }
+      }).catch(() => {
+        document.body.classList.remove("dark-mode");
+      });
+
+    } else {
+      window.location.href = "signin.html";
+    }
+  });
+
+    // Tab content templates
+    const startHereContent = `
+      <form id="startHereForm">
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="">Select category</option>
+            <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
+            <option value="IMPACT AWARDS">IMPACT AWARDS</option>
+            <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
+            <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
+            <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
+            <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="subcategory">Subcategory</label>
+          <select id="subcategory" name="subcategory" disabled>
+            <option value="">Select subcategory</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="website">Website (optional)</label>
+          <input type="text" id="website" name="website" />
+        </div>
+        <div class="form-group">
+          <label for="award">Which Awards would you want to enter?</label>
+          <select id="award" name="award" required>
+            <option value="">Select award</option>
+            <option value="WCWA Americas">WCWA Americas</option>
+            <option value="WCWA Middle East & North Africa (MENA)">WCWA Middle East & North Africa (MENA)</option>
+            <option value="WCWA Czech Republic">WCWA Czech Republic</option>
+            <option value="WCWA South Africa">WCWA South Africa</option>
+            <option value="WCWA Global 2025">WCWA Global 2025</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="mobile">Mobile Number</label>
+          <input type="tel" id="mobile" name="mobile" required />
+        </div>
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" name="address" required autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label for="instagram">Instagram profile page URL (if applicable)</label>
+          <input type="text" id="instagram" name="instagram" />
+        </div>
+        <div class="form-group">
+          <label for="linkedin">LinkedIn profile page URL (if applicable)</label>
+          <input type="text" id="linkedin" name="linkedin" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="action-btn btn-view" id="saveStartHereBtn">Save</button>
+          <button type="button" class="action-btn btn-view" id="saveNextBtn">Save & Next</button>
+        </div>
+      </form>
+    `;
+
+    const criteriaContent = `
+      <form id="criteriaForm">
+        <div class="form-group">
+          <label for="about_yourself">Tell us about yourself</label>
+          <textarea id="about_yourself" name="about_yourself" maxlength="1200" rows="3"></textarea>
+          <span class="word-count" id="count_about_yourself">0/150</span>
+        </div>
+        <div class="form-group">
+          <label for="about_work">Tell us about your work</label>
+          <textarea id="about_work" name="about_work" maxlength="1200" rows="3"></textarea>
+          <span class="word-count" id="count_about_work">0/150</span>
+        </div>
+        <div class="form-group">
+          <label for="inspiration">What inspired you to do this work?</label>
+          <textarea id="inspiration" name="inspiration" maxlength="1600" rows="4"></textarea>
+          <span class="word-count" id="count_inspiration">0/200</span>
+        </div>
+        <div class="form-group">
+          <label for="unique">What makes what you do special or unique?</label>
+          <textarea id="unique" name="unique" maxlength="1600" rows="4"></textarea>
+          <span class="word-count" id="count_unique">0/200</span>
+        </div>
+        <div class="form-group">
+          <label for="challenge">What has been your greatest challenge & how have you addressed this? </label>
+          <textarea id="challenge" name="challenge" maxlength="4000" rows="6"></textarea>
+          <span class="word-count" id="count_challenge">0/500</span>
+        </div>
+        <div class="form-group">
+          <label for="achievements">What have been your top 3 greatest achievements in the past 12 months? </label>
+          <textarea id="achievements" name="achievements" maxlength="2400" rows="5"></textarea>
+          <span class="word-count" id="count_achievements">0/300</span>
+        </div>
+        <div class="form-group">
+          <label for="significance">Why were these achievements significant and what do you attribute your achievements to?</label>
+          <textarea id="significance" name="significance" maxlength="1600" rows="4"></textarea>
+          <span class="word-count" id="count_significance">0/200</span>
+        </div>
+        <div class="form-group">
+          <label for="vision">What is your big picture vision for the work you are doing? </label>
+          <textarea id="vision" name="vision" maxlength="4000" rows="6"></textarea>
+          <span class="word-count" id="count_vision">0/500</span>
+        </div>
+        <div class="form-group">
+          <label for="recognition">Why should you be recognised in this category? </label>
+          <textarea id="recognition" name="recognition" maxlength="4000" rows="6"></textarea>
+          <span class="word-count" id="count_recognition">0/500</span>
+        </div>
+        <div class="eligibility-check">
+          <input type="checkbox" id="confirm-eligibility" />
+          <label for="confirm-eligibility" style="font-size: 0.98rem; font-weight: 400;">
+            I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+          </label>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="action-btn btn-view" id="saveCriteriaBtn">Save</button>
+          <button type="button" class="action-btn btn-view" id="saveCriteriaNextBtn">Save & Next</button>
+        </div>
+      </form>
+    `;
+
+    // Attachments tab content 
+    const attachmentsContent = `
+      <section>
+        <h2 style="margin-top:0; color:#8c1f4c; background:#faf0f4; padding:10px 12px; border-radius:6px;">
+          Attach your photo
+        </h2>
+        <div>
+          <p style="margin:0 0 10px 0;">Materials to be supplied</p>
+          <p style="margin:0 0 8px 0; font-weight:600;">HIGH RESOLUTION PHOTO TO BE ATTACHED TO YOUR ENTRY FORM</p>
+          <ul style="padding-left:20px; margin-top:6px;">
+            <li>The photo file should be named with your name and business name (e.g., Katy Garner, AusMumpreneur).</li>
+            <li>This photo should be just yourself without other people in it unless you are entering as a partnership or team.</li>
+            <li>Please no text, logos or montages.</li>
+            <li>If you are a finalist this photo will be used for the digital screen at the awards night so please use a good quality image you would be proud to share.</li>
+            <li>Your photo is part of your application and must be included to be eligible. Maximum file size is 5MB per piece.</li>
+          </ul>
+        </div>
+
+        <div class="upload-card" style="margin-top:14px;">
+          <div class="file-row">
+            <input type="file" id="att_photo" accept="image/*" />
+            <!-- Removed duplicate filename label -->
+            <!-- <span class="filename" id="att_file_name">No file chosen</span> -->
+          </div>
+          <div style="margin-top:10px">
+            <img id="att_preview" class="preview-image" alt="Selected photo preview" />
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top:14px;">
+          <button type="button" class="action-btn btn-view" id="att_save_btn">Save</button>
+          <button type="button" class="action-btn btn-view" id="attachmentsPreviewBtn">Preview</button>
+        </div>
+      </section>
+    `;
+
+    // Tabs
+    document.getElementById('tabStart').onclick = function() {
+      document.getElementById('tabStart').classList.add('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabAttachments').classList.remove('active');
+      document.getElementById('tabContent').innerHTML = startHereContent;
+      setUpStartHereTab();
+    };
+    document.getElementById('tabCriteria').onclick = function() {
+      document.getElementById('tabStart').classList.remove('active');
+      document.getElementById('tabCriteria').classList.add('active');
+      document.getElementById('tabAttachments').classList.remove('active');
+      document.getElementById('tabContent').innerHTML = criteriaContent;
+      setUpCriteriaTab();
+    };
+    document.getElementById('tabAttachments').onclick = function() {
+      document.getElementById('tabStart').classList.remove('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabAttachments').classList.add('active');
+      document.getElementById('tabContent').innerHTML = attachmentsContent;
+      setUpAttachmentsTab();
+    };
+
+    const db = () => firebase.firestore();
+
+    // ensure the application doc exists (creates draft if needed)
+    async function ensureApplicationDoc() {
+      if (applicationId) return;
+      if (!currentUser) throw new Error('Not signed in');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const ref = await db().collection('applications').add({
+        user_id: currentUser.uid,
+        applicant_id: currentUser.uid,
+        stage: 'draft',
+        createdAt: now,
+        updatedAt: now
+      });
+      applicationId = ref.id;
+    }
+
+    function allInputsDisabled(rootEl) {
+      const els = (rootEl || document).querySelectorAll('input, select, textarea, button');
+      els.forEach(el => el.disabled = true);
+    }
+
+    // Prefill from last-saved document
+    async function getApplicationData() {
+      if (!applicationId) return null;
+      try {
+        const snap = await db().collection('applications').doc(applicationId).get();
+        return snap.exists ? snap.data() : null;
+      } catch (e) {
+        console.error('Failed to fetch application', e);
+        return null;
+      }
+    }
+    function setVal(form, id, value) {
+      const el = form.querySelector('#' + id);
+      if (el) el.value = value ?? '';
+    }
+
+    const SUBCATEGORIES = {
+      "BUSINESS AWARDS": [
+        "BUSINESS OF THE YEAR",
+        "MICRO BUSINESS OF THE YEAR",
+        "SMALL BUSINESS OF THE YEAR",
+        "SOCIAL ENTERPRISE AWARD"
+      ],
+      "IMPACT AWARDS": [
+        "ADVOCACY IMPACT",
+        "CULTURAL DIVERSITY AND INCLUSION IMPACT",
+        "DISABILITY INCLUSION IMPACT",
+        "GENDER EMPOWERMENT",
+        "GENDER EQUALITY",
+        "GLOBAL IMPACT",
+        "HUMAN RIGHTS",
+        "HUMANITARIAN IMPACT",
+        "RURAL AND REGIONAL AREAS IMPACT",
+        "VOLUNTEER OF THE YEAR",
+        "YOUTH IMPACT"
+      ],
+      "INDUSTRY AWARDS": [
+        "COACH OF THE YEAR",
+        "HEALTHTECH INNOVATION",
+        "INNOVATION AWARD",
+        "TECH INNOVATION",
+        "WELLNESS & WELLBEING PROGRAMS",
+        "WELLNESS & WELLBEING SERVICES",
+        "WOMAN IN CORPORATE & PUBLIC SECTOR",
+        "WOMAN IN CREATIVE INDUSTRIES (INACTIVE FOR ENTRANTS)",
+        "WOMAN IN CREATIVE INDUSTRIES",
+        "WOMAN IN EDUCATION - CHILDREN'S EDUCATION",
+        "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION",
+        "WOMAN IN FASHION & TEXTLIES",
+        "WOMAN IN LITERATURE - CHILDRENS BOOKS",
+        "WOMAN IN PERSONAL SERVICES",
+        "WOMAN IN SCIENCE",
+        "WOMAN IN THERAPY & CONSELLING SERVICES",
+        "WOMAN IN TRAVEL, RETREATS AND EVENTS",
+        "WOMAN IN ACADEMIC",
+        "WOMAN IN AGRICULTURE & FARMING",
+        "WOMAN IN ADULT EDUCATION & TRAINING",
+        "WOMAN IN ENGINEERING",
+        "WOMAN IN FINANCE",
+        "WOMAN IN FOOD AND BEVERGAES",
+        "WOMAN IN HEALTH",
+        "WOMAN IN JOURNALISM AND MEDIA",
+        "WOMAN IN LAW",
+        "WOMAN IN LITERATIRE",
+        "WOMAN IN PROFESSIONAL SERVICES",
+        "WOMAN IN SCIENCE",
+        "WOMAN IN SPORT",
+        "WOMAN IN SUSTAINABILITY",
+        "WOMAN IN TECH"
+      ],
+      "LEADERSHIP AWARDS": [
+        "BIG IDEA - EMERGING LEADER OF THE YEAR",
+        "DISABILITY LEADERSHIP AWARD",
+        "FIRST NATIONS LEADERSHIP",
+        "LEADER OF THE YEAR",
+        "LGBTQI+ LEADERSHIP AWARD",
+        "MIGRANT LEADERSHIP AWARD",
+        "TECH LEADER OF THE YEAR",
+        "THOUGHT LEADER OF THE YEAR"
+      ],
+      "PEOPLE'S CHOICE": [
+        "People's Choice - BUSINESS",
+        "People's Choice - DIVERSITY AND INCLUSION",
+        "People's Choice - EDUCATION",
+        "People's Choice - ENVIRONMENTAL IMPACT",
+        "People's Choice - GENDER EQUALITY",
+        "People's Choice - GLOBAL IMPACT",
+        "People's Choice - HEALTH & WELLBEING",
+        "People's Choice - HUMANITARIAN IMPACT",
+        "People's Choice - LOCAL COMMUNITY",
+        "People's Choice - NON PROFIT",
+        "People's Choice - SOCIAL ENTERPRISE"
+      ],
+      "WOMAN OF THE YEAR AWARDS": [
+        "CHANGEMAKER",
+        "COMPANY OF THE YEAR",
+        "EMERGING ENTREPRENEUR OF THE YEAR",
+        "EMERGING LEADER OF THE YEAR",
+        "EMERGING WOMAN",
+        "ENTREPRENEUR OF THE YEAR",
+        "GIRL OF THE YEAR",
+        "HALL OF FAME",
+        "RISING STAR",
+        "WOMAN OF THE YEAR AWARD",
+        "WOMAN CHANGING THE WORLD",
+        "YOUNG WOMAN OF THE YEAR"
+      ]
+    };
+
+// populate a subcategory from category
+    function fillSubcategorySelect(selectEl, category, selectedValue = '') {
+      if (!selectEl) return;
+      const list = SUBCATEGORIES[category] || [];
+      selectEl.innerHTML = '';
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select subcategory';
+      selectEl.appendChild(def);
+      list.forEach(sc => {
+        const opt = document.createElement('option');
+        opt.value = sc;
+        opt.textContent = sc;
+        selectEl.appendChild(opt);
+      });
+      selectEl.disabled = list.length === 0;
+      if (selectedValue) selectEl.value = selectedValue;
+    }
+
+    async function hydrateStartHereForm() {
+      const form = document.getElementById('startHereForm');
+      if (!form) return;
+      const data = await getApplicationData();
+      if (!data) return;
+      setVal(form, 'category', data.category);
+      fillSubcategorySelect(form.querySelector('#subcategory'), data.category, data.subcategory);
+      setVal(form, 'name', data.name);
+      setVal(form, 'website', data.website);
+      setVal(form, 'award', data.awards_choice);
+      setVal(form, 'email', data.email);
+      setVal(form, 'mobile', data.mobile_number);
+      setVal(form, 'address', data.address);
+      setVal(form, 'instagram', data.instagram_url);
+      setVal(form, 'linkedin', data.linkedin_url);
+    }
+    async function hydrateCriteriaForm() {
+      const form = document.getElementById('criteriaForm');
+      if (!form) return;
+      const data = await getApplicationData();
+      if (!data) return;
+      setVal(form, 'about_yourself', data.tell_us_about_yourself);
+      setVal(form, 'about_work', data.tell_us_about_your_work);
+      setVal(form, 'inspiration', data.what_inspired_you);
+      setVal(form, 'unique', data.what_makes_you_unique);
+      setVal(form, 'challenge', data.greatest_challenge);
+      setVal(form, 'achievements', data.top_achievements);
+      setVal(form, 'significance', data.achievements_significance);
+      setVal(form, 'vision', data.big_picture_vision);
+      setVal(form, 'recognition', data.recognition_reason);
+      const cb = form.querySelector('#confirm-eligibility');
+      if (cb) cb.checked = !!data.eligibility;
+      const submitBtn = form.querySelector('#submit-application');
+      if (submitBtn) submitBtn.disabled = cb ? !cb.checked : true;
+    }
+
+    function collectStartHere(form) {
+      const val = id => (form.querySelector('#' + id)?.value || '');
+      return {
+        category: val('category'),
+        subcategory: val('subcategory'),           
+        name: val('name'),
+        website: val('website'),
+        awards_choice: val('award'),
+        email: val('email'),
+        mobile_number: val('mobile'),
+        address: val('address'),
+        instagram_url: val('instagram'),
+        linkedin_url: val('linkedin')
+      };
+    }
+    function collectCriteria(form) {
+      const val = id => (form.querySelector('#' + id)?.value || '');
+      return {
+        tell_us_about_yourself: val('about_yourself'),
+        tell_us_about_your_work: val('about_work'),
+        what_inspired_you: val('inspiration'),
+        what_makes_you_unique: val('unique'),
+        greatest_challenge: val('challenge'),
+        top_achievements: val('achievements'),
+        achievements_significance: val('significance'),
+        big_picture_vision: val('vision'),
+        recognition_reason: val('recognition'),
+        eligibility: form.querySelector('#confirm-eligibility')?.checked ? true : false
+      };
+    }
+
+    // Attachments tab
+    function setUpAttachmentsTab() {
+      const fileInput = document.getElementById('att_photo');
+      const img = document.getElementById('att_preview');
+      const saveBtn = document.getElementById('att_save_btn');
+      const previewBtn = document.getElementById('attachmentsPreviewBtn');
+
+      // preview image
+      fileInput?.addEventListener('change', () => {
+        const f = fileInput.files && fileInput.files[0];
+        if (f) {
+          const url = URL.createObjectURL(f);
+          img.src = url;
+          img.style.display = 'inline-block';
+        } else {
+          img.removeAttribute('src');
+          img.style.display = 'none';
+        }
+      });
+
+      // Save button
+      saveBtn?.addEventListener('click', () => {
+        alert('The image saving function is not implemented.');
+      });
+
+      previewBtn?.addEventListener('click', async () => {
+        try { await openPreviewModal(); }
+        catch (e) { console.error(e); alert('Failed to open preview: ' + e.message); }
+      });
+    }
+
+    // open preview modal
+    async function openPreviewModal() {
+      const modal = document.getElementById('previewModal');
+      if (!modal) return;
+      const data = await getApplicationData();
+      if (!data) return;
+
+      const awardName = data.awards_choice || '';
+      const categoryName = data.category || '';
+      const subcatName = data.subcategory || '';
+
+      // Category + Subcategory
+      document.getElementById('pv_category').value = categoryName;
+      // populate preview subcategories from category, then set value
+      fillSubcategorySelect(document.getElementById('pv_subcategory'), categoryName, subcatName);
+
+      // If user changes category in preview, refresh subcategories
+      document.getElementById('pv_category').onchange = (e) => {
+        fillSubcategorySelect(document.getElementById('pv_subcategory'), e.target.value, '');
+      };
+
+      document.getElementById('pv_award').value = awardName;
+      document.getElementById('pv_name').value = data.name || '';
+      document.getElementById('pv_website').value = data.website || '';
+      document.getElementById('pv_email').value = data.email || '';
+      document.getElementById('pv_mobile').value = data.mobile_number || '';
+      document.getElementById('pv_address').value = data.address || '';
+      document.getElementById('pv_instagram').value = data.instagram_url || '';
+      document.getElementById('pv_linkedin').value = data.linkedin_url || '';
+
+      document.getElementById('pv_about_yourself').value = data.tell_us_about_yourself || '';
+      document.getElementById('pv_about_work').value = data.tell_us_about_your_work || '';
+      document.getElementById('pv_inspiration').value = data.what_inspired_you || '';
+      document.getElementById('pv_unique').value = data.what_makes_you_unique || '';
+      document.getElementById('pv_challenge').value = data.greatest_challenge || '';
+      document.getElementById('pv_achievements').value = data.top_achievements || '';
+      document.getElementById('pv_significance').value = data.achievements_significance || '';
+      document.getElementById('pv_vision').value = data.big_picture_vision || '';
+      document.getElementById('pv_recognition').value = data.recognition_reason || '';
+
+      const cb = document.getElementById('pv_confirm_eligibility');
+      if (cb) cb.checked = !!data.eligibility;
+      
+      setUpPreviewWordCount();
+      bindPreviewValidation();
+      updatePreviewSubmitState();
+
+      // Show modal
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePreviewModal() {
+      const modal = document.getElementById('previewModal');
+      if (!modal) return;
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    // Close button
+    document.getElementById('previewClose')?.addEventListener('click', closePreviewModal);
+
+   
+    const _previewModalEl = document.getElementById('previewModal');
+    _previewModalEl?.addEventListener('click', (e) => {
+      if (e.target === _previewModalEl) closePreviewModal();
+    });
+
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && _previewModalEl?.classList.contains('open')) {
+        closePreviewModal();
+      }
+    });
+
+    // ---- Preview validation ----
+    const PREVIEW_REQUIRED_IDS = [
+      'pv_award',
+      'pv_name',
+      'pv_email',
+      'pv_mobile',
+      'pv_about_yourself',
+      'pv_about_work',
+      'pv_inspiration',
+      'pv_unique',
+      'pv_challenge',
+      'pv_achievements',
+      'pv_significance',
+      'pv_vision',
+      'pv_recognition'
+    ];
+
+    function getPreviewVal(id) {
+      const el = document.getElementById(id);
+      return (el && typeof el.value === 'string') ? el.value.trim() : '';
+    }
+
+    function previewRequiredOk() {
+      const allFilled = PREVIEW_REQUIRED_IDS.every(id => getPreviewVal(id).length > 0);
+      const eligible = !!document.getElementById('pv_confirm_eligibility')?.checked;
+      return allFilled && eligible;
+    }
+
+    function updatePreviewSubmitState() {
+      const btn = document.getElementById('previewSubmit');
+      if (btn) btn.disabled = !previewRequiredOk();
+    }
+
+    function bindPreviewValidation() {
+      const wire = (id, evt = 'input') => {
+        const el = document.getElementById(id);
+        if (!el || el.dataset.bound === '1') return;
+        el.addEventListener(evt, updatePreviewSubmitState);
+        el.dataset.bound = '1';
+      };
+
+      PREVIEW_REQUIRED_IDS.forEach(id => wire(id, 'input'));
+      wire('pv_confirm_eligibility', 'change');
+
+      ['pv_category','pv_subcategory','pv_award','pv_website','pv_address','pv_instagram','pv_linkedin']
+        .forEach(id => wire(id, 'change'));
+    }
+
+    // Collect all preview values into the Firestore shape
+    function collectPreviewData() {
+      return {
+        category: getPreviewVal('pv_category'),
+        subcategory: getPreviewVal('pv_subcategory'),
+        awards_choice: getPreviewVal('pv_award'),
+        name: getPreviewVal('pv_name'),
+        website: getPreviewVal('pv_website'),
+        email: getPreviewVal('pv_email'),
+        mobile_number: getPreviewVal('pv_mobile'),
+        address: getPreviewVal('pv_address'),
+        instagram_url: getPreviewVal('pv_instagram'),
+        linkedin_url: getPreviewVal('pv_linkedin'),
+        tell_us_about_yourself: getPreviewVal('pv_about_yourself'),
+        tell_us_about_your_work: getPreviewVal('pv_about_work'),
+        what_inspired_you: getPreviewVal('pv_inspiration'),
+        what_makes_you_unique: getPreviewVal('pv_unique'),
+        greatest_challenge: getPreviewVal('pv_challenge'),
+        top_achievements: getPreviewVal('pv_achievements'),
+        achievements_significance: getPreviewVal('pv_significance'),
+        big_picture_vision: getPreviewVal('pv_vision'),
+        recognition_reason: getPreviewVal('pv_recognition'),
+        eligibility: !!document.getElementById('pv_confirm_eligibility')?.checked
+      };
+    }
+
+    // NEW: submit previewed application
+    document.getElementById('previewSubmit').onclick = async function() {
+      const modal = document.getElementById('previewModal');
+      if (!modal) return;
+
+      // Validate from preview inputs (edits in preview count)
+      if (!previewRequiredOk()) {
+        return alert('Please complete all required fields and confirm eligibility.');
+      }
+
+      // Confirm submission
+      const confirmed = confirm('Are you sure you want to submit your application? This cannot be undone.');
+      if (!confirmed) return;
+
+      try {
+        const payload = collectPreviewData();
+        await db().collection('applications').doc(applicationId).set({
+          ...payload,
+          submitted: true,
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        alert('Application submitted successfully!');
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(() => { window.location.href = 'applicantdashboard.html'; }, 2000);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to submit application: ' + err.message);
+      }
+    };
+
+    // update word count displays
+    function updateWordCounts(formId, counts) {
+      for (const [id, count] of Object.entries(counts)) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+
+        if (!el.dataset.max) {
+          const m = el.textContent.match(/\/\s*(\d+)/);
+          if (m) el.dataset.max = m[1];
+        }
+
+        const max = el.dataset.max;
+        el.textContent = max ? `${count}/${max}` : String(count);
+      }
+    }
+
+    // word count
+    function setUpWordCount(formId, textAreas) {
+      const form = document.getElementById(formId);
+      if (!form) return;
+
+      const countWords = (s) => s.trim().split(/\s+/).filter(Boolean).length;
+
+      const getMaxFor = (id) => {
+        const span = document.getElementById('count_' + id);
+        if (!span) return Infinity;
+        if (!span.dataset.max) {
+          const m = span.textContent.match(/\/\s*(\d+)/);
+          if (m) span.dataset.max = m[1];
+        }
+        return Number(span.dataset.max || Infinity);
+      };
+
+      const clampToMax = (ta, max) => {
+        const words = ta.value.trim().split(/\s+/).filter(Boolean);
+        if (words.length > max) {
+          ta.value = words.slice(0, max).join(' ');
+          if (typeof ta.selectionStart === 'number') {
+            ta.selectionStart = ta.selectionEnd = ta.value.length;
+          }
+        }
+      };
+
+      textAreas.forEach((id) => {
+        const ta = form.querySelector('#' + id);
+        const spanId = 'count_' + id;
+        if (!ta || !document.getElementById(spanId)) return;
+
+        const update = () => {
+          const max = getMaxFor(id);
+          clampToMax(ta, max);
+          const count = countWords(ta.value);
+          updateWordCounts(formId, { [spanId]: count });
+        };
+
+        // Prevent adding a new word when already at max 
+        ta.addEventListener('keydown', (e) => {
+          const max = getMaxFor(id);
+          const atMax = countWords(ta.value) >= max;
+          const addingWordKey = e.key === ' ' || e.key === 'Enter';
+          const replacing = ta.selectionStart !== ta.selectionEnd; // allow replace
+          if (atMax && addingWordKey && !replacing) {
+            e.preventDefault();
+          }
+        });
+
+        ta.addEventListener('input', update);
+
+        // Initialize once
+        update();
+      });
+    }
+
+    // Start Here tab
+    function setUpStartHereTab() {
+      const form = document.getElementById('startHereForm');
+      if (!form) return;
+      form.reset();
+
+      // Subcategory population
+      const cat = form.querySelector('#category');
+      const sub = form.querySelector('#subcategory');
+      cat.addEventListener('change', () => {
+        // reset subcategory when category changes
+        fillSubcategorySelect(sub, cat.value, '');
+      });
+
+      hydrateStartHereForm();
+
+      // Save / Save & Next 
+      const saveBtn = document.getElementById('saveStartHereBtn');
+      const nextBtn = document.getElementById('saveNextBtn');
+
+      async function saveStartHereToFirestore() {
+        if (!currentUser) throw new Error('Not signed in');
+        await ensureApplicationDoc();
+        const payload = {
+          ...collectStartHere(form),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          stage: 'draft'
+        };
+        await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+      }
+
+      if (saveBtn) {
+        saveBtn.onclick = async () => {
+          try { await saveStartHereToFirestore(); alert('Saved.'); }
+          catch (e) { console.error(e); alert('Failed to save: ' + e.message); }
+        };
+      }
+      if (nextBtn) {
+        nextBtn.onclick = async () => {
+          try {
+            await saveStartHereToFirestore();
+            const critTab = document.getElementById('tabCriteria');
+            const attTab = document.getElementById('tabAttachments');
+            if (critTab) critTab.disabled = false;
+            if (attTab) attTab.disabled = false;
+            critTab?.click();
+          } catch (e) {
+            console.error(e); alert('Failed to save: ' + e.message);
+          }
+        };
+      }
+    }
+
+    // Criteria tab
+    function setUpCriteriaTab() {
+      const form = document.getElementById('criteriaForm');
+      if (!form) return;
+      form.reset();
+      hydrateCriteriaForm();
+      setUpWordCount('criteriaForm', ['about_yourself', 'about_work', 'inspiration', 'unique', 'challenge', 'achievements', 'significance', 'vision', 'recognition'], {
+        count_about_yourself: 0,
+        count_about_work: 0,
+        count_inspiration: 0,
+        count_unique: 0,
+        count_challenge: 0,
+        count_achievements: 0,
+        count_significance: 0,
+        count_vision: 0,
+        count_recognition: 0
+      });
+    }
+
+    // Word limit in Preview 
+    function setUpPreviewWordCount() {
+      const ids = [
+        'pv_about_yourself','pv_about_work','pv_inspiration','pv_unique',
+        'pv_challenge','pv_achievements','pv_significance','pv_vision','pv_recognition'
+      ];
+
+      const countWords = (s) => s.trim().split(/\s+/).filter(Boolean).length;
+
+      const getSpan = (id) => {
+        const suffix = id.replace(/^pv_/, '');
+        return document.getElementById('pv_count_' + suffix);
+      };
+
+      const getMaxFor = (id) => {
+        const span = getSpan(id);
+        if (!span) return Infinity;
+        if (!span.dataset.max) {
+          const m = span.textContent.match(/\/\s*(\d+)/);
+          if (m) span.dataset.max = m[1];
+        }
+        return Number(span.dataset.max || Infinity);
+      };
+
+      const clampToMax = (ta, max) => {
+        const words = ta.value.trim().split(/\s+/).filter(Boolean);
+        if (words.length > max) {
+          ta.value = words.slice(0, max).join(' ');
+          if (typeof ta.selectionStart === 'number') {
+            ta.selectionStart = ta.selectionEnd = ta.value.length;
+          }
+        }
+      };
+
+      ids.forEach((id) => {
+        const ta = document.getElementById(id);
+        const span = getSpan(id);
+        if (!ta || !span) return;
+
+        if (ta.dataset.pvBound === '1') {
+          const max = getMaxFor(id);
+          clampToMax(ta, max);
+          span.textContent = `${countWords(ta.value)}/${max}`;
+          return;
+        }
+
+        const update = () => {
+          const max = getMaxFor(id);
+          clampToMax(ta, max);
+          const count = countWords(ta.value);
+          span.textContent = `${count}/${max}`;
+        };
+
+        // Block adding a new word at max 
+        ta.addEventListener('keydown', (e) => {
+          const max = getMaxFor(id);
+          const atMax = countWords(ta.value) >= max;
+          const addingWordKey = e.key === ' ' || e.key === 'Enter';
+          const replacing = ta.selectionStart !== ta.selectionEnd;
+          if (atMax && addingWordKey && !replacing) e.preventDefault();
+        });
+
+        ta.addEventListener('input', update);
+        ta.dataset.pvBound = '1';
+        update();
+      });
+    }
+
+    // Init
+    (async () => {
+      const data = await getApplicationData();
+      if (data) {
+        document.getElementById('tabSection').style.display = 'block';
+        document.getElementById('datesSection').style.display = 'none';
+
+        // Ensure the Start here form is actually rendered
+        document.getElementById('tabContent').innerHTML = startHereContent;
+
+        // Enable the other tabs when continuing
+        const critTab = document.getElementById('tabCriteria');
+        const attTab = document.getElementById('tabAttachments');
+        if (critTab) critTab.disabled = false;
+        if (attTab) attTab.disabled = false;
+
+        hydrateStartHereForm();
+        setUpStartHereTab();
+      } else {
+        document.getElementById('tabContent').innerHTML = startHereContent;
+        setUpStartHereTab();
+      }
+    })();
+
+const userCircle = document.getElementById("userCircle");
+const userDropdown = document.getElementById("userDropdown");
+
+userCircle.onclick = function(e) {
+  userDropdown.classList.toggle("open");
+};
+
+// Close dropdown when clicking outside
+document.addEventListener("click", function(e) {
+  if (!userCircle.contains(e.target) && !userDropdown.contains(e.target)) {
+    userDropdown.classList.remove("open");
+  }
+});
+
+document.getElementById('start-entry-btn')?.addEventListener('click', function() {
+  document.getElementById('datesSection').style.display = 'none';
+  document.getElementById('tabSection').style.display = 'block';  
+  document.getElementById('tabContent').innerHTML = startHereContent;
+  setUpStartHereTab();
+});
+  </script>
+</body>
+</html>

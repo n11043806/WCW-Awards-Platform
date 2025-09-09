@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Applicant Dashboard - WCW Awards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
   <style>
     * { box-sizing: border-box; }
@@ -27,6 +28,77 @@
     header h1 {
       margin: 0;
       font-size: 24px;
+    }
+
+    .user-menu-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .user-fullname {
+      font-weight: 600;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .user-circle:hover {
+      background: #5f386d;
+    }
+
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 48px;
+      right: 0;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 160px;
+      z-index: 100;
+      flex-direction: column;
+    }
+
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .user-dropdown button:hover {
+      background: #ffe6ee;
+    }
+
+    .user-dropdown.open {
+      display: flex;
     }
 
     .logout-btn {
@@ -80,6 +152,12 @@
       background-color: #b8235a;
     }
 
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .applications-list {
       margin-top: 15px;
     }
@@ -94,13 +172,56 @@
       font-size: 14px;
       color: #888;
     }
+
+    .material-symbols-outlined {
+      color: #b8235a;
+      vertical-align: middle;
+    }
+
+        /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+      .container {
+        background: #1e1e1e;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      }
+      .section-title {
+        background: #2c2c2c;
+        color: #e0e0e0;
+      }
+      .user-dropdown {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .dashboard-section {
+        background: #1e1e1e;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      }
+    }
   </style>
 </head>
 
 <body>
   <header>
     <h1 id="welcomeMessage">Welcome to Your Dashboard</h1>
-    <button class="logout-btn" onclick="logout()">Log Out</button>
+    <div class="user-menu-container">
+      <span id="userFullName" class="user-fullname"></span>
+      <button id="userCircle" class="user-circle"></button>
+      <div id="userDropdown" class="user-dropdown">
+        <button onclick="showProfile()">
+          Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+        </button>
+        <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+          Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+        </button>
+        <button onclick="logout()">
+          Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+        </button>
+      </div>
+    </div>
   </header>
 
   <main>
@@ -108,16 +229,16 @@
     <div class="dashboard-section">
       <h2>Submit a New Application</h2>
       <p>Ready to apply for an award? Click below to start your submission.</p>
-      <button onclick="startNewApplication()">Start New Application</button>
+      <div class="button-row">
+        <button onclick="startNewApplication()">Start New Application</button>
+      </div>
     </div>
 
     <!-- Section 2: View Existing Applications -->
     <div class="dashboard-section">
-      <h2>Your Submitted Applications</h2>
-      <p>Below is a list of applications you have submitted:</p>
-      <ul class="applications-list" id="applicationsList">
-        <li>Loading your applications...</li>
-      </ul>
+      <h2>Your Applications</h2>
+      <p>View a history of your applications and their status.</p>
+      <button onclick="viewApplications()">View My Applications</button>
     </div>
 
     <!-- Section 3: Manage Profile (optional) -->
@@ -153,39 +274,60 @@
       window.location.href = "applicationform.html";
     }
 
-    // Placeholder for profile editing
-    function editProfile() {
-      alert("Profile management coming soon!");
+    // Redirect to history page
+    function viewApplications() {
+      window.location.href = "applicationhistory.html";
     }
 
-    // Personalize dashboard and load applications
+    // Redirect to profile page
+    function editProfile() {
+      window.location.href = "applicantprofile.html";
+    }
+
+    function showProfile() {
+      window.location.href = "applicantprofile.html";
+    }
+
+    const userCircle = document.getElementById("userCircle");
+    const userDropdown = document.getElementById("userDropdown");
+
+    userCircle.onclick = function(e) {
+      userDropdown.classList.toggle("open");
+    };
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!userCircle.contains(e.target) && !userDropdown.contains(e.target)) {
+        userDropdown.classList.remove("open");
+      }
+    });
+    
     firebase.auth().onAuthStateChanged(user => {
       const welcomeEl = document.getElementById("welcomeMessage");
-      const list = document.getElementById("applicationsList");
-
+      const fullNameEl = document.getElementById("userFullName");
+      const circleEl = document.getElementById("userCircle");
       if (user) {
         const name = user.displayName || user.email || "User";
         welcomeEl.textContent = `Welcome, ${name}!`;
+        fullNameEl.textContent = name;
+        let initials = "U";
+        if (user.displayName) {
+          initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+        } else if (user.email) {
+          initials = user.email[0].toUpperCase();
+        }
+        circleEl.textContent = initials;
 
-        const db = firebase.firestore();
-        db.collection("applications").where("userId", "==", user.uid)
-          .get()
-          .then(querySnapshot => {
-            list.innerHTML = "";
-            if (querySnapshot.empty) {
-              list.innerHTML = "<li>No applications have been submitted yet.</li>";
-            } else {
-              querySnapshot.forEach(doc => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.textContent = `Application: ${data.title || "Untitled"} - Status: ${data.status || "Pending"}`;
-                list.appendChild(li);
-              });
-            }
-          })
-          .catch(error => {
-            list.innerHTML = `<li>Error loading applications: ${error.message}</li>`;
-          });
+        // Dark mode check from Firestore
+        firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists && doc.data().darkMode === "enabled") {
+            document.body.classList.add("dark-mode");
+          } else {
+            document.body.classList.remove("dark-mode");
+          }
+        }).catch(() => {
+          document.body.classList.remove("dark-mode");
+        });
 
       } else {
         window.location.href = "signin.html";
