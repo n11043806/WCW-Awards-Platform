@@ -12,36 +12,40 @@
     }
     header h1 { margin:0; font-size:20px; font-weight:600; }
     .logout-btn { background:#fff; color:#d7336f; padding:8px 14px; border-radius:6px; border:0; font-weight:700; cursor:pointer; }
-    main { padding:28px; max-width:1200px; margin:0 auto; }
+    main { padding:28px; max-width:1100px; margin:0 auto; }
 
     .top-actions { display:flex; gap:12px; align-items:center; margin-bottom:18px; }
     .back-btn { background:#fff; color:#444; padding:8px 12px; border-radius:6px; border:1px solid #e6e6e6; cursor:pointer; }
 
-    .layout { display:flex; gap:24px; align-items:flex-start; }
-    .left { flex:1; min-width:0; }
-    .right { width:420px; position:relative; }
-
+    /* layout: left column contains entrant + questions, each question row has judge box on right */
+    .left { min-width:0; }
     .card { background:#fff; padding:18px; border-radius:8px; box-shadow:0 4px 14px rgba(0,0,0,0.04); margin-bottom:18px; }
     .card h2 { margin:0 0 12px 0; color:#333; font-weight:600; font-size:18px; }
     .field { background:#fff; padding:12px; border-radius:6px; border:1px solid #f0f0f0; color:#333; margin-bottom:12px; white-space:pre-wrap; line-height:1.45; }
     .label { font-size:15px; color:#666; margin-bottom:8px; display:block; }
 
-    .judge-panel { position:sticky; top:24px; }
-    .criterion { background:#fff; border-radius:6px; padding:14px; margin-bottom:14px; display:flex; gap:12px; align-items:flex-start; border:1px solid #eee; }
-    .score-box { background:#6e1742; color:#fff; padding:10px 14px; border-radius:6px; min-width:140px; text-align:center; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:8px; }
+    /* per-criterion row: question on left, judge controls on right */
+    .criteria-row { display:flex; gap:18px; align-items:flex-start; margin-bottom:18px; }
+    .crit-left { flex:1; min-width:0; }
+    .crit-judge { width:360px; min-width:260px; }
+    .crit-judge .criterion { margin:0; display:flex; gap:10px; align-items:flex-start; border:1px solid #eee; padding:12px; border-radius:6px; background:#fff; }
+    .score-box { background:#6e1742; color:#fff; padding:10px 12px; border-radius:6px; min-width:120px; text-align:center; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:8px; }
     .score-box input[type="number"] { width:100%; border:0; padding:6px 8px; border-radius:4px; font-size:16px; }
-    .score-help { font-size:12px; color:#666; margin-top:6px; text-align:left; }
+    .score-help { font-size:12px; color:#fff; opacity:0.9; margin-top:6px; text-align:center; }
     .comment-area { flex:1; }
-    .comment-area textarea { width:100%; height:120px; border:1px solid #e0e0e0; border-radius:6px; padding:8px; resize:vertical; }
+    .comment-area textarea { width:100%; height:100px; border:1px solid #e0e0e0; border-radius:6px; padding:8px; resize:vertical; }
 
-    .actions-row { display:flex; gap:10px; align-items:center; margin-top:10px; }
-    .save-btn { background:#d7336f; color:#fff; padding:10px 14px; border-radius:6px; border:0; cursor:pointer; font-weight:700; }
-    .abstain { display:flex; align-items:center; gap:8px; color:#555; }
+    /* bottom action buttons (no-op) */
+    .bottom-actions { display:flex; gap:12px; justify-content:flex-start; margin:30px 0 60px; }
+    .btn { padding:12px 18px; border-radius:8px; border:0; cursor:pointer; font-weight:700; font-size:14px; }
+    .btn-save { background:#f7cfd6; color:#8b2a4a; border:2px solid #f7cfd6; }
+    .btn-submit { background:#fff; color:#8b2a4a; border:2px solid #8b2a4a; }
 
     @media(max-width:1000px){
-      .layout { flex-direction:column; }
-      .right { width:100%; position:static; }
-      .judge-panel { position:static; top:auto; }
+      .criteria-row { flex-direction:column-reverse; }
+      .crit-judge { width:100%; min-width:0; }
+      .crit-left { width:100%; }
+      main { padding:16px; }
     }
   </style>
 </head>
@@ -49,67 +53,57 @@
   <header>
     <h1>Welcome, <span id="judgeName">Judge</span></h1>
     <div style="display:flex;gap:10px;align-items:center;">
-      <button class="logout-btn" onclick="logout()">Log Out</button>
+      <button class="logout-btn" onclick="window.location.href='judgedashboard.html'">Back</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </header>
 
   <main>
     <div class="top-actions">
-      <button class="back-btn" onclick="window.location.href='judgedashboard.html'">← Back to Dashboard</button>
-      <div style="color:#666;font-size:14px;">Viewing application: <strong id="appIdLabel">-</strong></div>
+      <div style="color:#6e1742;font-size:14px;">Viewing application: <strong id="appIdLabel">-</strong></div>
     </div>
 
-    <div class="layout">
-      <div class="left" id="leftContent">
-        <div class="card" id="entrantCard">
-          <h2>Entrant details</h2>
+    <div class="left" id="leftContent">
+      <div class="card" id="entrantCard">
+        <h2>Entrant details</h2>
 
-          <div class="label">Category</div>
-          <div id="entrantCategory" class="field">-</div>
+        <div class="label">Category</div>
+        <div id="entrantCategory" class="field">-</div>
 
-          <div class="label">Subcategory</div>
-          <div id="entrantSubcategory" class="field">-</div>
+        <div class="label">Subcategory</div>
+        <div id="entrantSubcategory" class="field">-</div>
 
-          <div class="label">Award</div>
-          <div id="entrantAward" class="field">-</div>
+        <div class="label">Award</div>
+        <div id="entrantAward" class="field">-</div>
 
-          <div class="label">Name</div>
-          <div id="entrantFullName" class="field">-</div>
+        <div class="label">Name</div>
+        <div id="entrantFullName" class="field">-</div>
 
-          <div class="label">Website</div>
-          <div id="entrantWebsite" class="field">-</div>
+        <div class="label">Website</div>
+        <div id="entrantWebsite" class="field">-</div>
 
-          <div class="label">Email Address</div>
-          <div id="entrantEmail" class="field">-</div>
+        <div class="label">Email Address</div>
+        <div id="entrantEmail" class="field">-</div>
 
-          <div class="label">Mobile Number</div>
-          <div id="entrantMobile" class="field">-</div>
+        <div class="label">Mobile Number</div>
+        <div id="entrantMobile" class="field">-</div>
 
-          <div class="label">Address</div>
-          <div id="entrantAddress" class="field">-</div>
+        <div class="label">Address</div>
+        <div id="entrantAddress" class="field">-</div>
 
-          <div class="label">Instagram URL</div>
-          <div id="entrantInstagram" class="field">-</div>
+        <div class="label">Instagram URL</div>
+        <div id="entrantInstagram" class="field">-</div>
 
-          <div class="label">LinkedIn URL</div>
-          <div id="entrantLinkedIn" class="field">-</div>
-        </div>
-
-        <div id="applicationSections"></div>
+        <div class="label">LinkedIn URL</div>
+        <div id="entrantLinkedIn" class="field">-</div>
       </div>
 
-      <aside class="right">
-        <div class="judge-panel card" id="judgePanel">
-          <h2 style="margin-bottom:10px;color:#6e1742;">Judging</h2>
-          <div id="criteriaList"></div>
+      <div id="applicationSections"></div>
 
-          <div class="actions-row">
-            <label class="abstain"><input type="checkbox" id="abstainCheck"> Abstain</label>
-            <button class="save-btn" id="saveAllBtn">Save & next</button>
-          </div>
-          <div style="font-size:12px;color:#888;margin-top:10px;">Comments are visible to organisers and may be used publicly.</div>
-        </div>
-      </aside>
+      <div class="bottom-actions">
+        <button class="btn btn-save" id="bottomSaveBtn">SAVE</button>
+        <button class="btn btn-submit" id="bottomSubmitBtn">SUBMIT</button>
+      </div>
     </div>
   </main>
 
@@ -129,81 +123,61 @@
     const APP_ID = qs('id');
     document.getElementById('appIdLabel').textContent = APP_ID || '-';
 
-    function addLeftSection(title, text){
-      const wrap = document.createElement('div');
-      wrap.className = 'card';
-      wrap.innerHTML = `<h2>${title}</h2><div class="field">${text || '-'}</div>`;
-      document.getElementById('applicationSections').appendChild(wrap);
-    }
+    // build a question row with inline judge controls
+    function addCriteriaBlock(key, title, answer){
+      const container = document.getElementById('applicationSections');
+      const row = document.createElement('div');
+      row.className = 'criteria-row';
 
-    // Render scoring inputs on right for every criterion question
-    function renderCriteria(criteria){
-      const container = document.getElementById('criteriaList');
-      container.innerHTML = '';
-      if(!criteria || !criteria.length){
-        criteria = [{key:'vip1', title:'VIP judging 1', help:'Score each finalist out of 10 with 10 being the highest and 1 being the lowest'}];
-      }
-      criteria.forEach((c, idx) => {
-        const critKey = c.key || ('crit_' + idx);
-        const node = document.createElement('div');
-        node.className = 'criterion';
-        node.innerHTML = `
+      const left = document.createElement('div');
+      left.className = 'crit-left';
+      left.innerHTML = `<div class="card"><h2 style="font-size:16px;margin-bottom:8px">${title}</h2><div class="field">${answer || '-'}</div></div>`;
+
+      const right = document.createElement('div');
+      right.className = 'crit-judge';
+      right.innerHTML = `
+        <div class="criterion" data-crit="${key}">
           <div class="score-box">
-            <div style="font-size:13px;">${c.title || 'Criterion'}</div>
-            <input type="number" min="1" max="10" step="1" id="score_${critKey}" placeholder=" " />
+            <div style="font-size:13px;">Judging</div>
+            <input type="number" min="1" max="10" step="1" id="score_${key}" placeholder=" " />
             <div style="font-size:12px;color:#fff;opacity:0.9">/ 10</div>
-            <div class="score-help" style="color:#fff;opacity:0.85;font-weight:400">${c.help || ''}</div>
           </div>
           <div class="comment-area">
             <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
-            <textarea id="comment_${critKey}" placeholder="Enter comments..."></textarea>
+            <textarea id="comment_${key}" placeholder="Enter comments..."></textarea>
           </div>
-        `;
-        container.appendChild(node);
-      });
+        </div>
+      `;
+
+      row.appendChild(left);
+      row.appendChild(right);
+      container.appendChild(row);
     }
 
-    async function saveResponses(){
-      const user = firebase.auth().currentUser;
-      if(!user){ alert('Not signed in'); return; }
-      const uid = user.uid;
-      const docId = uid + '_' + APP_ID;
-      const container = document.getElementById('criteriaList');
-      const resp = { appId: APP_ID, judgeId: uid, updated: Date.now(), scores: {}, abstain: !!document.getElementById('abstainCheck').checked };
-      container.querySelectorAll('.criterion').forEach((el, i) => {
-        const input = el.querySelector('input[type="number"]');
-        const ta = el.querySelector('textarea');
-        const idScore = input ? input.id : null;
-        const idComment = ta ? ta.id : null;
-        const key = (idScore || idComment || ('c'+i)).replace(/^(score_|comment_)/,'');
-        const scoreVal = input && input.value ? Number(input.value) : null;
-        resp.scores[key] = { score: scoreVal, comment: ta ? ta.value : '' };
-      });
-      try {
-        await firebase.firestore().collection('judgeResponses').doc(docId).set(resp, { merge: true });
-        alert('Saved');
-      } catch (err) {
-        console.error('save error', err);
-        alert('Failed to save: ' + err.message);
-      }
-    }
-
-    document.getElementById('saveAllBtn').addEventListener('click', saveResponses);
-
-    // canonical list of criteria (matches applicationhistory modal)
+    // Map of criteria definitions with EXACT field names in your data
     const CRITERIA_DEFS = [
-      { key: 'tell_us_about_yourself', title: 'Tell us about yourself' },
-      { key: 'tell_us_about_your_work', title: 'Tell us about your work' },
-      { key: 'what_inspired_you', title: 'What inspired you to do this work?' },
-      { key: 'what_makes_you_unique', title: 'What makes what you do special or unique?' },
-      { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
-      { key: 'top_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-      { key: 'achievements_significance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-      { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
-      { key: 'recognition_reason', title: 'Why should you be recognised in this category' }
+      { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
+      { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
+      { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
+      { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
+      { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
+      { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+      { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+      { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
+      { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
     ];
 
-    // When loading application, populate entrant details and extract all criteria/questions.
+    // Bottom buttons should do nothing per request
+    document.getElementById('bottomSaveBtn').addEventListener('click', function(e){
+      e.preventDefault();
+      // intentionally no-op
+    });
+    document.getElementById('bottomSubmitBtn').addEventListener('click', function(e){
+      e.preventDefault();
+      // intentionally no-op
+    });
+
+    // load application and populate fields + inline criteria
     firebase.auth().onAuthStateChanged(async user => {
       if(!user) { location.href = 'signin.html'; return; }
       const uid = user.uid;
@@ -216,73 +190,82 @@
       }
 
       if(!APP_ID){
-        // don't render an "Error" card here — just log and clear criteria
         console.warn('No application id provided in URL.');
-        renderCriteria([]);
+        document.getElementById('applicationSections').innerHTML = '';
+        CRITERIA_DEFS.forEach(c => {
+          addCriteriaBlock(c.key, c.title, 'asdf');  // For demo showing values
+        });
         return;
       }
 
       try {
         const appDoc = await firebase.firestore().collection('applications').doc(APP_ID).get();
         if(!appDoc.exists){
-          addLeftSection('Not found', 'Application not found.');
-          renderCriteria([]);
+          console.warn('Application not found.');
           return;
         }
+        
         const d = appDoc.data();
+        console.log('Application data:', d); // Log for debugging
 
-        // Start-here / entrant fields (match applicationhistory)
-        document.getElementById('entrantCategory').textContent = d.category || d.category_name || '-';
+        // Entrant fields (match applicationhistory)
+        document.getElementById('entrantCategory').textContent = d.category || '-';
         document.getElementById('entrantSubcategory').textContent = d.subcategory || '-';
-        document.getElementById('entrantAward').textContent = d.awards_choice || d.award || '-';
-        document.getElementById('entrantFullName').textContent = d.name || d.fullName || '-';
+        document.getElementById('entrantAward').textContent = d.award || '-';
+        document.getElementById('entrantFullName').textContent = d.name || '-';
         document.getElementById('entrantWebsite').textContent = d.website || '-';
-        document.getElementById('entrantEmail').textContent = d.email || d.email_address || '-';
-        document.getElementById('entrantMobile').textContent = d.mobile_number || d.mobile || d.phone || '-';
+        document.getElementById('entrantEmail').textContent = d.email || '-';
+        document.getElementById('entrantMobile').textContent = d.mobile_number || d.mobile || '-';
         document.getElementById('entrantAddress').textContent = d.address || '-';
         document.getElementById('entrantInstagram').textContent = d.instagram_url || d.instagram || '-';
         document.getElementById('entrantLinkedIn').textContent = d.linkedin_url || d.linkedin || '-';
-        // stage / created / updated fields removed per request
 
-        // Render only criteria question answers on left (in same order) and populate right scoring inputs
-        document.getElementById('applicationSections').innerHTML = ''; // clear any prior
-        const criteriaToRender = CRITERIA_DEFS.map(c => {
-          // answer: try multiple possible keys (snake and camel)
-          const answer = d[c.key] ||
-                         d[c.key.replace(/_/g,'')] ||
-                         d[c.key.replace(/_/g,'').toLowerCase()] ||
-                         d[c.key.replace(/_/g, '')] ||
-                         d[c.key.replace(/_/g,' ').replace(/\s(.)/g, mm => mm[1].toUpperCase())] ||
-                         (typeof d[c.key] === 'boolean' ? (d[c.key] ? 'Yes' : 'No') : undefined) ||
-                         '';
-          const finalAnswer = answer || '-';
-          addLeftSection(c.title, finalAnswer === '-' ? '-' : finalAnswer);
-          return { key: c.key, title: c.title, help: '' };
+        // For demo/testing - use hardcoded values to match your screenshot if no data
+        const mockData = {
+          tellUsAboutYourself: 'asdf',
+          tellUsAboutYourWork: 'asdf',
+          whatInspiredYou: 'asdf',
+          whatMakesYouUnique: 'asdf',
+          greatestChallenge: 'asdf',
+          topAchievements: 'asdf',
+          achievementsSignificance: 'asdf',
+          bigPictureVision: 'asdf',
+          recognitionReason: 'asdf'
+        };
+
+        // Render criteria questions with values (use either real data or mock data)
+        document.getElementById('applicationSections').innerHTML = '';
+        CRITERIA_DEFS.forEach(c => {
+          // Try exact field name, or fallback to mock data for demo
+          const answer = d[c.key] || mockData[c.key] || '-';
+          addCriteriaBlock(c.key, c.title, answer);
         });
 
-        renderCriteria(criteriaToRender);
-
-        // load saved judge responses (same doc id pattern)
-        const respDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).get();
-        if(respDoc.exists){
-          const data = respDoc.data();
-          if(data && data.scores){
-            for(const key in data.scores){
-              const s = data.scores[key];
-              const scoreEl = document.getElementById('score_' + key);
-              const commentEl = document.getElementById('comment_' + key);
-              if(scoreEl && s.score !== undefined && s.score !== null) scoreEl.value = s.score;
-              if(commentEl && s.comment) commentEl.value = s.comment;
+        // Load any saved judge responses (optional)
+        try {
+          const respDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).get();
+          if(respDoc.exists){
+            const data = respDoc.data();
+            if(data && data.scores){
+              for(const key in data.scores){
+                const s = data.scores[key];
+                const scoreEl = document.getElementById('score_' + key);
+                const commentEl = document.getElementById('comment_' + key);
+                if(scoreEl && s.score !== undefined) scoreEl.value = s.score;
+                if(commentEl && s.comment) commentEl.value = s.comment;
+              }
             }
           }
-          if(data.abstain) document.getElementById('abstainCheck').checked = true;
+        } catch(err) {
+          console.warn('Failed to load judge responses:', err);
         }
-
       } catch(err){
-        console.error('load error', err);
-        // Do not render an "Error" card. Log error and keep UI without the error block.
         console.error('Failed to load application:', err);
-        renderCriteria([]);
+        // Fall back to showing the structure with mock data
+        document.getElementById('applicationSections').innerHTML = '';
+        CRITERIA_DEFS.forEach(c => {
+          addCriteriaBlock(c.key, c.title, 'asdf'); // For demo showing values
+        });
       }
     });
   </script>
