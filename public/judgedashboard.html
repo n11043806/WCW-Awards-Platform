@@ -112,14 +112,17 @@
         </ol>
       </div>
       <div class="list-header" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:18px;">
-        <div class="sort-dropdown" id="sortDropdown">
-          <button id="sortBtn" class="sort-btn">SORT BY</button>
-          <div id="sortList" class="sort-list">
-            <button data-sort="asc">Application Name Asc</button>
-            <button data-sort="desc">Application Name Desc</button>
-            <button data-sort="updated_desc">Last Updated Desc</button>
-            <button data-sort="updated_asc">Last Updated Asc</button>
-          </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;width:100%;">
+          <label style="font-weight:700;color:#d7336f;font-size:1.1em;margin-bottom:6px;">Sort By</label>
+          <select id="sortDropdown" style="padding:10px 16px;border-radius:6px;border:1px solid #d7336f;font-size:1em;background:#fff;color:#d7336f;min-width:220px;">
+            <option value="category_asc">Category (A-Z)</option>
+            <option value="category_desc">Category (Z-A)</option>
+            <option value="status_draft">Status (Draft)</option>
+            <option value="status_complete">Status (Complete)</option>
+            <option value="status_incomplete">Status (Incomplete)</option>
+            <option value="updated_desc">Last Updated (Newest)</option>
+            <option value="updated_asc">Last Updated (Oldest)</option>
+          </select>
         </div>
       </div>
       <table style="width:100%;border-collapse:separate;border-spacing:0 10px;">
@@ -138,6 +141,12 @@
           <!-- Table rows will be rendered by JS -->
         </tbody>
       </table>
+      <div id="viewModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:10px;max-width:1100px;width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.25);overflow:auto;max-height:90vh;position:relative;">
+          <button id="closeViewModal" style="position:absolute;top:18px;right:18px;background:#d7336f;color:#fff;border:none;border-radius:5px;padding:8px 16px;font-weight:bold;cursor:pointer;">Close</button>
+          <div id="viewModalContent" style="padding:40px 32px 32px 32px;"></div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -162,26 +171,42 @@
 
     // Table rendering and sort logic for assigned applications
     let ALL_APPS = [];
-    let SORT_MODE = 'none';
+    let SORT_MODE = 'category_asc';
 
     function renderTable(items) {
       const body = document.getElementById('appsBody');
-      if (!items.length) {
+      let filtered = [...items];
+      switch (SORT_MODE) {
+        case 'category_asc':
+          filtered.sort((a, b) => String(a.category).localeCompare(String(b.category)));
+          break;
+        case 'category_desc':
+          filtered.sort((a, b) => String(b.category).localeCompare(String(a.category)));
+          break;
+        case 'status_draft':
+          filtered = filtered.filter(a => (a.judgeStatus || '').toLowerCase() === 'draft');
+          break;
+        case 'status_complete':
+          filtered = filtered.filter(a => (a.judgeStatus || '').toLowerCase() === 'complete');
+          break;
+        case 'status_incomplete':
+          filtered = filtered.filter(a => (a.judgeStatus || '').toLowerCase() === 'incomplete');
+          break;
+        case 'updated_desc':
+          filtered.sort((a, b) => b.updated - a.updated);
+          break;
+        case 'updated_asc':
+          filtered.sort((a, b) => a.updated - b.updated);
+          break;
+        default:
+          break;
+      }
+      if (!filtered.length) {
         body.innerHTML = `<tr><td colspan="6" class="muted" style="padding:24px 0;text-align:center;font-size:16px;">No assigned applications found.</td></tr>`;
         return;
       }
-      let sorted = [...items];
-      if (SORT_MODE === 'asc') {
-        sorted.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-      } else if (SORT_MODE === 'desc') {
-        sorted.sort((a, b) => String(b.name).localeCompare(String(a.name)));
-      } else if (SORT_MODE === 'updated_desc') {
-        sorted.sort((a, b) => b.updated - a.updated);
-      } else if (SORT_MODE === 'updated_asc') {
-        sorted.sort((a, b) => a.updated - b.updated);
-      }
       body.innerHTML = '';
-      sorted.forEach(({id, name, category, subcategory, judgeStatus, updated}) => {
+      filtered.forEach(({id, name, category, subcategory, judgeStatus, updated}) => {
         body.innerHTML += `
           <tr style="background:#fff;border-radius:8px;box-shadow:0 0 8px rgba(0,0,0,0.04);">
             <td style="padding:12px 16px;">${id}</td>
@@ -189,32 +214,20 @@
             <td style="padding:12px 16px;">${category}</td>
             <td style="padding:12px 16px;">${subcategory}</td>
             <td style="padding:12px 16px;">${judgeStatus}</td>
-            <td style="padding:12px 16px;">${updated ? new Date(updated).toLocaleString() : '-'}</td>
-            <td style="padding:12px 16px;"><button class="action-btn btn-view" onclick="viewEntry('${id}')">View</button></td>
+            <td style="padding:12px 16px;">${updated ? new Date(updated).toLocaleString() : '-'} </td>
+            <td style="padding:12px 16px;"><button class="action-btn btn-view" onclick="window.location.href='judgeapplicationview.html?id=${id}'">View</button></td>
           </tr>
         `;
       });
     }
 
-    document.getElementById('sortBtn').onclick = function(e) {
-      document.getElementById('sortList').classList.toggle('open');
+    document.getElementById('sortDropdown').onchange = function(e) {
+      SORT_MODE = e.target.value;
+      renderTable(ALL_APPS);
     };
-    document.getElementById('sortList').onclick = function(e) {
-      if (e.target.tagName === 'BUTTON') {
-        SORT_MODE = e.target.dataset.sort;
-        document.getElementById('sortBtn').textContent = 'SORT BY: ' + e.target.textContent;
-        document.getElementById('sortList').classList.remove('open');
-        renderTable(ALL_APPS);
-      }
-    };
-    document.addEventListener('click', function(e) {
-      if (!document.getElementById('sortDropdown').contains(e.target)) {
-        document.getElementById('sortList').classList.remove('open');
-      }
-    });
 
     function viewEntry(id) {
-      alert('View details for application ' + id);
+  // Now handled by direct navigation to judgeapplicationview.html
     }
 
     // Fetch assigned applications from Firestore
