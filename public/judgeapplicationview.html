@@ -168,9 +168,49 @@
     ];
 
     // Bottom buttons should do nothing per request
-    document.getElementById('bottomSaveBtn').addEventListener('click', function(e){
+    document.getElementById('bottomSaveBtn').addEventListener('click', async function(e){
       e.preventDefault();
-      // intentionally no-op
+
+      // Get current user
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        alert('Not signed in');
+        return;
+      }
+      const uid = user.uid;
+
+      // Collect scores/comments for each criterion
+      const scores = {};
+      CRITERIA_DEFS.forEach(c => {
+        const scoreVal = parseInt(document.getElementById('score_' + c.key)?.value, 10);
+        const commentVal = document.getElementById('comment_' + c.key)?.value || '';
+        scores[c.key] = {
+          score: isNaN(scoreVal) ? null : scoreVal,
+          comment: commentVal
+        };
+      });
+
+      // Calculate average score (ignoring nulls)
+      const scoreValues = Object.values(scores).map(s => s.score).filter(s => typeof s === 'number');
+      const averageScore = scoreValues.length ? (scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length) : null;
+
+      // Prepare judge response document
+      const judgeDoc = {
+        judgeId: uid,
+        applicationId: APP_ID,
+        scores: scores,
+        averageScore: averageScore,
+        status: 'draft',
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      // Save to Firestore (judgeResponses collection, doc id: `${uid}_${APP_ID}`)
+      try {
+        await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set(judgeDoc, { merge: true });
+        alert('Saved as draft!');
+      } catch (err) {
+        alert('Error saving: ' + err.message);
+      }
     });
     document.getElementById('bottomSubmitBtn').addEventListener('click', function(e){
       e.preventDefault();
