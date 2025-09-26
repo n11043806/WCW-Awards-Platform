@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Entries - WCW Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      color: #333;
+    }
+    /* make container span same width as header (inside main-content) */
+    .container {
+      max-width: none;
+      width: 100%;
+      margin: 30px 0;
+      padding: 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d62d83;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+    }
+
+    header {
+      background-color: #d62d83;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: #d62d83;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #ffe6ee;
+    }
+
+    h2.section-title {
+      margin-top: 30px;
+      color: #d62d83;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .controls input {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 70%;
+    }
+
+    .controls select, .controls button {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .controls button {
+      background-color: #d62d83;
+      color: white;
+      font-weight: bold;
+    }
+
+    .controls button:hover {
+      background-color: #b8235a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #fafafa;
+      color: #d62d83;
+    }
+
+    .action-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #d62d83;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .action-btn:hover {
+      background-color: #b8235a;
+    }
+
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 300px;
+      text-align: center;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+        main {
+      padding: 40px 30px;
+    }
+
+    /* Dates / Tabs in-place replacement - left aligned to container */
+    #datesSection, #tabSection {
+      max-width: none;
+      margin: 0;
+    }
+
+    /* Users dropdown style (match dates/support color) */
+    .users-row { margin: 12px 0 18px; }
+    .users-row label { color: #d7336f; font-weight:700; margin-right:8px; display:inline-block; }
+    .users-row select { padding:8px; border-radius:6px; border:1px solid #ddd; min-width:260px; }
+
+    .tab-list {
+      max-width: 800px;
+      margin: 30px auto 0;
+      display: flex;
+      gap: 2px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 16px 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background: #888;
+      color: #fff;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .tab.active { background: #b8235a; }
+
+    .tab-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    /* Form controls styling to match applicationform */
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display:block; margin-bottom:6px; font-weight:500; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .form-actions { margin-top: 12px; display:flex; gap:10px; flex-wrap:wrap; }
+    .form-actions .action-btn { padding:8px 14px; border-radius:6px; }
+
+    /* Keep dates "Start Entry" look */
+    .start-entry-btn { padding: 12px 20px; background-color: #d7336f; color: #fff; border-radius:5px; border:none; cursor:pointer; }
+    .start-entry-btn:hover { background-color: #b8235a; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #popup h3 {
+      margin-bottom: 20px;
+      color: #d62d83;
+      font-size: 20px;
+    }
+
+    #popup select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #popup button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    #popup button:first-of-type {
+      background-color: #d62d83;
+      color: white;
+    }
+
+    #popup button:last-of-type {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    /* Save-like button (match applicant Save button style) */
+    .save-like {
+      background: #e1faed;
+      color: #1f7a4b;
+      border: 1px solid #c9f2da;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .save-like:hover { background:#c9f2da; }
+
+    /* Application Form title colour */
+    .manage-title { color: #8c1f4c; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html" class="active">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <h1>Entries Management</h1>
+      <button class="logout-btn" onclick="logout()">Log Out</button>
+    </header>
+
+    <main>
+      <div class="container">
+        <h2 class="manage-title">Application Form</h2>
+
+        <!-- Back button moved to the right and Dates content copied from applicationform.html -->
+        <div style="position:relative;">
+          
+
+          <div id="datesSection" style="margin-top:40px; background:#fff; padding:28px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+            <h2 style="margin-top:0; color:#d7336f;">Dates</h2>
+            <!-- users selector moved next to buttons (rendered below) -->
+            <ul style="margin-bottom:1.2em; font-size:15px; line-height:1.5;">
+              <li>Please note the entry deadline, this date is final and there will be no extensions provided.</li>
+              <li>You may edit your entry after submitting, up until the entry deadline for your region.</li>
+              <li>Please make sure all your personal details are entered accurately, including contact details.</li>
+              <li>You are eligible to enter more than one category, as long as the work submitted meets the criteria.</li>
+            </ul>
+            <p style="font-style:italic; margin-bottom:1.5em;">* You can use the ‘copy’ feature to create a copy of your entry and change the category as required.</p>
+
+            <h3 style="color:#d7336f; margin-bottom:6px;">IMPORTANT DATES</h3>
+            <h4 style="margin:0 0 8px 0; color:#d7336f;">GLOBAL:</h4>
+            <p style="margin-top:0;">
+              All nominations have now closed for 2025<br>
+              Finalists in all categories announced - 17 FEBRUARY 2025
+            </p>
+            <p style="margin-top:12px;">
+              People’s Choice Voting starts - 24 FEBRUARY 2025<br>
+              People’s Choice Voting ends - 10 MARCH 2025
+            </p>
+            <p style="margin-top:12px;">
+              Winners Announced Global Awards & Summit - London 2-3 APRIL 2025
+            </p>
+            <p style="margin-top:12px;">
+              For any questions, please contact <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a>
+            </p>
+
+            <h3 style="color:#d7336f; margin-top:18px;">Support</h3>
+            <p>If you have any questions on the entry process, please contact the organisers by email to <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a></p>
+
+            <div style="margin-top:20px; display:flex; gap:12px; align-items:center;">
+              <label for="select_user" style="color:#d7336f;font-weight:700;margin:0 8px 0 0;">Users:</label>
+              <select id="select_user" aria-label="Select user for this application" style="padding:8px;border-radius:6px;border:1px solid #ddd;min-width:320px;">
+                <option value="">Loading users…</option>
+              </select>
+              <div style="flex:1"></div>
+              <button class="save-like" id="startEntryBtn" disabled>Start Entry</button>
+              <button class="save-like" onclick="window.location.href='adminentriestab.html'">Back</button>
+            </div>
+           </div>
+         </div>
+
+      <!-- moved: Tabs section sits inside the same container so it replaces Dates in-place -->
+      <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
+        <div class="tab-list" style="max-width:100%; display:flex; gap:2px;">
+          <button class="tab active" id="tabStart" style="flex:1; padding:12px 0; background:#b8235a; color:#fff; border-radius:6px 6px 0 0;">Start here</button>
+          <button class="tab" id="tabCriteria" disabled style="flex:1; padding:12px 0; background:#888; color:#fff; border-radius:6px 6px 0 0;">Criteria</button>
+          <button class="tab" id="tabAttachments" disabled style="flex:1; padding:12px 0; background:#888; color:#fff; border-radius:6px 6px 0 0;">Attachments</button>
+        </div>
+        <div id="tabContent" class="tab-content" style="padding:24px;"></div>
+      </div>
+      <!-- end moved tabs -->
+
+     </div>
+   </main>
+ </div>
+
+  <!-- Firebase Scripts -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Include xlsx library -->
+ 
+  <script>
+    // ---- Admin Start Entry wiring (copied/adapted from applicationform) ----
+    let applicationId = null;
+    let currentUser = null;
+    const db = () => firebase.firestore();
+
+    // small helper to populate subcategories
+    const SUBCATEGORIES = {
+      "BUSINESS AWARDS": ["BUSINESS OF THE YEAR","SMALL BUSINESS OF THE YEAR"],
+      "IMPACT AWARDS": ["ADVOCACY IMPACT","GLOBAL IMPACT"],
+      "INDUSTRY AWARDS": ["INNOVATION AWARD","WOMAN IN TECH"],
+      "LEADERSHIP AWARDS": ["LEADER OF THE YEAR"],
+      "PEOPLE'S CHOICE": ["People's Choice - BUSINESS"],
+      "WOMAN OF THE YEAR AWARDS": ["WOMAN OF THE YEAR AWARD"]
+    };
+    function fillSubcategorySelect(selectEl, category, selectedValue = '') {
+      if (!selectEl) return;
+      const list = SUBCATEGORIES[category] || [];
+      selectEl.innerHTML = '';
+      const def = document.createElement('option'); def.value=''; def.textContent='Select subcategory'; selectEl.appendChild(def);
+      list.forEach(sc => { const o = document.createElement('option'); o.value = sc; o.textContent = sc; selectEl.appendChild(o); });
+      selectEl.disabled = list.length === 0;
+      if (selectedValue) selectEl.value = selectedValue;
+    }
+
+    // templates copied from applicationform
+    const startHereContent = `...`; // will be set below by building via function to avoid huge inline string duplication
+    const criteriaContent = `...`;
+    const attachmentsContent = `...`;
+
+    // build templates (small subset to match app form)
+    function buildTemplates() {
+      window._startHereContent = `
+        <form id="startHereForm">
+          <div class="form-group"><label for="category">Category</label>
+            <select id="category" name="category" required>
+              <option value="">Select category</option>
+              <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
+              <option value="IMPACT AWARDS">IMPACT AWARDS</option>
+              <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
+              <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
+              <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
+              <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="subcategory">Subcategory</label>
+            <select id="subcategory" name="subcategory" disabled><option value=''>Select subcategory</option></select>
+          </div>
+          <div class="form-group"><label for="name">Full name</label><input type="text" id="name" name="name" required /></div>
+          <div class="form-group"><label for="website">Website (optional)</label><input type="text" id="website" name="website" /></div>
+          <div class="form-group"><label for="award">Which Awards would you want to enter?</label>
+            <select id="award" name="award" required>
+              <option value="">Select award</option>
+              <option value="WCWA Americas">WCWA Americas</option>
+              <option value="WCWA Middle East & North Africa (MENA)">WCWA MENA</option>
+              <option value="WCWA Global 2025">WCWA Global 2025</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" required /></div>
+          <div class="form-group"><label for="mobile">Mobile Number</label><input type="tel" id="mobile" name="mobile" required /></div>
+          <div class="form-group"><label for="address">Address</label><input type="text" id="address" name="address" /></div>
+          <div class="form-group"><label for="instagram">Instagram profile page URL</label><input type="text" id="instagram" name="instagram" /></div>
+          <div class="form-group"><label for="linkedin">LinkedIn profile page URL</label><input type="text" id="linkedin" name="linkedin" /></div>
+          <div class="form-actions"><button type="button" class="action-btn btn-view" id="saveStartHereBtn">Save</button><button type="button" class="action-btn btn-view" id="saveNextBtn">Save & Next</button></div>
+        </form>`;
+
+      window._criteriaContent = `
+        <form id="criteriaForm">
+          <div class="form-group"><label for="about_yourself">Tell us about yourself</label><textarea id="about_yourself" name="about_yourself" rows="3"></textarea><span class="word-count" id="count_about_yourself">0/150</span></div>
+          <div class="form-group"><label for="about_work">Tell us about your work</label><textarea id="about_work" name="about_work" rows="3"></textarea><span class="word-count" id="count_about_work">0/150</span></div>
+          <div class="form-group"><label for="inspiration">What inspired you to do this work?</label><textarea id="inspiration" name="inspiration" rows="4"></textarea><span class="word-count" id="count_inspiration">0/200</span></div>
+          <div class="eligibility-check"><input type="checkbox" id="confirm-eligibility" /><label for="confirm-eligibility">I confirm I meet the eligibility criteria.</label></div>
+          <div class="form-actions"><button type="button" class="action-btn btn-primary" id="saveCriteriaBtn">Save</button><button type="button" class="action-btn" id="saveCriteriaNextBtn">Save & Next</button></div>
+        </form>`;
+
+      window._attachmentsContent = `
+        <section>
+          <h3 style="margin-top:0; color:#8c1f4c; background:#faf0f4; padding:10px 12px; border-radius:6px;">Attach your photo</h3>
+          <div class="upload-card" style="margin-top:14px;">
+            <div class="file-row"><input type="file" id="att_photo" accept="image/*" /></div>
+            <div style="margin-top:10px"><img id="att_preview" class="preview-image" alt="Selected photo preview" /></div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;"><button type="button" class="action-btn btn-view" id="att_save_btn">Save</button><button type="button" class="action-btn btn-view" id="attachmentsPreviewBtn">Preview</button></div>
+        </section>`;
+    }
+
+    // ensure auth user tracked
+    firebase.auth().onAuthStateChanged(u => { currentUser = u || null; });
+
+    // create draft app doc
+    async function ensureApplicationDoc() {
+      if (applicationId) return;
+      const ownerId = await getSelectedOwnerId();
+      if (!ownerId) throw new Error('No owner selected or not signed in');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const ref = await db().collection('applications').add({
+        user_id: ownerId,
+        applicant_id: ownerId,
+        stage: 'draft',
+        createdAt: now,
+        updatedAt: now
+      });
+      applicationId = ref.id;
+    }
+
+    async function getApplicationData() {
+      if (!applicationId) return null;
+      try { const snap = await db().collection('applications').doc(applicationId).get(); return snap.exists ? snap.data() : null; }
+      catch (e) { console.error(e); return null; }
+    }
+
+    function setVal(form, id, value) { const el = form.querySelector('#' + id); if (el) el.value = value ?? ''; }
+
+    async function hydrateStartHereForm() {
+      const form = document.getElementById('startHereForm'); if (!form) return;
+      const data = await getApplicationData(); if (!data) return;
+      setVal(form,'category',data.category); fillSubcategorySelect(form.querySelector('#subcategory'), data.category, data.subcategory);
+      setVal(form,'name',data.name); setVal(form,'website',data.website); setVal(form,'award',data.awards_choice);
+      setVal(form,'email',data.email); setVal(form,'mobile',data.mobile_number); setVal(form,'address',data.address);
+      setVal(form,'instagram',data.instagram_url); setVal(form,'linkedin',data.linkedin_url);
+    }
+
+    function collectStartHere(form) {
+      const v = id => (form.querySelector('#' + id)?.value || '');
+      return { category: v('category'), subcategory: v('subcategory'), name: v('name'), website: v('website'), awards_choice: v('award'), email: v('email'), mobile_number: v('mobile'), address: v('address'), instagram_url: v('instagram'), linkedin_url: v('linkedin') };
+    }
+
+    async function setUpStartHereTab() {
+      const form = document.getElementById('startHereForm'); if (!form) return;
+      const cat = form.querySelector('#category'); const sub = form.querySelector('#subcategory');
+      cat?.addEventListener('change', ()=> fillSubcategorySelect(sub, cat.value, ''));
+      await hydrateStartHereForm();
+      document.getElementById('saveStartHereBtn').onclick = async () => {
+        try { await ensureApplicationDoc(); const payload={...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft'}; await db().collection('applications').doc(applicationId).set(payload,{merge:true}); alert('Saved.'); }
+        catch(e){ console.error(e); alert('Save failed: '+(e.message||e)); }
+      };
+      document.getElementById('saveNextBtn').onclick = async () => {
+        try { await ensureApplicationDoc(); const payload={...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft'}; await db().collection('applications').doc(applicationId).set(payload,{merge:true});
+          document.getElementById('tabCriteria').disabled = false; document.getElementById('tabAttachments').disabled = false; document.getElementById('tabCriteria').click();
+        } catch(e){ console.error(e); alert('Save failed: '+(e.message||e)); }
+      };
+    }
+
+    function setUpCriteriaTab() {
+      // basic wiring: save and save next update firestore
+      const form = document.getElementById('criteriaForm'); if(!form) return;
+      document.getElementById('saveCriteriaBtn').onclick = async () => {
+        try { await ensureApplicationDoc(); const payload = { tell_us_about_yourself: form.querySelector('#about_yourself')?.value||'', tell_us_about_your_work: form.querySelector('#about_work')?.value||'', what_inspired_you: form.querySelector('#inspiration')?.value||'', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage:'draft' }; await db().collection('applications').doc(applicationId).set(payload,{merge:true}); alert('Saved.'); } catch(e){ console.error(e); alert('Save failed: '+e.message); }
+      };
+      document.getElementById('saveCriteriaNextBtn').onclick = async () => {
+        try { await ensureApplicationDoc(); const payload = { tell_us_about_yourself: form.querySelector('#about_yourself')?.value||'', tell_us_about_your_work: form.querySelector('#about_work')?.value||'', what_inspired_you: form.querySelector('#inspiration')?.value||'', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage:'draft' }; await db().collection('applications').doc(applicationId).set(payload,{merge:true}); document.getElementById('tabAttachments').disabled = false; document.getElementById('tabAttachments').click(); } catch(e){ console.error(e); alert('Save failed: '+e.message); }
+      };
+    }
+
+    function setUpAttachmentsTab() {
+      const fileInput = document.getElementById('att_photo'); const img = document.getElementById('att_preview');
+      fileInput?.addEventListener('change', ()=> { const f = fileInput.files && fileInput.files[0]; if (f) { img.src = URL.createObjectURL(f); img.style.display = 'inline-block'; } else { img.removeAttribute('src'); img.style.display = 'none'; }});
+      document.getElementById('att_save_btn')?.addEventListener('click', ()=> alert('Attachment save not implemented.'));
+      document.getElementById('attachmentsPreviewBtn')?.addEventListener('click', ()=> alert('Preview not implemented in admin flow.'));
+    }
+
+    // tab switching handlers (delegated)
+    function wireTabHandlers() {
+      document.getElementById('tabStart').onclick = function() { document.getElementById('tabStart').classList.add('active'); document.getElementById('tabCriteria').classList.remove('active'); document.getElementById('tabAttachments').classList.remove('active'); document.getElementById('tabContent').innerHTML = window._startHereContent; setUpStartHereTab(); };
+      document.getElementById('tabCriteria').onclick = function() { if(this.disabled) return; document.getElementById('tabStart').classList.remove('active'); document.getElementById('tabCriteria').classList.add('active'); document.getElementById('tabAttachments').classList.remove('active'); document.getElementById('tabContent').innerHTML = window._criteriaContent; setUpCriteriaTab(); };
+      document.getElementById('tabAttachments').onclick = function() { if(this.disabled) return; document.getElementById('tabStart').classList.remove('active'); document.getElementById('tabCriteria').classList.remove('active'); document.getElementById('tabAttachments').classList.add('active'); document.getElementById('tabContent').innerHTML = window._attachmentsContent; setUpAttachmentsTab(); };
+    }
+
+    // populate users dropdown and default to current user
+    async function loadUsersDropdown() {
+      const sel = document.getElementById('select_user');
+      const startBtn = document.getElementById('startEntryBtn');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Loading users…</option>';
+      try {
+        const snapshot = await firebase.firestore().collection('users').get();
+        sel.innerHTML = '';
+
+        if (snapshot.empty) {
+          sel.innerHTML = '<option value="">No users found</option>';
+          if (startBtn) startBtn.disabled = true;
+          return;
+        }
+
+        snapshot.docs.forEach(doc => {
+          const d = doc.data() || {};
+          const fullname = d.fullName || d.name || d.displayName || d.email || 'No name';
+          const opt = document.createElement('option');
+          opt.value = doc.id;
+          opt.textContent = `${fullname} | ${doc.id}`;
+          sel.appendChild(opt);
+        });
+
+        const me = firebase.auth().currentUser?.uid;
+        if (me && [...sel.options].some(o => o.value === me)) {
+          sel.value = me;
+        }
+
+        const updateStartState = () => { if (startBtn) startBtn.disabled = !sel.value; };
+        sel.addEventListener('change', updateStartState);
+        updateStartState();
+      } catch (err) {
+        console.error('Failed to load users', err);
+        sel.innerHTML = '<option value="">Failed to load users</option>';
+        if (startBtn) startBtn.disabled = true;
+      }
+    }
+
+    // use selected user when creating/ saving application
+    async function getSelectedOwnerId() {
+      const sel = document.getElementById('select_user');
+      return (sel && sel.value) ? sel.value : (firebase.auth().currentUser ? firebase.auth().currentUser.uid : null);
+    }
+
+    // ensureApplicationDoc now uses selected owner id if provided in the UI
+    async function ensureApplicationDoc() {
+      if (applicationId) return;
+      const ownerId = await getSelectedOwnerId();
+      if (!ownerId) throw new Error('No owner selected or not signed in');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const ref = await db().collection('applications').add({
+        user_id: ownerId,
+        applicant_id: ownerId,
+        stage: 'draft',
+        createdAt: now,
+        updatedAt: now
+      });
+      applicationId = ref.id;
+    }
+
+    // Start Entry button behaviour (admin)
+    document.getElementById('startEntryBtn')?.addEventListener('click', async () => {
+       try {
+         // prepare templates and show tabs
+         buildTemplates();
+         document.getElementById('datesSection')?.style && (document.getElementById('datesSection').style.display = 'none');
+         document.getElementById('tabSection').style.display = 'block';
+         document.getElementById('tabContent').innerHTML = window._startHereContent;
+         wireTabHandlers();
+         // create draft doc for admin if needed (keeps parity with applicant flow)
+        try { await ensureApplicationDoc(); } catch(e){ console.warn('ensureApplicationDoc failed', e); }
+         setUpStartHereTab();
+       } catch (e) { console.error(e); alert('Failed to open form: ' + (e.message||e)); }
+     });
+    // load users dropdown once auth ready
+    firebase.auth().onAuthStateChanged(user => {
+      currentUser = user || null;
+      loadUsersDropdown().catch(()=>{});
+    });
+
+    // when saving start-here, include selected owner (ensure setUpStartHereTab uses this)
+    const originalSetUp = setUpStartHereTab;
+    async function setUpStartHereTab_wrapper() {
+      originalSetUp();
+      // patch save actions to include selected owner id
+      const form = document.getElementById('startHereForm');
+      if (!form) return;
+      const saveBtn = document.getElementById('saveStartHereBtn');
+      const nextBtn = document.getElementById('saveNextBtn');
+      if (saveBtn) {
+        saveBtn.onclick = async () => {
+          try {
+            await ensureApplicationDoc();
+            const ownerId = await getSelectedOwnerId();
+            const payload = { ...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft', user_id: ownerId, applicant_id: ownerId };
+            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+            alert('Saved.');
+          } catch (e) { console.error(e); alert('Save failed: ' + (e.message || e)); }
+        };
+      }
+      if (nextBtn) {
+        nextBtn.onclick = async () => {
+          try {
+            await ensureApplicationDoc();
+            const ownerId = await getSelectedOwnerId();
+            const payload = { ...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft', user_id: ownerId, applicant_id: ownerId };
+            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+            document.getElementById('tabCriteria').disabled = false;
+            document.getElementById('tabAttachments').disabled = false;
+            document.getElementById('tabCriteria').click();
+          } catch (e) { console.error(e); alert('Save failed: ' + (e.message || e)); }
+        };
+      }
+    }
+    // swap wrapper into use after templates built
+    setUpStartHereTab = setUpStartHereTab_wrapper;
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+
+    // Modal functionality
+    const modalEl = document.getElementById('viewModal');
+    const modalClose = document.getElementById('modalClose');
+    modalClose.onclick = () => closeModal();
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    
+    function openModal() { 
+      modalEl.classList.add('open'); 
+      modalEl.setAttribute('aria-hidden', 'false'); 
+    }
+    
+    function closeModal() { 
+      modalEl.classList.remove('open'); 
+      modalEl.setAttribute('aria-hidden', 'true'); 
+    }
+
+    // Utility functions
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function fmt(ts) {
+      try {
+        if (!ts) return "-";
+        if (ts.toDate) return ts.toDate().toLocaleDateString();
+        return new Date(ts).toLocaleDateString();
+      } catch { return "-"; }
+    }
+
+    function kv(label, value) {
+      return `<div class="kv"><div class="k">${esc(label)}</div><div class="v">${esc(value || '-')}</div></div>`;
+    }
+
+    function block(label, value) {
+      const safe = esc(value || '');
+      return `<div class="kv" style="margin-bottom:10px">
+                <div class="k" style="margin-bottom:6px">${esc(label)}</div>
+                <div class="block">${safe || '-'}</div>
+              </div>`;
+    }
+
+    // View application details
+    async function viewApp(id) {
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('applications').doc(id).get();
+        if (!doc.exists) { alert("Application not found."); return; }
+        const d = doc.data();
+
+        // Header info
+        document.getElementById('modalAppId').textContent = id;
+
+        // Start here fields 
+        const startHtml = [
+          kv('Category', d.category),
+          kv('Subcategory', d.subcategory),
+          kv('Award', d.awards_choice),
+          kv('Name', d.name),
+          kv('Website', d.website),
+          kv('Email Address', d.email),
+          kv('Mobile Number', d.mobile_number),
+          kv('Address', d.address),
+          kv('Instagram URL', d.instagram_url),
+          kv('LinkedIn URL', d.linkedin_url),
+          kv('Status', d.status),
+          kv('Created', fmt(d.createdAt)),
+          kv('Updated', fmt(d.updatedAt))
+        ].join('');
+        document.getElementById('modalStartFields').innerHTML = startHtml;
+
+        // Criteria fields 
+        const critHtml = [
+          block('Tell us about yourself', d.tell_us_about_yourself),
+          block('Tell us about your work', d.tell_us_about_your_work),
+          block('What inspired you to do this work?', d.what_inspired_you),
+          block('What makes what you do special or unique?', d.what_makes_you_unique),
+          block('What has been your greatest challenge & how have you addressed this?', d.greatest_challenge),
+          block('What have been your top 3 greatest achievements in the past 12 months?', d.top_achievements),
+          block('Why were these achievements significant and what do you attribute your achievements to?', d.achievements_significance),
+          block('What is your big picture vision for the work you are doing?', d.big_picture_vision),
+          block('Why should you be recognised in this category?', d.recognition_reason),
+          kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No')
+        ].join('');
+        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
+
+        openModal();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load application: " + err.message);
+      }
+    }
+
+    // Load all applications
+    firebase.auth().onAuthStateChanged(async user => {
+      const body = document.getElementById('entriesBody');
+      if (!user) { 
+        window.location.href = "signin.html"; 
+        return; 
+      }
+
+      // Check if user is admin
+      try {
+        const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
+        if (!userDoc.exists || userDoc.data().role !== "admin") {
+          window.location.href = "unauthorized.html";
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        window.location.href = "signin.html";
+        return;
+      }
+
+      // Load all applications
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+
+        if (snap.empty) {
+          body.innerHTML = `<tr><td colspan="9" class="muted">No applications found.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = '';
+        snap.docs.forEach(doc => {
+          const id = doc.id;
+          const d = doc.data();
+          const stage = (d.stage || 'draft').toLowerCase();
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${id}</td>
+            <td>${d.name || '-'}</td>
+            <td><span class="muted">${d.stage || 'draft'}</span></td>
+            <td>${d.category || '-'}</td>
+            <td>${d.subcategory || '-'}</td>
+            <td>${fmt(d.updatedAt)}</td>
+            <td>${d.stage === 'submitted' ? fmt(d.submittedAt || d.updatedAt) : '-'}</td>
+            <td>${d.email || '-'}</td>
+            <td>
+              <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
+            </td>
+          `;
+          body.appendChild(tr);
+        });
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="9" class="muted">Error: ${err.message}</td></tr>`;
+        console.error(err);
+      }
+    });
+
+    async function bulkExport() {
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+
+        if (snap.empty) {
+          alert('No applications found to export.');
+          return;
+        }
+
+        const applications = snap.docs.map(doc => {
+          const data = doc.data();
+          return {
+            'Applicant ID': doc.id,
+            'Full Name': data.name || '-',
+            'Award': data.awards_choice || '-',
+            'Status': data.stage || 'draft',
+            'Category': data.category || '-',
+            'Subcategory': data.subcategory || '-',
+            'Updated': data.updatedAt?.toDate().toLocaleDateString() || '-',
+            'Submitted': data.submittedAt?.toDate().toLocaleDateString() || '-',
+            'Email': data.email || '-',
+            'Mobile Number': data.mobile_number || '-',
+            'Website': data.website || '-',
+            'Instagram URL': data.instagram_url || '-',
+            'LinkedIn URL': data.linkedin_url || '-',
+            'Q1: Tell us about yourself': data.tell_us_about_yourself || '-',
+            'Q2: Tell us about your work': data.tell_us_about_your_work || '-',
+            'Q3: What inspired you to do this work?': data.what_inspired_you || '-',
+            'Q4: What makes what you do special or unique?': data.what_makes_you_unique || '-',
+            'Q5: What has been your greatest challenge & how have you addressed this?': data.greatest_challenge || '-',
+            'Q6: What have been your top 3 greatest achievements in the past 12 months?': data.top_achievements || '-',
+            'Q7: Why were these achievements significant and what do you attribute your achievements to?': data.achievements_significance || '-',
+            'Q8: What is your big picture vision for the work you are doing?': data.big_picture_vision || '-',
+            'Q9: Why should you be recognised in this category?': data.recognition_reason || '-',
+            'Eligibility confirmed': data.eligibility ? 'Yes' : 'No'  
+          };
+        });
+
+        // Create a worksheet and workbook
+        const worksheet = XLSX.utils.json_to_sheet(applications);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
+
+        // Generate Excel file and trigger download
+        const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+        const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Applications.xlsx';
+        link.click();
+
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error exporting applications:', error);
+        alert('Failed to export applications: ' + error.message);
+      }
+    }
+
+    // Helper function to convert string to ArrayBuffer
+    function s2ab(s) {
+      const buf = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
+    }
+  </script>
+</body>
+</html>

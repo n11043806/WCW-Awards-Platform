@@ -4,7 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Manage Entries - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
+    .pdf-btn {
+      background: #faf0f4;               
+      border: 2px solid transparent;
+      padding: 6px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .pdf-btn:active { transform: translateY(1px); }
+    .pdf-btn:hover { background: #d62d83; } 
+
+    .material-symbols-outlined.pdf-icon {
+      font-variation-settings: 'wght' 700;
+      font-size: 22px;                   
+      vertical-align: middle;
+      color: #8c1f4c;                   
+      transition: color .12s ease;
+    }
+    .pdf-btn:hover .pdf-icon { color: #fff; } 
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -15,7 +38,8 @@
 
     .sidebar {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 220px;
       height: 100vh;
       background-color: #d62d83;
@@ -143,11 +167,16 @@
       background-color: #b8235a;
     }
 
-    footer {
-      text-align: center;
-      color: #888;
-      margin-top: 40px;
-      font-size: 14px;
+    .actions-inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    .actions-inline .action-btn,
+    .actions-inline .pdf-btn {
+      margin: 0;
+      white-space: nowrap;
     }
 
     .error {
@@ -194,10 +223,6 @@
       width: 100%;
     }
 
-    h2 {
-      color: #d7336f;
-      margin-top: 0;
-    }
 
     .manage-buttons {
       display: flex;
@@ -220,6 +245,12 @@
       background: #b8235a;
     }
 
+    .manage-title {
+      color: #d7336f;
+      margin-top: 0;
+      font-size: 20px;
+    }
+    
     table {
       width: 100%;
       border-collapse: collapse;
@@ -263,7 +294,8 @@
     }
 
     .btn-view:hover {
-      background: #c9f2da;
+      background: #1f7a4b;
+      color: #fff;
     }
 
     .btn-danger {
@@ -410,6 +442,68 @@
       background-color: #f0f0f0;
       color: #333;
     }
+
+    /* Sort / Filter styles */
+    .btn-filter {
+      background: #a1466b;
+      color: #eec5d6;
+      border: 2px solid #572338;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-filter:hover { background: #eec5d6; color: #572338; }
+
+    .sort-dropdown { position: relative; display: inline-block; }
+    .sort-btn {
+      background: #fff;
+      color: #572338;
+      border: 2px solid #572338;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 180px;
+      text-align: left;
+    }
+    .sort-btn:after { content: "▼"; float: right; font-size: 12px; margin-left: 8px; }
+    .sort-list {
+      display: none;
+      position: absolute;
+      top: 110%;
+      left: 0;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-width: 220px;
+      z-index: 10;
+    }
+    .sort-list.open { display: block; }
+    .sort-list button {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 14px;
+      color: #572338;
+      cursor: pointer;
+    }
+    .sort-list button:hover { background: #f0e4e9; }
+   
+    .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+    .filter-group { border: 1px solid #eee; padding: 10px; border-radius: 6px; background: #fcfcfc; }
+    .confirm-actions { display:flex; gap:10px; margin-top:12px; }
+    .chk { display:flex; gap:8px; align-items:center; margin:8px 0; }
+    .filter-input { width:100%; padding:8px; border-radius:4px; border:1px solid #ccc; }
+
+    #filterModal .filter-group h4,
+    #filterModal .modal-header strong,
+    #filterModal #selected_name {
+      color: #8c1f4c;
+    }
   </style>
 </head>
 <body>
@@ -430,13 +524,26 @@
 
     <main>
       <div class="container">
-        <h2>Manage Entries</h2>
+        <h2 class="manage-title">Manage Entries</h2>
         
         <!-- Management Buttons -->
         <div class="manage-buttons">
-          <button class="manage-btn" onclick="alert('Start Entry functionality will be implemented')">Start Entry</button>
-          <button class="manage-btn" onclick="alert('Edit From functionality will be implemented')">Edit Form</button>
+          <button class="manage-btn" onclick="window.location.href='adminnewform.html'">Start Entry</button>
+          <button class="manage-btn" onclick="alert('Edit Form Content functionality will be implemented')">Edit Form Content</button>
           <button class="manage-btn" onclick="bulkExport()">Bulk Export</button>
+          <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+            <div class="sort-dropdown" id="sortDropdown">
+              <button class="sort-btn" id="sortBtn">SORT BY: -select-</button>
+              <div class="sort-list" id="sortList">
+                <button data-sort="none">-select-</button>
+                <button data-sort="asc">Application ID Ascending</button>
+                <button data-sort="desc">Application ID Descending</button>
+                <button data-sort="updated_desc">Updated (Newest first)</button>
+                <button data-sort="updated_asc">Updated (Oldest first)</button>
+              </div>
+            </div>
+            <button id="openFilter" class="btn-filter">Filter</button>
+          </div>
         </div>
 
         <!-- Entries Table -->
@@ -481,6 +588,70 @@
     </div>
   </div>
 
+  <!-- Confirm Delete/Withdraw Modal -->
+  <div id="confirmModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <strong id="confirmTitle">Confirm</strong>
+        <button id="confirmClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmText" style="margin-top:0">Are you sure?</p>
+        <div class="confirm-actions">
+          <button id="confirmYes" class="action-btn btn-danger">Yes</button>
+          <button id="confirmNo" class="close-btn">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div id="filterModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <strong>Filter</strong>
+        <button id="filterClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <h4>Category</h4>
+            <div id="flt_categories"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Applicant name</h4>
+            <input id="flt_name" class="filter-input" placeholder="Search and select one name" />
+            <div id="selected_name" style="margin-top:8px;font-size:13px;color:#333"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Subcategory</h4>
+            <div id="flt_subcategories"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Status</h4>
+            <div id="flt_stages"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Award</h4>
+            <div id="flt_awards"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Eligibility</h4>
+            <div id="flt_eligibility">
+              <label class="chk"><input type="radio" name="elig" value="any" checked/> Any</label>
+              <label class="chk"><input type="radio" name="elig" value="yes"/> Yes</label>
+              <label class="chk"><input type="radio" name="elig" value="no"/> No</label>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:12px;">
+          <button id="filterApply" class="action-btn btn-view">Done</button>
+          <button id="filterClear" class="close-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase Scripts -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
@@ -511,6 +682,62 @@
       modalEl.classList.remove('open'); 
       modalEl.setAttribute('aria-hidden', 'true'); 
     }
+
+    // Confirm modal logic
+    const cModal = document.getElementById('confirmModal');
+    const cTitle = document.getElementById('confirmTitle');
+    const cText = document.getElementById('confirmText');
+    const cClose = document.getElementById('confirmClose');
+    const cNo = document.getElementById('confirmNo');
+    const cYes = document.getElementById('confirmYes');
+    let pendingAction = null; // { type: 'delete'|'withdraw', id: 'docId' }
+
+    function openConfirm(type, id) {
+      pendingAction = { type, id };
+      cTitle.textContent = type === 'delete' ? 'Delete application' : 'Withdraw application';
+      cText.textContent = type === 'delete'
+        ? 'Are you sure you want to delete this application? This cannot be undone!'
+        : 'Are you sure you want to withdraw this application? This cannot be undone!';
+      cModal.classList.add('open');
+      cModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeConfirm() {
+      cModal.classList.remove('open');
+      cModal.setAttribute('aria-hidden', 'true');
+      pendingAction = null;
+    }
+
+    cClose.onclick = closeConfirm;
+    cNo.onclick = closeConfirm;
+    cModal.addEventListener('click', (e) => { if (e.target === cModal) closeConfirm(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
+
+    cYes.onclick = async () => {
+      if (!pendingAction) return closeConfirm();
+      try {
+        const db = firebase.firestore();
+        const id = pendingAction.id;
+        if (pendingAction.type === 'delete') {
+          await db.collection('applications').doc(id).delete();
+          const row = document.getElementById('row_' + id);
+          if (row) row.remove();
+          location.reload();
+        } else {
+          await db.collection('applications').doc(id).set({
+            stage: 'withdrawn',
+            withdrawnAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Operation failed: ' + (err.message || err));
+      } finally {
+        closeConfirm();
+      }
+    };
 
     // Utility functions
     function esc(s) {
@@ -588,65 +815,6 @@
       }
     }
 
-    // Load all applications
-    firebase.auth().onAuthStateChanged(async user => {
-      const body = document.getElementById('entriesBody');
-      if (!user) { 
-        window.location.href = "signin.html"; 
-        return; 
-      }
-
-      // Check if user is admin
-      try {
-        const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
-        if (!userDoc.exists || userDoc.data().role !== "admin") {
-          window.location.href = "unauthorized.html";
-          return;
-        }
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        window.location.href = "signin.html";
-        return;
-      }
-
-      // Load all applications
-      try {
-        const db = firebase.firestore();
-        const snap = await db.collection('applications').get();
-
-        if (snap.empty) {
-          body.innerHTML = `<tr><td colspan="9" class="muted">No applications found.</td></tr>`;
-          return;
-        }
-
-        body.innerHTML = '';
-        snap.docs.forEach(doc => {
-          const id = doc.id;
-          const d = doc.data();
-          const stage = (d.stage || 'draft').toLowerCase();
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${id}</td>
-            <td>${d.name || '-'}</td>
-            <td><span class="muted">${d.stage || 'draft'}</span></td>
-            <td>${d.category || '-'}</td>
-            <td>${d.subcategory || '-'}</td>
-            <td>${fmt(d.updatedAt)}</td>
-            <td>${d.stage === 'submitted' ? fmt(d.submittedAt || d.updatedAt) : '-'}</td>
-            <td>${d.email || '-'}</td>
-            <td>
-              <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
-            </td>
-          `;
-          body.appendChild(tr);
-        });
-      } catch (err) {
-        body.innerHTML = `<tr><td colspan="9" class="muted">Error: ${err.message}</td></tr>`;
-        console.error(err);
-      }
-    });
-
     async function bulkExport() {
       try {
         const db = firebase.firestore();
@@ -715,6 +883,381 @@
       for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
       return buf;
     }
+
+    async function exportAppPdf(id) {
+      try {
+        const doc = await firebase.firestore().collection('applications').doc(id).get();
+        if (!doc.exists) { alert("Application not found."); return; }
+        const d = doc.data();
+
+        const leftCols = [
+          kv('Full name', d.name),
+          kv('Email', d.email),
+          kv('Address', d.address),
+          kv('Mobile No.', d.mobile_number),
+          kv('Website', d.website)
+        ].join('');
+
+        const rightCols = [
+          kv('Category', d.category),
+          kv('Subcategory', d.subcategory),
+          kv('Award', d.awards_choice),
+          kv('Instagram', d.instagram_url),
+          kv('LinkedIn', d.linkedin_url)
+        ].join('');
+
+        const criteriaHtml = [
+          block('Tell us about yourself', d.tell_us_about_yourself),
+          block('Tell us about your work', d.tell_us_about_your_work),
+          block('What inspired you to do this work?', d.what_inspired_you),
+          block('What makes what you do special or unique?', d.what_makes_you_unique),
+          block('What has been your greatest challenge & how have you addressed this?', d.greatest_challenge),
+          block('What have been your top 3 greatest achievements in the past 12 months?', d.top_achievements),
+          block('Why were these achievements significant and what do you attribute your achievements to?', d.achievements_significance),
+          block('What is your big picture vision for the work you are doing?', d.big_picture_vision),
+          block('Why should you be recognised in this category?', d.recognition_reason),
+        ].join('');
+
+        const html = `
+           <!doctype html>
+           <html>
+           <head>
+             <meta charset="utf-8">
+             <title>Application Preview - ${esc(id)}</title>
+             <style>
+              :root{
+                --pink:#d62d83;        /* darker header */
+                --pink-strong:#b8235a; /* section title / main pink */
+                --meta-pink:#8c1f4c;   /* application id color + border */
+                --pink-light:#faf0f4;  /* light wash for rows */
+                --pink-row:#fde6ee;    /* slightly darker wash for header-row */
+                --card-width:760px;
+              }
+
+              /* page / print settings */
+              @page { margin: 12mm; }
+              html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;color:#222;background:#fff}
+              @media print {
+                html,body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                /* remove any default focus outlines in print */
+                * { -webkit-print-color-adjust: exact; }
+              }
+
+              /* dark pink header bar with WCW AWARDS label */
+              .pink-bar{background:var(--pink);height:56px;display:flex;align-items:center;padding:0 22px;color:#fff;font-weight:700}
+              .wrap{display:flex;align-items:flex-start;justify-content:center;padding:18px 12px}
+              .card{width:100%;max-width:var(--card-width);background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.08);border-radius:6px;overflow:hidden}
+              .card .inner{padding:20px 28px}
+
+              /* header-row full-width lighter row (slightly darker than section wash) */
+              .header-row{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                background:var(--pink-row);
+                padding:12px;
+                gap:12px;
+                border-radius:6px;
+                margin-bottom:12px;
+              }
+
+              h1{font-size:18px;color:var(--pink-strong);margin:0;font-weight:700}
+
+              /* Application ID box: keep current pink shade and add matching border */
+              .meta {
+                font-size:13px;
+                color:var(--meta-pink);
+                background:var(--pink-light);
+                padding:6px 10px;
+                border-radius:6px;
+                border:2px solid var(--meta-pink); /* border added as requested */
+                box-shadow: none;
+              }
+
+              .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+              .kv{margin-bottom:8px}
+              .kv .k{font-weight:700;color:#444;font-size:13px;margin-bottom:4px}
+              .kv .v{font-size:14px;color:#111}
+
+              /* Start here / Criteria header rows: use the light pink wash */
+              .section-title{
+                display:block;
+                margin:12px 0 8px;
+                color:var(--pink-strong);
+                font-weight:700;
+                background:var(--pink-light);
+                padding:8px 10px;
+                border-radius:6px;
+              }
+
+              /* reduce block spacing/padding to remove big gaps between questions */
+              .block{border:1px solid #eee;padding:10px;border-radius:6px;background:#fff;white-space:pre-wrap;margin-bottom:10px}
+
+              /* ensure printed card uses full card width and consistent padding */
+              @media (max-width:800px){
+                .form-grid{grid-template-columns:1fr}
+                .card .inner{padding:16px}
+              }
+             </style>
+           </head>
+           <body>
+            <div class="pink-bar" aria-hidden="true">WCW AWARDS</div>
+
+             <div class="wrap">
+               <div class="card" role="document" aria-label="Application preview">
+                 <div class="inner">
+                   <div class="header-row">
+                     <h1>Application Preview</h1>
+                     <div class="meta">Application ID: ${esc(id)}</div>
+                   </div>
+
+                   <h2 class="section-title">Start here</h2>
+                   <div class="form-grid">
+                     <div>
+                       ${leftCols}
+                     </div>
+                     <div>
+                       ${rightCols}
+                     </div>
+                   </div>
+
+                   <h2 class="section-title">Criteria</h2>
+                   <div>
+                     ${criteriaHtml}
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </body>
+           </html>
+         `;
+
+         const win = window.open('', '_blank');
+         if (!win) { alert('Please allow popups to generate preview.'); return; }
+         win.document.open();
+         win.document.write(html);
+         win.document.close();
+         win.focus();
+         setTimeout(() => win.print(), 700);
+       } catch (err) {
+         console.error(err);
+         alert('Failed to open printable preview: ' + (err.message || err));
+       }
+     }
+
+     /* ---------- Filter / Sort logic ---------- */
+    let ALL_APPS = [];        // [{ id, d }]
+    let SUBS_BY_CAT = new Map();
+    const FILTERS = {
+      categories: new Set(),
+      subcategories: new Set(),
+      awards: new Set(),
+      stages: new Set(),
+      name: '' ,
+      eligibility: 'any'
+    };
+    let SORT_MODE = 'none';
+
+    function uniqSorted(arr) { return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b))); }
+    function computeSubsByCat() {
+      SUBS_BY_CAT = new Map();
+      ALL_APPS.forEach(({d}) => {
+        const c = d.category || ''; const s = d.subcategory || '';
+        if (!c || !s) return;
+        if (!SUBS_BY_CAT.has(c)) SUBS_BY_CAT.set(c, new Set());
+        SUBS_BY_CAT.get(c).add(s);
+      });
+    }
+
+    function renderCheckboxList(containerId, values, selectedSet) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = values.length
+        ? values.map(v => `
+            <label class="chk">
+              <input type="checkbox" value="${esc(v)}" ${selectedSet.has(v) ? 'checked' : ''}/>
+              <span>${esc(v)}</span>
+            </label>
+          `).join('')
+        : `<div class="muted">No options</div>`;
+      el.onchange = (e) => {
+        if (e.target && e.target.type === 'checkbox') {
+          const val = e.target.value;
+          if (e.target.checked) selectedSet.add(val);
+          else selectedSet.delete(val);
+        }
+      };
+    }
+
+    function categoriesList() {
+      const fromData = uniqSorted(ALL_APPS.map(({d}) => d.category));
+      return uniqSorted(fromData);
+    }
+    function awardsList() {
+      const fromData = uniqSorted(ALL_APPS.map(({d}) => d.awards_choice));
+      return uniqSorted(fromData);
+    }
+    function stagesList() {
+      return ['draft','submitted'];
+    }
+    function subcategoriesForSelectedCats() {
+      const selectedCats = FILTERS.categories;
+      const sets = [];
+      if (selectedCats.size === 0) {
+        SUBS_BY_CAT.forEach(s => sets.push(...s));
+        return uniqSorted(sets);
+      }
+      selectedCats.forEach(cat => {
+        const set = SUBS_BY_CAT.get(cat);
+        if (set) sets.push(...set);
+      });
+      return uniqSorted(sets);
+    }
+
+    function buildFilterUI() {
+      const cats = categoriesList();
+      const awds = awardsList();
+      const stgs = stagesList();
+      renderCheckboxList('flt_categories', cats, FILTERS.categories);
+      renderCheckboxList('flt_awards', awds, FILTERS.awards);
+      renderCheckboxList('flt_stages', stgs, FILTERS.stages);
+      renderCheckboxList('flt_subcategories', subcategoriesForSelectedCats(), FILTERS.subcategories);
+
+      const nameInput = document.getElementById('flt_name');
+      const selName = document.getElementById('selected_name');
+      nameInput.value = FILTERS.name || '';
+      selName.textContent = FILTERS.name ? `Selected: ${FILTERS.name}` : '';
+      nameInput.oninput = function() {
+        const q = this.value.toLowerCase();
+        const names = uniqSorted(ALL_APPS.map(({d}) => d.name)).filter(n => n.toLowerCase().includes(q));
+        // simple suggestion list
+        selName.innerHTML = names.slice(0,6).map(n => `<div style="padding:6px 8px;cursor:pointer" onclick="(function(){FILTERS.name='${esc(n)}';document.getElementById('flt_name').value='${esc(n)}';document.getElementById('selected_name').textContent='Selected: ${esc(n)}';})();">${esc(n)}</div>`).join('') || '';
+      };
+      nameInput.onblur = () => { setTimeout(()=>{ document.getElementById('selected_name').innerHTML = FILTERS.name ? `Selected: ${esc(FILTERS.name)}` : ''; }, 150); };
+    }
+
+    function applyFiltersAndRender() {
+      const matches = ALL_APPS.filter(({d}) => {
+        const stage = (d.stage || 'draft').toLowerCase();
+        const catOk  = FILTERS.categories.size     ? FILTERS.categories.has(d.category || '')      : true;
+        const subOk  = FILTERS.subcategories.size  ? FILTERS.subcategories.has(d.subcategory || ''): true;
+        const awdOk  = FILTERS.awards.size         ? FILTERS.awards.has(d.awards_choice || '')      : true;
+        const stgOk  = FILTERS.stages.size         ? FILTERS.stages.has(stage)                      : true;
+        const nameOk = FILTERS.name ? (String(d.name || '').toLowerCase() === String(FILTERS.name).toLowerCase()) : true;
+        const elig = FILTERS.eligibility;
+        const eligOk = elig === 'any' ? true : (elig === 'yes' ? !!d.eligibility : !d.eligibility);
+        return catOk && subOk && awdOk && stgOk && nameOk && eligOk;
+      });
+      renderTable(matches);
+    }
+
+    function renderTable(items) {
+      const body = document.getElementById('entriesBody');
+      if (!items.length) {
+        body.innerHTML = `<tr><td colspan="9" class="muted">No applications found.</td></tr>`;
+        return;
+      }
+      let sorted = [...items];
+      if (SORT_MODE === 'asc') sorted.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+      else if (SORT_MODE === 'desc') sorted.sort((a,b) => String(b.id).localeCompare(String(a.id)));
+      else if (SORT_MODE === 'updated_desc') sorted.sort((a,b) => ((b.d.updatedAt?.toMillis?.()||0) - (a.d.updatedAt?.toMillis?.()||0)));
+      else if (SORT_MODE === 'updated_asc') sorted.sort((a,b) => ((a.d.updatedAt?.toMillis?.()||0) - (b.d.updatedAt?.toMillis?.()||0)));
+
+      body.innerHTML = '';
+      sorted.forEach(({id,d}) => {
+        const stage = (d.stage || 'draft').toLowerCase();
+        const isWithdrawn = stage === 'withdrawn';
+        const delLabel = stage === 'submitted' ? 'WITHDRAW' : 'DELETE';
+        const delType = stage === 'submitted' ? 'withdraw' : 'delete';
+        const delBtnHtml = isWithdrawn
+          ? `<span class="muted">WITHDRAWN</span>`
+          : `<button class="action-btn btn-danger" onclick="openConfirm('${delType}','${id}')">${delLabel}</button>`;
+
+        const tr = document.createElement('tr');
+        tr.id = 'row_' + id;
+        tr.innerHTML = `
+          <td>${esc(id)}</td>
+          <td>${esc(d.name || '-')}</td>
+          <td><span class="muted">${esc(d.stage || 'draft')}</span></td>
+          <td>${esc(d.category || '-')}</td>
+          <td>${esc(d.subcategory || '-')}</td>
+          <td>${fmt(d.updatedAt)}</td>
+          <td>${d.stage === 'submitted' ? fmt(d.submittedAt || d.updatedAt) : '-'}</td>
+          <td>${esc(d.email || '-')}</td>
+          <td>
+            <div class="actions-inline">
+              <button class="pdf-btn" title="Open printable preview (save as PDF)" onclick="exportAppPdf('${id}')">
+                <span class="material-symbols-outlined pdf-icon" aria-hidden="true">picture_as_pdf</span>
+              </button>
+              <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
+              ${delBtnHtml}
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    /* Sort dropdown behaviour */
+    const sortBtn = document.getElementById('sortBtn');
+    const sortList = document.getElementById('sortList');
+    const sortDropdown = document.getElementById('sortDropdown');
+    sortBtn.onclick = () => sortList.classList.toggle('open');
+    sortList.onclick = (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        SORT_MODE = e.target.dataset.sort;
+        sortBtn.textContent = 'SORT BY: ' + (
+          SORT_MODE === 'asc' ? 'Application ID Ascending' :
+          SORT_MODE === 'desc' ? 'Application ID Descending' :
+          SORT_MODE === 'updated_desc' ? 'Updated (Newest to Oldest)' :
+          SORT_MODE === 'updated_asc' ? 'Updated (Oldest to Newest)' :
+          '-select-'
+        );
+        sortList.classList.remove('open');
+        applyFiltersAndRender();
+      }
+    };
+    document.addEventListener('click', function(e){ if (!sortDropdown.contains(e.target)) sortList.classList.remove('open'); });
+
+    /* Filter modal wiring */
+    const fModal = document.getElementById('filterModal');
+    const fOpen  = document.getElementById('openFilter');
+    const fClose = document.getElementById('filterClose');
+    const fApply = document.getElementById('filterApply');
+    const fClear = document.getElementById('filterClear');
+    fOpen?.addEventListener('click', () => { buildFilterUI(); fModal.classList.add('open'); fModal.setAttribute('aria-hidden','false'); });
+    fClose?.addEventListener('click', () => { fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true'); });
+    fModal?.addEventListener('click', (e) => { if (e.target === fModal) { fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true'); } });
+    fApply?.addEventListener('click', () => {
+      // read applicant name and eligibility
+      FILTERS.name = document.getElementById('flt_name').value || FILTERS.name || '';
+      const elig = document.querySelector('input[name="elig"]:checked');
+      FILTERS.eligibility = elig ? elig.value : 'any';
+      FILTERS.subcategories = FILTERS.subcategories || new Set();
+      applyFiltersAndRender();
+      fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true');
+    });
+    fClear?.addEventListener('click', () => {
+      FILTERS.categories.clear(); FILTERS.subcategories.clear(); FILTERS.awards.clear(); FILTERS.stages.clear();
+      FILTERS.name = ''; FILTERS.eligibility = 'any';
+      buildFilterUI(); applyFiltersAndRender();
+    });
+
+    firebase.auth().onAuthStateChanged(async user => {
+      const body = document.getElementById('entriesBody');
+      if (!user) { window.location.href = "signin.html"; return; }
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+        ALL_APPS = snap.docs.map(doc => ({ id: doc.id, d: doc.data() }));
+        computeSubsByCat();
+        // initial render
+        applyFiltersAndRender();
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="9" class="muted">Error: ${esc(err.message || err)}</td></tr>`;
+        console.error(err);
+      }
+    });
   </script>
 </body>
 </html>
