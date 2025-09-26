@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WCW Admin – Judging Assignments</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      color: #333;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d62d83;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #d62d83;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .header-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .header-box video {
+      border-radius: 8px;
+    }
+
+    .header-description {
+      max-width: 700px;
+    }
+
+    .header-description h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+    }
+
+    .action-buttons {
+      margin-bottom: 20px;
+    }
+
+    .action-buttons button {
+      background-color: #d62d83;
+      color: white;
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .action-buttons button:hover {
+      background-color: #b8235a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .pill {
+      background-color: #e0e0e0;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .link {
+      color: #d62d83;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="#">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#" class="active">Judging</a>
+    <a href="#">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <h1>Assignments</h1>
+
+    <div class="header-box">
+      <div class="header-description">
+        <h3>Assign judges to your entries</h3>
+        <p>This is where you define how entries are distributed to your judges. Choose between random or manual assignment. Use random assignment to evenly distribute entries. Use manual assignment to target specific judges for specific entries.</p>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button onclick="location.href='manualassignment.html'">New manual assignment</button>
+      <button onclick="location.href='randomassignment.html'">New random assignment</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Judge</th>
+          <th>ID</th>
+          <th>Entry</th>
+          <th>Score set</th>
+          <th>Round</th>
+          <th>Status</th>
+          <th>Method</th>
+          <th>Panels</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Katy Garner</td>
+          <td>1554</td>
+          <td><a class="link" href="#">Aida Okdon</a></td>
+          <td><span class="pill">Finalist judging</span></td>
+          <td>Judging open period</td>
+          <td>Complete</td>
+          <td>Automatic</td>
+          <td><a class="link" href="#">Judges (19)</a></td>
+          <td>5 days ago</td>
+        </tr>
+        <tr>
+          <td>Katy Garner</td>
+          <td>1773</td>
+          <td><a class="link" href="#">Sabrina Bestel</a></td>
+          <td><span class="pill">Finalist judging</span></td>
+          <td>2025 WCWA Global Judging</td>
+          <td>Complete</td>
+          <td>Manual</td>
+          <td><a class="link" href="#">Judges (19)</a></td>
+          <td>1 week ago</td>
+        </tr>
+        <!-- More rows can be dynamically added here -->
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
