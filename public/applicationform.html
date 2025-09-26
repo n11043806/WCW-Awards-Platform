@@ -513,12 +513,6 @@
           <label>Category</label>
           <select id="pv_category">
             <option value="">Select category</option>
-            <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
-            <option value="IMPACT AWARDS">IMPACT AWARDS</option>
-            <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
-            <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
-            <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
-            <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
           </select>
         </div>
         <div>
@@ -531,11 +525,6 @@
           <label>Award</label>
           <select id="pv_award">
             <option value="">Select award</option>
-            <option value="WCWA Americas">WCWA Americas</option>
-            <option value="WCWA Middle East & North Africa (MENA)">WCWA Middle East & North Africa (MENA)</option>
-            <option value="WCWA Czech Republic">WCWA Czech Republic</option>
-            <option value="WCWA South Africa">WCWA South Africa</option>
-            <option value="WCWA Global 2025">WCWA Global 2025</option>
           </select>
         </div>
         <div><label>Name</label><input id="pv_name" type="text"></div>
@@ -637,12 +626,6 @@
           <label for="category">Category</label>
           <select id="category" name="category" required>
             <option value="">Select category</option>
-            <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
-            <option value="IMPACT AWARDS">IMPACT AWARDS</option>
-            <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
-            <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
-            <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
-            <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
           </select>
         </div>
         <div class="form-group">
@@ -652,23 +635,18 @@
           </select>
         </div>
         <div class="form-group">
+          <label for="award">Which Awards would you want to enter?</label>
+          <select id="award" name="award" required>
+            <option value="">Select award</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="name">Name</label>
           <input type="text" id="name" name="name" required />
         </div>
         <div class="form-group">
           <label for="website">Website (optional)</label>
           <input type="text" id="website" name="website" />
-        </div>
-        <div class="form-group">
-          <label for="award">Which Awards would you want to enter?</label>
-          <select id="award" name="award" required>
-            <option value="">Select award</option>
-            <option value="WCWA Americas">WCWA Americas</option>
-            <option value="WCWA Middle East & North Africa (MENA)">WCWA Middle East & North Africa (MENA)</option>
-            <option value="WCWA Czech Republic">WCWA Czech Republic</option>
-            <option value="WCWA South Africa">WCWA South Africa</option>
-            <option value="WCWA Global 2025">WCWA Global 2025</option>
-          </select>
         </div>
         <div class="form-group">
           <label for="email">Email</label>
@@ -818,6 +796,121 @@
 
     const db = () => firebase.firestore();
 
+    // dynamic categories/subcategories loader 
+    let CATEGORIES_MAP = {};
+
+    async function loadCategoriesFromFirestore() {
+      const namesToTry = ['Categories', 'Category'];
+      CATEGORIES_MAP = {};
+      try {
+        for (const col of namesToTry) {
+          try {
+            const snap = await db().collection(col).get();
+            if (!snap.empty) {
+              snap.forEach(doc => {
+                const data = doc.data() || {};
+                const subcats = Object.values(data).filter(Boolean).map(v => String(v));
+                CATEGORIES_MAP[doc.id] = subcats;
+              });
+              break; 
+            }
+          } catch (e) {
+            console.warn('Failed to read collection', col, e);
+          }
+        }
+        // populate any rendered category selects 
+        populateCategorySelects();
+      } catch (err) {
+        console.error('Failed to load categories from Firestore', err);
+      }
+    }
+
+    function populateCategorySelects(selectedCategory = '') {
+      ['category', 'pv_category'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        sel.innerHTML = '';
+        const def = document.createElement('option');
+        def.value = '';
+        def.textContent = 'Select category';
+        sel.appendChild(def);
+        Object.keys(CATEGORIES_MAP).forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          sel.appendChild(opt);
+        });
+        if (selectedCategory) sel.value = selectedCategory;
+      });
+    }
+
+    // populate a subcategory from category 
+    function fillSubcategorySelect(selectEl, category, selectedValue = '') {
+      if (!selectEl) return;
+      const list = CATEGORIES_MAP[category] || [];
+      selectEl.innerHTML = '';
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select subcategory';
+      selectEl.appendChild(def);
+      list.forEach(sc => {
+        const opt = document.createElement('option');
+        opt.value = sc;
+        opt.textContent = sc;
+        selectEl.appendChild(opt);
+      });
+      selectEl.disabled = list.length === 0;
+      if (selectedValue) selectEl.value = selectedValue;
+    }
+
+    // dynamic awards loader 
+    let AWARDS_LIST = [];
+
+    async function loadAwardsFromFirestore() {
+      const namesToTry = ['Award', 'Awards'];
+      AWARDS_LIST = [];
+      try {
+        for (const col of namesToTry) {
+          try {
+            const snap = await db().collection(col).get();
+            if (!snap.empty) {
+              snap.forEach(doc => {
+                AWARDS_LIST.push(String(doc.id));
+              });
+              break;
+            }
+          } catch (e) {
+            console.warn('Failed to read awards collection', col, e);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load awards from Firestore', err);
+      } finally {
+        populateAwardSelects();
+      }
+    }
+
+    function populateAwardSelects(selected = '') {
+      ['award', 'pv_award'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        sel.innerHTML = '';
+        const def = document.createElement('option');
+        def.value = '';
+        def.textContent = 'Select award';
+        sel.appendChild(def);
+        AWARDS_LIST.forEach(a => {
+          const opt = document.createElement('option');
+          opt.value = a;
+          opt.textContent = a;
+          sel.appendChild(opt);
+        });
+        if (selected) sel.value = selected;
+      });
+    }
+
+    loadAwardsFromFirestore();
+    loadCategoriesFromFirestore();
     // ensure the application doc exists (creates draft if needed)
     async function ensureApplicationDoc() {
       if (applicationId) return;
@@ -854,117 +947,43 @@
       if (el) el.value = value ?? '';
     }
 
-    const SUBCATEGORIES = {
-      "BUSINESS AWARDS": [
-        "BUSINESS OF THE YEAR",
-        "MICRO BUSINESS OF THE YEAR",
-        "SMALL BUSINESS OF THE YEAR",
-        "SOCIAL ENTERPRISE AWARD"
-      ],
-      "IMPACT AWARDS": [
-        "ADVOCACY IMPACT",
-        "CULTURAL DIVERSITY AND INCLUSION IMPACT",
-        "DISABILITY INCLUSION IMPACT",
-        "GENDER EMPOWERMENT",
-        "GENDER EQUALITY",
-        "GLOBAL IMPACT",
-        "HUMAN RIGHTS",
-        "HUMANITARIAN IMPACT",
-        "RURAL AND REGIONAL AREAS IMPACT",
-        "VOLUNTEER OF THE YEAR",
-        "YOUTH IMPACT"
-      ],
-      "INDUSTRY AWARDS": [
-        "COACH OF THE YEAR",
-        "HEALTHTECH INNOVATION",
-        "INNOVATION AWARD",
-        "TECH INNOVATION",
-        "WELLNESS & WELLBEING PROGRAMS",
-        "WELLNESS & WELLBEING SERVICES",
-        "WOMAN IN CORPORATE & PUBLIC SECTOR",
-        "WOMAN IN CREATIVE INDUSTRIES (INACTIVE FOR ENTRANTS)",
-        "WOMAN IN CREATIVE INDUSTRIES",
-        "WOMAN IN EDUCATION - CHILDREN'S EDUCATION",
-        "WOMAN IN EDUCATION - EARLY CHILDHOOD EDUCATION",
-        "WOMAN IN FASHION & TEXTLIES",
-        "WOMAN IN LITERATURE - CHILDRENS BOOKS",
-        "WOMAN IN PERSONAL SERVICES",
-        "WOMAN IN SCIENCE",
-        "WOMAN IN THERAPY & CONSELLING SERVICES",
-        "WOMAN IN TRAVEL, RETREATS AND EVENTS",
-        "WOMAN IN ACADEMIC",
-        "WOMAN IN AGRICULTURE & FARMING",
-        "WOMAN IN ADULT EDUCATION & TRAINING",
-        "WOMAN IN ENGINEERING",
-        "WOMAN IN FINANCE",
-        "WOMAN IN FOOD AND BEVERGAES",
-        "WOMAN IN HEALTH",
-        "WOMAN IN JOURNALISM AND MEDIA",
-        "WOMAN IN LAW",
-        "WOMAN IN LITERATIRE",
-        "WOMAN IN PROFESSIONAL SERVICES",
-        "WOMAN IN SCIENCE",
-        "WOMAN IN SPORT",
-        "WOMAN IN SUSTAINABILITY",
-        "WOMAN IN TECH"
-      ],
-      "LEADERSHIP AWARDS": [
-        "BIG IDEA - EMERGING LEADER OF THE YEAR",
-        "DISABILITY LEADERSHIP AWARD",
-        "FIRST NATIONS LEADERSHIP",
-        "LEADER OF THE YEAR",
-        "LGBTQI+ LEADERSHIP AWARD",
-        "MIGRANT LEADERSHIP AWARD",
-        "TECH LEADER OF THE YEAR",
-        "THOUGHT LEADER OF THE YEAR"
-      ],
-      "PEOPLE'S CHOICE": [
-        "People's Choice - BUSINESS",
-        "People's Choice - DIVERSITY AND INCLUSION",
-        "People's Choice - EDUCATION",
-        "People's Choice - ENVIRONMENTAL IMPACT",
-        "People's Choice - GENDER EQUALITY",
-        "People's Choice - GLOBAL IMPACT",
-        "People's Choice - HEALTH & WELLBEING",
-        "People's Choice - HUMANITARIAN IMPACT",
-        "People's Choice - LOCAL COMMUNITY",
-        "People's Choice - NON PROFIT",
-        "People's Choice - SOCIAL ENTERPRISE"
-      ],
-      "WOMAN OF THE YEAR AWARDS": [
-        "CHANGEMAKER",
-        "COMPANY OF THE YEAR",
-        "EMERGING ENTREPRENEUR OF THE YEAR",
-        "EMERGING LEADER OF THE YEAR",
-        "EMERGING WOMAN",
-        "ENTREPRENEUR OF THE YEAR",
-        "GIRL OF THE YEAR",
-        "HALL OF FAME",
-        "RISING STAR",
-        "WOMAN OF THE YEAR AWARD",
-        "WOMAN CHANGING THE WORLD",
-        "YOUNG WOMAN OF THE YEAR"
-      ]
-    };
-
-// populate a subcategory from category
-    function fillSubcategorySelect(selectEl, category, selectedValue = '') {
-      if (!selectEl) return;
-      const list = SUBCATEGORIES[category] || [];
-      selectEl.innerHTML = '';
-      const def = document.createElement('option');
-      def.value = '';
-      def.textContent = 'Select subcategory';
-      selectEl.appendChild(def);
-      list.forEach(sc => {
-        const opt = document.createElement('option');
-        opt.value = sc;
-        opt.textContent = sc;
-        selectEl.appendChild(opt);
+    // load categories once on script run
+    loadCategoriesFromFirestore();
+    async function ensureApplicationDoc() {
+      if (applicationId) return;
+      if (!currentUser) throw new Error('Not signed in');
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const ref = await db().collection('applications').add({
+        user_id: currentUser.uid,
+        applicant_id: currentUser.uid,
+        stage: 'draft',
+        createdAt: now,
+        updatedAt: now
       });
-      selectEl.disabled = list.length === 0;
-      if (selectedValue) selectEl.value = selectedValue;
+      applicationId = ref.id;
     }
+
+    function allInputsDisabled(rootEl) {
+      const els = (rootEl || document).querySelectorAll('input, select, textarea, button');
+      els.forEach(el => el.disabled = true);
+    }
+
+    // Prefill from last-saved document
+    async function getApplicationData() {
+      if (!applicationId) return null;
+      try {
+        const snap = await db().collection('applications').doc(applicationId).get();
+        return snap.exists ? snap.data() : null;
+      } catch (e) {
+        console.error('Failed to fetch application', e);
+        return null;
+      }
+    }
+    function setVal(form, id, value) {
+      const el = form.querySelector('#' + id);
+      if (el) el.value = value ?? '';
+    }
+
 
     async function hydrateStartHereForm() {
       const form = document.getElementById('startHereForm');
@@ -1002,6 +1021,7 @@
       if (submitBtn) submitBtn.disabled = cb ? !cb.checked : true;
     }
 
+    // Collect all form values into the Firestore shape
     function collectStartHere(form) {
       const val = id => (form.querySelector('#' + id)?.value || '');
       return {
@@ -1071,10 +1091,13 @@
       const data = await getApplicationData();
       if (!data) return;
 
-      const awardName = data.awards_choice || '';
+      // read saved category/subcategory from the application data
       const categoryName = data.category || '';
       const subcatName = data.subcategory || '';
 
+      const awardName = data.awards_choice || '';
+      populateAwardSelects(awardName);
+      populateCategorySelects(categoryName);
       // Category + Subcategory
       document.getElementById('pv_category').value = categoryName;
       // populate preview subcategories from category, then set value
@@ -1326,6 +1349,8 @@
       const form = document.getElementById('startHereForm');
       if (!form) return;
       form.reset();
+      populateCategorySelects();
+     populateAwardSelects();
 
       // Subcategory population
       const cat = form.querySelector('#category');

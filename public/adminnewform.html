@@ -406,24 +406,80 @@
     let currentUser = null;
     const db = () => firebase.firestore();
 
-    // small helper to populate subcategories
-    const SUBCATEGORIES = {
-      "BUSINESS AWARDS": ["BUSINESS OF THE YEAR","SMALL BUSINESS OF THE YEAR"],
-      "IMPACT AWARDS": ["ADVOCACY IMPACT","GLOBAL IMPACT"],
-      "INDUSTRY AWARDS": ["INNOVATION AWARD","WOMAN IN TECH"],
-      "LEADERSHIP AWARDS": ["LEADER OF THE YEAR"],
-      "PEOPLE'S CHOICE": ["People's Choice - BUSINESS"],
-      "WOMAN OF THE YEAR AWARDS": ["WOMAN OF THE YEAR AWARD"]
-    };
+    // dynamic Categories/Subcategories loader 
+    let CATEGORIES_MAP = {};
+    async function loadCategoriesFromFirestore() {
+      const namesToTry = ['Categories', 'Category'];
+      CATEGORIES_MAP = {};
+      for (const col of namesToTry) {
+        try {
+          const snap = await db().collection(col).get();
+          if (!snap.empty) {
+            snap.forEach(doc => {
+              const data = doc.data() || {};
+              const subcats = Object.values(data).filter(Boolean).map(v => String(v));
+              CATEGORIES_MAP[doc.id] = subcats;
+            });
+            break;
+          }
+        } catch (e) {
+          console.warn('Failed to read collection', col, e);
+        }
+      }
+      populateCategorySelects();
+    }
+
+    function populateCategorySelects(selected = '') {
+      const sel = document.getElementById('category');
+      if (!sel) return;
+      sel.innerHTML = '';
+      const def = document.createElement('option'); def.value = ''; def.textContent = 'Select category'; sel.appendChild(def);
+      Object.keys(CATEGORIES_MAP).forEach(cat => {
+        const o = document.createElement('option'); o.value = cat; o.textContent = cat; sel.appendChild(o);
+      });
+      if (selected) sel.value = selected;
+    }
+
     function fillSubcategorySelect(selectEl, category, selectedValue = '') {
       if (!selectEl) return;
-      const list = SUBCATEGORIES[category] || [];
+      const list = CATEGORIES_MAP[category] || [];
       selectEl.innerHTML = '';
-      const def = document.createElement('option'); def.value=''; def.textContent='Select subcategory'; selectEl.appendChild(def);
+      const def = document.createElement('option'); def.value = ''; def.textContent = 'Select subcategory'; selectEl.appendChild(def);
       list.forEach(sc => { const o = document.createElement('option'); o.value = sc; o.textContent = sc; selectEl.appendChild(o); });
       selectEl.disabled = list.length === 0;
       if (selectedValue) selectEl.value = selectedValue;
     }
+
+    // dynamic Awards loader 
+    let AWARDS_LIST = [];
+    async function loadAwardsFromFirestore() {
+      const namesToTry = ['Award', 'Awards'];
+      AWARDS_LIST = [];
+      for (const col of namesToTry) {
+        try {
+          const snap = await db().collection(col).get();
+          if (!snap.empty) {
+            snap.forEach(doc => AWARDS_LIST.push(String(doc.id)));
+            break;
+          }
+        } catch (e) {
+          console.warn('Failed to read awards collection', col, e);
+        }
+      }
+      populateAwardSelects();
+    }
+
+    function populateAwardSelects(selected = '') {
+      const sel = document.getElementById('award');
+      if (!sel) return;
+      sel.innerHTML = '';
+      const def = document.createElement('option'); def.value = ''; def.textContent = 'Select award'; sel.appendChild(def);
+      AWARDS_LIST.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
+      if (selected) sel.value = selected;
+    }
+
+    loadCategoriesFromFirestore();
+    loadAwardsFromFirestore();
 
     // templates copied from applicationform
     const startHereContent = `...`; // will be set below by building via function to avoid huge inline string duplication
@@ -437,12 +493,6 @@
           <div class="form-group"><label for="category">Category</label>
             <select id="category" name="category" required>
               <option value="">Select category</option>
-              <option value="BUSINESS AWARDS">BUSINESS AWARDS</option>
-              <option value="IMPACT AWARDS">IMPACT AWARDS</option>
-              <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
-              <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
-              <option value="PEOPLE'S CHOICE">PEOPLE'S CHOICE</option>
-              <option value="WOMAN OF THE YEAR AWARDS">WOMAN OF THE YEAR AWARDS</option>
             </select>
           </div>
           <div class="form-group"><label for="subcategory">Subcategory</label>
@@ -453,9 +503,6 @@
           <div class="form-group"><label for="award">Which Awards would you want to enter?</label>
             <select id="award" name="award" required>
               <option value="">Select award</option>
-              <option value="WCWA Americas">WCWA Americas</option>
-              <option value="WCWA Middle East & North Africa (MENA)">WCWA MENA</option>
-              <option value="WCWA Global 2025">WCWA Global 2025</option>
             </select>
           </div>
           <div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" required /></div>
@@ -653,6 +700,8 @@
     // when saving start-here, include selected owner (ensure setUpStartHereTab uses this)
     const originalSetUp = setUpStartHereTab;
     async function setUpStartHereTab_wrapper() {
+      try { await loadCategoriesFromFirestore(); } catch(e){console.warn(e);}
+      try { await loadAwardsFromFirestore(); } catch(e){console.warn(e);}
       originalSetUp();
       // patch save actions to include selected owner id
       const form = document.getElementById('startHereForm');
