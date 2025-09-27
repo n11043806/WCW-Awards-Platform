@@ -650,9 +650,12 @@
     if (applicationId) return;
     if (!currentUser) throw new Error('Not signed in');
     const now = firebase.firestore.FieldValue.serverTimestamp();
+    let seasonName = null;
+    try { seasonName = await getCurrentSeasonName(); } catch (e) { seasonName = null; }
     const ref = await db().collection('applications').add({
       user_id: currentUser.uid,
       applicant_id: currentUser.uid,
+      season: seasonName,
       stage: 'draft',
       createdAt: now,
       updatedAt: now

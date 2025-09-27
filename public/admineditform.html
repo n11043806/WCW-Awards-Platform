@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Entries - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      color: #333;
+    }
+    .container {
+      max-width: none;
+      width: 100%;
+      margin: 30px 0;
+      padding: 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d7336f;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+    }
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logout-btn {
+      background-color: white;
+      color: #d62d83;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background-color: #ffe6ee;
+    }
+    h2.section-title {
+      margin-top: 30px;
+      color: #d62d83;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .controls input {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 70%;
+    }
+    .controls select, .controls button {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+    .controls button {
+      background-color: #d62d83;
+      color: white;
+      font-weight: bold;
+    }
+    .controls button:hover {
+      background-color: #b8235a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #fafafa;
+      color: #d62d83;
+    }
+    .action-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #d62d83;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .action-btn:hover {
+      background-color: #b8235a;
+    }
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 300px;
+      text-align: center;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    main {
+      padding: 40px 30px;
+    }
+    .manage-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .manage-btn {
+      background: #d7336f;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .manage-btn:hover {
+      background: #b8235a;
+    }
+
+    .manage-title {
+      color: #d7336f;
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .container .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .container .header-row .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .manage-btn.small {
+      padding: 8px 14px;
+      font-size: 13px;
+      height: auto;
+    }
+
+    .seasons-card {
+      background: #fff;
+      border: 1px solid #f0e0e8;
+      padding: 16px;
+      margin-top: 18px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .seasons-card .left { display:flex; align-items:center; gap:12px; }
+    .seasons-table { margin-top:14px; border-collapse: collapse; width: 100%; }
+    .seasons-table th, .seasons-table td { padding: 10px 12px; border: 1px solid #eee; text-align: left; }
+    .seasons-table th { background:#fafafa; color:#d7336f; }
+
+    #datesBodyContent h2,
+    #datesBodyContent h3,
+    #datesBodyContent strong {
+      color: #d62d83;
+    }
+    #datesBodyContent a { color: #d62d83; }
+    #datesBodyContent ul { margin-left:18px; }
+    #datesBodyContent p { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html" class="active">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+  <div class="main-content">
+    <header>
+      <h1>Entries Management</h1>
+      <button class="logout-btn" onclick="logout()">Log Out</button>
+    </header>
+    <main>
+      <div class="container">
+        <div class="header-row">
+          <div class="left">
+            <h2 class="manage-title">Manage Applications Information</h2>
+          </div>
+          <div class="right">
+            <button class="manage-btn" onclick="window.location.href='adminentriestab.html'">Back</button>
+          </div>
+        </div>
+
+        <!-- Manage Seasons card -->
+        <div class="seasons-card" aria-hidden="false">
+          <div class="left" style="gap:16px; align-items:flex-start;">
+            <div>
+              <strong>Manage seasons</strong>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input id="newSeasonName" placeholder="Season name (doc id)" style="padding:8px; border:1px solid #ddd; border-radius:4px;" />
+              <select id="newSeasonStatus" style="padding:8px; border:1px solid #ddd; border-radius:4px;">
+                <option value="">(no status)</option>
+                <option value="current">current</option>
+                <option value="past">past</option>
+              </select>
+              <button class="manage-btn small" id="saveSeasonsBtn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seasons table -->
+        <div style="margin-top:12px;">
+          <table class="seasons-table" id="seasonsTable">
+            <thead>
+              <tr><th>Season Name</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+            </thead>
+            <tbody><tr><td colspan="3" class="muted">Loading seasons…</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- Dates Body editable card -->
+        <div class="seasons-card" id="datesBodyCard" style="margin-top:12px; flex-direction:column; align-items:stretch;">
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div>
+              <strong>Dates Body</strong>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="datesLastUpdated" class="muted" style="font-size:13px;"></span>
+              <button class="manage-btn small" id="editDatesBtn">Edit</button>
+              <button class="manage-btn small" id="saveDatesBodyBtn">Save</button>
+              <button class="manage-btn small" id="cancelEditDatesBtn" style="display:none; background:#eee; color:#d7336f;">Cancel</button>
+            </div>
+          </div>
+          <div id="datesBodyView" style="margin-top:12px; padding:12px; border-top:1px dashed #f0e0e8; min-height:140px; width:100%;">
+            <div id="datesBodyContent" contenteditable="false" style="outline:none; min-height:120px; color:#333;"></div>
+          </div>
+        </div>
+
+        <!-- Manage Questions card -->
+        <div class="seasons-card" style="margin-top:12px;">
+          <div class="left">
+            <div>
+              <strong>Manage questions</strong>
+            </div>
+          </div>
+          <div class="right">
+            <button class="manage-btn small" id="saveQuestionsBtn" onclick="/* no-op save for now */">Save</button>
+          </div>
+        </div>
+
+      <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
+      </div>
+    </main>
+  </div>
+
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script>
+        function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+
+    function escapeHtml(s) {
+      if (s == null) return '';
+      return String(s).replace(/[&<>"']/g, function (m) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+      });
+    }
+
+    // Load seasons and render rows with edit/delete
+    async function loadSeasonsList() {
+      const tbody = document.querySelector('#seasonsTable tbody');
+      if (!tbody) return;
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('season').get();
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="3" class="muted">No seasons found</td></tr>';
+          return;
+        }
+        const rows = [];
+        snap.forEach(doc => {
+          const id = doc.id;
+          const d = doc.data() || {};
+          const status = d.status || '';
+          rows.push(`
+            <tr data-season="${escapeHtml(id)}">
+              <td style="vertical-align:middle">${escapeHtml(id)}</td>
+              <td style="vertical-align:middle">
+                <select data-season-select="${escapeHtml(id)}" style="padding:6px; border-radius:4px;">
+                  <option value="" ${status === '' ? 'selected' : ''}>(no status)</option>
+                  <option value="current" ${status === 'current' ? 'selected' : ''}>current</option>
+                  <option value="past" ${status === 'past' ? 'selected' : ''}>past</option>
+                </select>
+              </td>
+              <td style="text-align:right; vertical-align:middle">
+                <button class="manage-btn small" data-save-row="${escapeHtml(id)}">Save</button>
+                <button class="manage-btn small" style="background:#f8d7da;color:#8c1f1f;margin-left:8px;" data-delete-row="${escapeHtml(id)}">Delete</button>
+              </td>
+            </tr>
+          `);
+        });
+        tbody.innerHTML = rows.join('');
+        // wire per-row buttons
+        document.querySelectorAll('[data-save-row]').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const season = btn.getAttribute('data-save-row');
+            const sel = document.querySelector('[data-season-select="' + CSS.escape(season) + '"]');
+            const newStatus = sel ? sel.value : '';
+            await saveSeason(season, newStatus);
+            await loadSeasonsList();
+          });
+        });
+        document.querySelectorAll('[data-delete-row]').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const season = btn.getAttribute('data-delete-row');
+            if (!confirm('Delete season "' + season + '"? This cannot be undone.')) return;
+            await deleteSeason(season);
+            await loadSeasonsList();
+          });
+        });
+      } catch (err) {
+        console.error('loadSeasonsList error', err);
+        tbody.innerHTML = `<tr><td colspan="3" class="muted">Failed to load seasons: ${escapeHtml(err.message || String(err))}</td></tr>`;
+      }
+    }
+
+    // Save (create or update) season doc with status field
+    async function saveSeason(seasonName, status) {
+      if (!seasonName || !seasonName.trim()) { alert('Season name is required.'); return; }
+      const db = firebase.firestore();
+      const docRef = db.collection('season').doc(seasonName);
+      try {
+        // if doc exists update, otherwise create with status field (may be empty string)
+        await docRef.set({ status: status || '' }, { merge: true });
+        alert('Saved season: ' + seasonName);
+      } catch (err) {
+        console.error('saveSeason error', err);
+        alert('Failed to save season: ' + (err.message || err));
+      }
+    }
+
+    // Check whether seasonName is used in applicationInfo fields OR application documents
+    async function checkSeasonInUse(seasonName) {
+      const db = firebase.firestore();
+      try {
+        const appSnap = await db.collection('applications').where('season', '==', seasonName).limit(1).get();
+        if (!appSnap.empty) return true;
+      } catch (err) {
+        console.warn('applications check failed', err);
+        // continue to check applicationInfo
+      }
+      try {
+        const infoSnap = await db.collection('applicationInfo').get();
+        let used = false;
+        infoSnap.forEach(doc => {
+          const d = doc.data() || {};
+          if (Object.prototype.hasOwnProperty.call(d, seasonName)) {
+            used = true;
+          }
+        });
+        if (used) return true;
+      } catch (err) {
+        console.warn('applicationInfo check failed', err);
+      }
+      return false;
+    }
+
+    // Delete season after checking usage
+    async function deleteSeason(seasonName) {
+      try {
+        const inUse = await checkSeasonInUse(seasonName);
+        if (inUse) {
+          alert('Cannot delete season "' + seasonName + '". It is currently in use by applications or application form configuration.');
+          return;
+        }
+        const db = firebase.firestore();
+        await db.collection('season').doc(seasonName).delete();
+        alert('Deleted season: ' + seasonName);
+      } catch (err) {
+        console.error('deleteSeason error', err);
+        alert('Failed to delete season: ' + (err.message || err));
+      }
+    }
+
+    // Handler for top Save button (create new season or update status if exists)
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('saveSeasonsBtn')?.addEventListener('click', async () => {
+        const nameEl = document.getElementById('newSeasonName');
+        const statusEl = document.getElementById('newSeasonStatus');
+        const name = nameEl?.value?.trim();
+        const status = statusEl?.value || '';
+        if (!name) { alert('Enter a season name'); return; }
+        try {
+          await saveSeason(name, status);
+          // clear input name but leave status
+          nameEl.value = '';
+          await loadSeasonsList();
+        } catch (err) {
+          console.error(err);
+          alert('Failed to save season: ' + (err.message || err));
+        }
+      });
+
+      // initial loads (delay to allow firebase init)
+      setTimeout(() => {
+        loadSeasonsList();
+        if (typeof loadDatesInfoBody === 'function') setTimeout(loadDatesInfoBody, 200);
+      }, 200);
+    });
+
+    // Dates Info: load, edit, save
+    function formatTimestamp(ts) {
+      if (!ts) return '';
+      try {
+        if (typeof ts.toDate === 'function') return ts.toDate().toLocaleString();
+        return new Date(ts).toLocaleString();
+      } catch (e) { return String(ts); }
+    }
+ 
+    async function isCurrentUserAdmin() {
+      const user = firebase.auth().currentUser;
+      if (!user) return false;
+      try {
+        const udoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        return udoc.exists && udoc.data().role === 'admin';
+      } catch (e) {
+        console.warn('admin check failed', e);
+        return false;
+      }
+    }
+
+    async function loadDatesInfoBody() {
+      const el = document.getElementById('datesBodyContent');
+      const lastEl = document.getElementById('datesLastUpdated');
+      if (!el) return;
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('applicationInfo').doc('DatesInfo').get();
+        if (!doc.exists) {
+          el.innerHTML = '<div class="muted">No DatesInfo document found.</div>';
+          if (lastEl) lastEl.textContent = '';
+          return;
+        }
+        const data = doc.data() || {};
+        let body = data.Body || '';
+        body = String(body).replace(/\\n/g, '').replace(/\r?\n/g, '');
+        el.innerHTML = body ? body : '<div class="muted">No Body content.</div>';
+        if (lastEl) lastEl.textContent = data.lastUpdated ? `Last updated: ${formatTimestamp(data.lastUpdated)}` : '';
+        el.contentEditable = 'false';
+        document.getElementById('editDatesBtn').style.display = '';
+        document.getElementById('cancelEditDatesBtn').style.display = 'none';
+      } catch (err) {
+        console.error('Failed to load DatesInfo.Body', err);
+        el.innerHTML = `<div class="muted">Failed to load DatesInfo: ${escapeHtml(err.message || String(err))}</div>`;
+      }
+    }
+
+    async function saveDatesInfoBody() {
+      const el = document.getElementById('datesBodyContent');
+      if (!el) return;
+      const ok = await isCurrentUserAdmin();
+      if (!ok) { alert('You are not authorised to edit Dates Body.'); return; }
+      const html = el.innerHTML;
+      try {
+        const db = firebase.firestore();
+        await db.collection('applicationInfo').doc('DatesInfo').set({
+          Body: html,
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        alert('Dates body saved.');
+        await loadDatesInfoBody();
+      } catch (err) {
+        console.error('saveDatesInfoBody error', err);
+        alert('Failed to save Dates Body: ' + (err.message || err));
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // wire buttons
+      document.getElementById('editDatesBtn')?.addEventListener('click', async () => {
+        const el = document.getElementById('datesBodyContent');
+        if (!el) return;
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('You are not authorised to edit Dates Body.'); return; }
+        el.contentEditable = 'true';
+        el.focus();
+        document.getElementById('editDatesBtn').style.display = 'none';
+        document.getElementById('cancelEditDatesBtn').style.display = '';
+      });
+
+      document.getElementById('cancelEditDatesBtn')?.addEventListener('click', async () => {
+        // discard edits and reload original
+        await loadDatesInfoBody();
+      });
+
+      document.getElementById('saveDatesBodyBtn')?.addEventListener('click', async () => {
+        // save current html
+        await saveDatesInfoBody();
+      });
+
+      // initial load (allow firebase.init to run)
+      setTimeout(() => { loadDatesInfoBody(); }, 250);
+    });
+  </script>
+  
+</body>
+</html>

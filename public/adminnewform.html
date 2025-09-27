@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Manage Entries - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; }
     body {
@@ -12,7 +13,6 @@
       background-color: #fafafa;
       color: #333;
     }
-    /* make container span same width as header (inside main-content) */
     .container {
       max-width: none;
       width: 100%;
@@ -22,26 +22,23 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
       width: 220px;
       height: 100vh;
-      background-color: #d62d83;
+      background-color: #d7336f;
       padding: 20px;
       color: white;
       display: flex;
       flex-direction: column;
     }
-
     .sidebar h2 {
       text-align: center;
       margin-bottom: 40px;
       font-size: 22px;
     }
-
     .sidebar a {
       color: white;
       text-decoration: none;
@@ -50,18 +47,15 @@
       margin-bottom: 10px;
       transition: background-color 0.2s;
     }
-
     .sidebar a:hover, .sidebar a.active {
       background-color: #b8235a;
     }
-
     .main-content {
       margin-left: 220px;
       padding: 30px;
     }
-
     header {
-      background-color: #d62d83;
+      background-color: #d7336f;
       color: white;
       padding: 20px;
       border-radius: 8px;
@@ -69,7 +63,6 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .logout-btn {
       background-color: white;
       color: #d62d83;
@@ -79,23 +72,19 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     .logout-btn:hover {
       background-color: #ffe6ee;
     }
-
     h2.section-title {
       margin-top: 30px;
       color: #d62d83;
     }
-
     .controls {
       display: flex;
       align-items: center;
       gap: 10px;
       margin: 20px 0;
     }
-
     .controls input {
       padding: 8px;
       font-size: 14px;
@@ -103,7 +92,6 @@
       border-radius: 4px;
       width: 70%;
     }
-
     .controls select, .controls button {
       padding: 8px;
       font-size: 14px;
@@ -112,34 +100,28 @@
       background: white;
       cursor: pointer;
     }
-
     .controls button {
       background-color: #d62d83;
       color: white;
       font-weight: bold;
     }
-
     .controls button:hover {
       background-color: #b8235a;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
     }
-
     th, td {
       text-align: left;
       padding: 12px;
       border-bottom: 1px solid #ddd;
     }
-
     th {
       background-color: #fafafa;
       color: #d62d83;
     }
-
     .action-btn {
       padding: 6px 10px;
       border: none;
@@ -149,23 +131,19 @@
       font-size: 14px;
       cursor: pointer;
     }
-
     .action-btn:hover {
       background-color: #b8235a;
     }
-
     footer {
       text-align: center;
       color: #888;
       margin-top: 40px;
       font-size: 14px;
     }
-
     .error {
       color: red;
       margin-top: 10px;
     }
-
     #overlay {
       display: none;
       position: fixed;
@@ -175,7 +153,6 @@
       background: rgba(0, 0, 0, 0.5);
       z-index: 999;
     }
-
     #popup {
       display: none;
       position: fixed;
@@ -190,18 +167,13 @@
       text-align: center;
       animation: fadeIn 0.2s ease-in-out;
     }
-
-        main {
+    main {
       padding: 40px 30px;
     }
-
-    /* Dates / Tabs in-place replacement - left aligned to container */
     #datesSection, #tabSection {
       max-width: none;
       margin: 0;
     }
-
-    /* Make headings inside the Dates body match applicant form */
     #datesSection h2,
     #datesSection h3,
     #datesSection h4 {
@@ -209,19 +181,15 @@
     }
     #datesSection ul { font-size: 16px; line-height: 1.5; }
     #datesSection a { color: #1a0dab; }
-
-    /* Users dropdown style (match dates/support color) */
     .users-row { margin: 12px 0 18px; }
     .users-row label { color: #d7336f; font-weight:700; margin-right:8px; display:inline-block; }
     .users-row select { padding:8px; border-radius:6px; border:1px solid #ddd; min-width:260px; }
-
     .tab-list {
       max-width: 800px;
       margin: 30px auto 0;
       display: flex;
       gap: 2px;
     }
-
     .tab {
       flex: 1;
       padding: 16px 0;
@@ -233,10 +201,9 @@
       background: #888;
       color: #fff;
       border-radius: 6px 6px 0 0;
+      margin-right: 2px;
     }
-
-    .tab.active { background: #b8235a; }
-
+    .tab.active { background: #b8235a; color: #fff; }
     .tab-content {
       max-width: 800px;
       margin: 0 auto;
@@ -245,8 +212,6 @@
       border-radius: 0 0 10px 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-
-    /* Form controls styling to match applicationform */
     .form-group { margin-bottom: 18px; }
     .form-group label { display:block; margin-bottom:6px; font-weight:500; }
     .form-group input, .form-group select, .form-group textarea {
@@ -257,54 +222,36 @@
       font-size: 16px;
     }
     .form-group textarea { resize: vertical; min-height: 80px; }
-
     .form-actions { margin-top: 12px; display:flex; gap:10px; flex-wrap:wrap; }
     .form-actions .action-btn { padding:8px 14px; border-radius:6px; }
-
-    /* Keep dates "Start Entry" look */
     .start-entry-btn { padding: 12px 20px; background-color: #d7336f; color: #fff; border-radius:5px; border:none; cursor:pointer; }
     .start-entry-btn:hover { background-color: #b8235a; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    #popup h3 {
-      margin-bottom: 20px;
-      color: #d62d83;
-      font-size: 20px;
-    }
-
-    #popup select {
-      width: 100%;
-      padding: 10px;
-      font-size: 14px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
+    .word-count { font-size: 13px; color: #888; float: right; }
+    .eligibility-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+    .preview-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.4); z-index: 1000; padding: 24px; }
+    .preview-modal.open { display: flex; }
+    .preview-dialog { background: #fff; border-radius: 10px; max-width: 980px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden; }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #faf0f4; color: #8c1f4c; }
+    .preview-body { padding: 18px; max-height: 75vh; overflow: auto; }
+    .preview-title { margin: 18px 0 10px; color: #8c1f4c; background: #faf0f4; padding: 8px 12px; border-radius: 6px; }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+    @media (max-width: 800px) { .preview-grid { grid-template-columns: 1fr; } }
+    .preview-actions { display: flex; gap: 10px; }
+    .preview-close { background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+    .preview-close:hover { background: #ffe6ee; }
+    .preview-submit { background: #d7336f; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+    .preview-submit:disabled { background: #ccc; cursor: not-allowed; }
+    .upload-card { border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fcfcfc; }
+    .file-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .preview-image { 
+      display:none; 
+      max-width: 100%;
+      max-height: 400px;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid #eee;
       border-radius: 6px;
     }
-
-    #popup button {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      margin: 5px;
-    }
-
-    #popup button:first-of-type {
-      background-color: #d62d83;
-      color: white;
-    }
-
-    #popup button:last-of-type {
-      background-color: #f0f0f0;
-      color: #333;
-    }
-
-    /* Save-like button (match applicant Save button style) */
     .save-like {
       background: #e1faed;
       color: #1f7a4b;
@@ -315,9 +262,8 @@
       cursor: pointer;
     }
     .save-like:hover { background:#c9f2da; }
-
-    /* Application Form title colour */
     .manage-title { color: #8c1f4c; }
+    
   </style>
 </head>
 <body>
@@ -329,642 +275,840 @@
     <a href="#">Judging</a>
     <a href="#" onclick="logout()">Logout</a>
   </div>
-
   <div class="main-content">
     <header>
       <h1>Entries Management</h1>
       <button class="logout-btn" onclick="logout()">Log Out</button>
     </header>
-
     <main>
       <div class="container">
         <h2 class="manage-title">Application Form</h2>
-
-        <!-- Back button moved to the right and Dates content copied from applicationform.html -->
         <div style="position:relative;">
-          
-
           <div id="datesSection" style="margin-top:40px; background:#fff; padding:28px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
-            <!-- Dynamic body loaded from Firestore -->
             <div id="datesBody">Loading dates…</div>
-
             <div style="margin-top:20px; display:flex; gap:12px; align-items:center;">
                <label for="select_user" style="color:#d7336f;font-weight:700;margin:0 8px 0 0;">Users:</label>
                <select id="select_user" aria-label="Select user for this application" style="padding:8px;border-radius:6px;border:1px solid #ddd;min-width:320px;">
                  <option value="">Loading users…</option>
                </select>
                <div style="flex:1"></div>
-               <button class="save-like" id="startEntryBtn" disabled>Start Entry</button>
+               <button class="start-entry-btn" id="startEntryBtn" disabled>Start Entry</button>
                <button class="save-like" onclick="window.location.href='adminentriestab.html'">Back</button>
              </div>
             </div>
          </div>
-
-      <!-- moved: Tabs section sits inside the same container so it replaces Dates in-place -->
       <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
         <div class="tab-list" style="max-width:100%; display:flex; gap:2px;">
-          <button class="tab active" id="tabStart" style="flex:1; padding:12px 0; background:#b8235a; color:#fff; border-radius:6px 6px 0 0;">Start here</button>
-          <button class="tab" id="tabCriteria" disabled style="flex:1; padding:12px 0; background:#888; color:#fff; border-radius:6px 6px 0 0;">Criteria</button>
-          <button class="tab" id="tabAttachments" disabled style="flex:1; padding:12px 0; background:#888; color:#fff; border-radius:6px 6px 0 0;">Attachments</button>
+          <button class="tab active" id="tabStart">Start here</button>
+          <button class="tab" id="tabCriteria" disabled>Criteria</button>
+          <button class="tab" id="tabAttachments" disabled>Attachments</button>
         </div>
         <div id="tabContent" class="tab-content" style="padding:24px;"></div>
       </div>
-      <!-- end moved tabs -->
-
-     </div>
-   </main>
- </div>
-
-  <!-- Firebase Scripts -->
+      <div id="previewModal" class="preview-modal" aria-hidden="true"></div>
+      </div>
+    </main>
+  </div>
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Include xlsx library -->
- 
   <script>
-    // ---- Admin Start Entry wiring (copied/adapted from applicationform) ----
-    let applicationId = null;
-    let currentUser = null;
-    const db = () => firebase.firestore();
+  // ---- Admin New Form Logic ----
+  let applicationId = null;
+  let currentUser = null;
+  let criteriaQuestions = [];
+  const db = () => firebase.firestore();
 
-    // dynamic Categories/Subcategories loader 
-    let CATEGORIES_MAP = {};
-    async function loadCategoriesFromFirestore() {
-      const namesToTry = ['Categories', 'Category'];
-      CATEGORIES_MAP = {};
-      for (const col of namesToTry) {
-        try {
-          const snap = await db().collection(col).get();
-          if (!snap.empty) {
-            snap.forEach(doc => {
-              const data = doc.data() || {};
-              const subcats = Object.values(data).filter(Boolean).map(v => String(v));
-              CATEGORIES_MAP[doc.id] = subcats;
-            });
-            break;
-          }
-        } catch (e) {
-          console.warn('Failed to read collection', col, e);
+  firebase.auth().onAuthStateChanged(u => { currentUser = u || null; });
+
+  async function loadDatesFromFirestore() {
+    try {
+      const doc = await db().collection('applicationInfo').doc('DatesInfo').get();
+      if (doc.exists) {
+        const data = doc.data() || {};
+        if (data.Body) {
+          let html = String(data.Body)
+            .replace(/\\n/g, '')
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          document.getElementById('datesBody').innerHTML = html.trim();
         }
       }
-      populateCategorySelects();
-    }
+    } catch (e) {}
+  }
+  loadDatesFromFirestore();
 
-    function populateCategorySelects(selected = '') {
-      const sel = document.getElementById('category');
+  // Categories/Awards logic
+  let CATEGORIES_MAP = {};
+  let AWARDS_LIST = [];
+  async function loadCategoriesFromFirestore() {
+    const namesToTry = ['Categories', 'Category'];
+    CATEGORIES_MAP = {};
+    for (const col of namesToTry) {
+      try {
+        const snap = await db().collection(col).get();
+        if (!snap.empty) {
+          snap.forEach(doc => {
+            const data = doc.data() || {};
+            const subcats = Object.values(data).filter(Boolean).map(v => String(v));
+            CATEGORIES_MAP[doc.id] = subcats;
+          });
+          break;
+        }
+      } catch (e) {}
+    }
+    populateCategorySelects();
+  }
+  function populateCategorySelects(selectedCategory = '') {
+    ['category', 'pv_category'].forEach(id => {
+      const sel = document.getElementById(id);
       if (!sel) return;
       sel.innerHTML = '';
-      const def = document.createElement('option'); def.value = ''; def.textContent = 'Select category'; sel.appendChild(def);
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select category';
+      sel.appendChild(def);
       Object.keys(CATEGORIES_MAP).forEach(cat => {
-        const o = document.createElement('option'); o.value = cat; o.textContent = cat; sel.appendChild(o);
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        sel.appendChild(opt);
       });
-      if (selected) sel.value = selected;
-    }
-
-    function fillSubcategorySelect(selectEl, category, selectedValue = '') {
-      if (!selectEl) return;
-      const list = CATEGORIES_MAP[category] || [];
-      selectEl.innerHTML = '';
-      const def = document.createElement('option'); def.value = ''; def.textContent = 'Select subcategory'; selectEl.appendChild(def);
-      list.forEach(sc => { const o = document.createElement('option'); o.value = sc; o.textContent = sc; selectEl.appendChild(o); });
-      selectEl.disabled = list.length === 0;
-      if (selectedValue) selectEl.value = selectedValue;
-    }
-
-    // dynamic Awards loader 
-    let AWARDS_LIST = [];
-    async function loadAwardsFromFirestore() {
-      const namesToTry = ['Award', 'Awards'];
-      AWARDS_LIST = [];
-      for (const col of namesToTry) {
-        try {
-          const snap = await db().collection(col).get();
-          if (!snap.empty) {
-            snap.forEach(doc => AWARDS_LIST.push(String(doc.id)));
-            break;
-          }
-        } catch (e) {
-          console.warn('Failed to read awards collection', col, e);
+      if (selectedCategory) sel.value = selectedCategory;
+    });
+  }
+  function fillSubcategorySelect(selectEl, category, selectedValue = '') {
+    if (!selectEl) return;
+    const list = CATEGORIES_MAP[category] || [];
+    selectEl.innerHTML = '';
+    const def = document.createElement('option');
+    def.value = '';
+    def.textContent = 'Select subcategory';
+    selectEl.appendChild(def);
+    list.forEach(sc => {
+      const opt = document.createElement('option');
+      opt.value = sc;
+      opt.textContent = sc;
+      selectEl.appendChild(opt);
+    });
+    selectEl.disabled = list.length === 0;
+    if (selectedValue) selectEl.value = selectedValue;
+  }
+  async function loadAwardsFromFirestore() {
+    const namesToTry = ['Award', 'Awards'];
+    AWARDS_LIST = [];
+    for (const col of namesToTry) {
+      try {
+        const snap = await db().collection(col).get();
+        if (!snap.empty) {
+          snap.forEach(doc => {
+            AWARDS_LIST.push(String(doc.id));
+          });
+          break;
         }
-      }
-      populateAwardSelects();
+      } catch (e) {}
     }
-
-    function populateAwardSelects(selected = '') {
-      const sel = document.getElementById('award');
+    populateAwardSelects();
+  }
+  function populateAwardSelects(selected = '') {
+    ['award', 'pv_award'].forEach(id => {
+      const sel = document.getElementById(id);
       if (!sel) return;
       sel.innerHTML = '';
-      const def = document.createElement('option'); def.value = ''; def.textContent = 'Select award'; sel.appendChild(def);
-      AWARDS_LIST.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select award';
+      sel.appendChild(def);
+      AWARDS_LIST.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      });
       if (selected) sel.value = selected;
-    }
-
-    loadCategoriesFromFirestore();
-    loadAwardsFromFirestore();
-
-    // Load DatesInfo Body from applicationInfo and inject into #datesBody
-    async function loadDatesFromFirestore() {
-      try {
-        const doc = await db().collection('applicationInfo').doc('DatesInfo').get();
-        if (doc.exists) {
-          const data = doc.data() || {};
-          const el = document.getElementById('datesBody');
-          if (el && data.Body) {
-            // remove literal "\n" sequences if present and unescape common escapes
-            let html = String(data.Body).replace(/\\n/g, '').replace(/\\"/g, '"').replace(/\\'/g, "'");
-            el.innerHTML = html.trim();
-          }
-        }
-      } catch (e) {
-        console.warn('Could not load DatesInfo from Firestore', e);
-      }
-    }
-
-    // call loader (safe no-op if element not mounted yet)
-    loadDatesFromFirestore();
-
-    // templates copied from applicationform
-    const startHereContent = `...`; // will be set below by building via function to avoid huge inline string duplication
-    const criteriaContent = `...`;
-    const attachmentsContent = `...`;
-
-    // build templates (small subset to match app form)
-    function buildTemplates() {
-      window._startHereContent = `
-        <form id="startHereForm">
-          <div class="form-group"><label for="category">Category</label>
-            <select id="category" name="category" required>
-              <option value="">Select category</option>
-            </select>
-          </div>
-          <div class="form-group"><label for="subcategory">Subcategory</label>
-            <select id="subcategory" name="subcategory" disabled><option value=''>Select subcategory</option></select>
-          </div>
-          <div class="form-group"><label for="name">Full name</label><input type="text" id="name" name="name" required /></div>
-          <div class="form-group"><label for="website">Website (optional)</label><input type="text" id="website" name="website" /></div>
-          <div class="form-group"><label for="award">Which Awards would you want to enter?</label>
-            <select id="award" name="award" required>
-              <option value="">Select award</option>
-            </select>
-          </div>
-          <div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" required /></div>
-          <div class="form-group"><label for="mobile">Mobile Number</label><input type="tel" id="mobile" name="mobile" required /></div>
-          <div class="form-group"><label for="address">Address</label><input type="text" id="address" name="address" /></div>
-          <div class="form-group"><label for="instagram">Instagram profile page URL</label><input type="text" id="instagram" name="instagram" /></div>
-          <div class="form-group"><label for="linkedin">LinkedIn profile page URL</label><input type="text" id="linkedin" name="linkedin" /></div>
-          <div class="form-actions"><button type="button" class="action-btn btn-view" id="saveStartHereBtn">Save</button><button type="button" class="action-btn btn-view" id="saveNextBtn">Save & Next</button></div>
-        </form>`;
-
-      window._criteriaContent = `
-        <form id="criteriaForm">
-          <div class="form-group"><label for="about_yourself">Tell us about yourself</label><textarea id="about_yourself" name="about_yourself" rows="3"></textarea><span class="word-count" id="count_about_yourself">0/150</span></div>
-          <div class="form-group"><label for="about_work">Tell us about your work</label><textarea id="about_work" name="about_work" rows="3"></textarea><span class="word-count" id="count_about_work">0/150</span></div>
-          <div class="form-group"><label for="inspiration">What inspired you to do this work?</label><textarea id="inspiration" name="inspiration" rows="4"></textarea><span class="word-count" id="count_inspiration">0/200</span></div>
-          <div class="eligibility-check"><input type="checkbox" id="confirm-eligibility" /><label for="confirm-eligibility">I confirm I meet the eligibility criteria.</label></div>
-          <div class="form-actions"><button type="button" class="action-btn btn-primary" id="saveCriteriaBtn">Save</button><button type="button" class="action-btn" id="saveCriteriaNextBtn">Save & Next</button></div>
-        </form>`;
-
-      window._attachmentsContent = `
-        <section>
-          <h3 style="margin-top:0; color:#8c1f4c; background:#faf0f4; padding:10px 12px; border-radius:6px;">Attach your photo</h3>
-          <div class="upload-card" style="margin-top:14px;">
-            <div class="file-row"><input type="file" id="att_photo" accept="image/*" /></div>
-            <div style="margin-top:10px"><img id="att_preview" class="preview-image" alt="Selected photo preview" /></div>
-          </div>
-          <div class="form-actions" style="margin-top:14px;"><button type="button" class="action-btn btn-view" id="att_save_btn">Save</button><button type="button" class="action-btn btn-view" id="attachmentsPreviewBtn">Preview</button></div>
-        </section>`;
-    }
-
-    // ensure auth user tracked
-    firebase.auth().onAuthStateChanged(u => { currentUser = u || null; });
-
-    // create draft app doc
-    async function ensureApplicationDoc() {
-      if (applicationId) return;
-      const ownerId = await getSelectedOwnerId();
-      if (!ownerId) throw new Error('No owner selected or not signed in');
-      const now = firebase.firestore.FieldValue.serverTimestamp();
-      const ref = await db().collection('applications').add({
-        user_id: ownerId,
-        applicant_id: ownerId,
-        stage: 'draft',
-        createdAt: now,
-        updatedAt: now
-      });
-      applicationId = ref.id;
-    }
-
-    async function getApplicationData() {
-      if (!applicationId) return null;
-      try { const snap = await db().collection('applications').doc(applicationId).get(); return snap.exists ? snap.data() : null; }
-      catch (e) { console.error(e); return null; }
-    }
-
-    function setVal(form, id, value) { const el = form.querySelector('#' + id); if (el) el.value = value ?? ''; }
-
-    async function hydrateStartHereForm() {
-      const form = document.getElementById('startHereForm'); if (!form) return;
-      const data = await getApplicationData(); if (!data) return;
-      setVal(form,'category',data.category); fillSubcategorySelect(form.querySelector('#subcategory'), data.category, data.subcategory);
-      setVal(form,'name',data.name); setVal(form,'website',data.website); setVal(form,'award',data.awards_choice);
-      setVal(form,'email',data.email); setVal(form,'mobile',data.mobile_number); setVal(form,'address',data.address);
-      setVal(form,'instagram',data.instagram_url); setVal(form,'linkedin',data.linkedin_url);
-    }
-
-    function collectStartHere(form) {
-      const v = id => (form.querySelector('#' + id)?.value || '');
-      return { category: v('category'), subcategory: v('subcategory'), name: v('name'), website: v('website'), awards_choice: v('award'), email: v('email'), mobile_number: v('mobile'), address: v('address'), instagram_url: v('instagram'), linkedin_url: v('linkedin') };
-    }
-
-    async function setUpStartHereTab() {
-      const form = document.getElementById('startHereForm'); if (!form) return;
-      const cat = form.querySelector('#category'); const sub = form.querySelector('#subcategory');
-      cat?.addEventListener('change', ()=> fillSubcategorySelect(sub, cat.value, ''));
-      await hydrateStartHereForm();
-      document.getElementById('saveStartHereBtn').onclick = async () => {
-        try { await ensureApplicationDoc(); const payload={...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft'}; await db().collection('applications').doc(applicationId).set(payload,{merge:true}); alert('Saved.'); }
-        catch(e){ console.error(e); alert('Save failed: '+(e.message||e)); }
-      };
-      document.getElementById('saveNextBtn').onclick = async () => {
-        try { await ensureApplicationDoc(); const payload={...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft'}; await db().collection('applications').doc(applicationId).set(payload,{merge:true});
-          document.getElementById('tabCriteria').disabled = false; document.getElementById('tabAttachments').disabled = false; document.getElementById('tabCriteria').click();
-        } catch(e){ console.error(e); alert('Save failed: '+(e.message||e)); }
-      };
-    }
-
-    function setUpCriteriaTab() {
-      // basic wiring: save and save next update firestore
-      const form = document.getElementById('criteriaForm'); if(!form) return;
-      document.getElementById('saveCriteriaBtn').onclick = async () => {
-        try { await ensureApplicationDoc(); const payload = { tell_us_about_yourself: form.querySelector('#about_yourself')?.value||'', tell_us_about_your_work: form.querySelector('#about_work')?.value||'', what_inspired_you: form.querySelector('#inspiration')?.value||'', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage:'draft' }; await db().collection('applications').doc(applicationId).set(payload,{merge:true}); alert('Saved.'); } catch(e){ console.error(e); alert('Save failed: '+e.message); }
-      };
-      document.getElementById('saveCriteriaNextBtn').onclick = async () => {
-        try { await ensureApplicationDoc(); const payload = { tell_us_about_yourself: form.querySelector('#about_yourself')?.value||'', tell_us_about_your_work: form.querySelector('#about_work')?.value||'', what_inspired_you: form.querySelector('#inspiration')?.value||'', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage:'draft' }; await db().collection('applications').doc(applicationId).set(payload,{merge:true}); document.getElementById('tabAttachments').disabled = false; document.getElementById('tabAttachments').click(); } catch(e){ console.error(e); alert('Save failed: '+e.message); }
-      };
-    }
-
-    function setUpAttachmentsTab() {
-      const fileInput = document.getElementById('att_photo'); const img = document.getElementById('att_preview');
-      fileInput?.addEventListener('change', ()=> { const f = fileInput.files && fileInput.files[0]; if (f) { img.src = URL.createObjectURL(f); img.style.display = 'inline-block'; } else { img.removeAttribute('src'); img.style.display = 'none'; }});
-      document.getElementById('att_save_btn')?.addEventListener('click', ()=> alert('Attachment save not implemented.'));
-      document.getElementById('attachmentsPreviewBtn')?.addEventListener('click', ()=> alert('Preview not implemented in admin flow.'));
-    }
-
-    // tab switching handlers (delegated)
-    function wireTabHandlers() {
-      document.getElementById('tabStart').onclick = function() { document.getElementById('tabStart').classList.add('active'); document.getElementById('tabCriteria').classList.remove('active'); document.getElementById('tabAttachments').classList.remove('active'); document.getElementById('tabContent').innerHTML = window._startHereContent; setUpStartHereTab(); };
-      document.getElementById('tabCriteria').onclick = function() { if(this.disabled) return; document.getElementById('tabStart').classList.remove('active'); document.getElementById('tabCriteria').classList.add('active'); document.getElementById('tabAttachments').classList.remove('active'); document.getElementById('tabContent').innerHTML = window._criteriaContent; setUpCriteriaTab(); };
-      document.getElementById('tabAttachments').onclick = function() { if(this.disabled) return; document.getElementById('tabStart').classList.remove('active'); document.getElementById('tabCriteria').classList.remove('active'); document.getElementById('tabAttachments').classList.add('active'); document.getElementById('tabContent').innerHTML = window._attachmentsContent; setUpAttachmentsTab(); };
-    }
-
-    // populate users dropdown and default to current user
-    async function loadUsersDropdown() {
-      const sel = document.getElementById('select_user');
-      const startBtn = document.getElementById('startEntryBtn');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">Loading users…</option>';
-      try {
-        const snapshot = await firebase.firestore().collection('users').get();
-        sel.innerHTML = '';
-
-        if (snapshot.empty) {
-          sel.innerHTML = '<option value="">No users found</option>';
-          if (startBtn) startBtn.disabled = true;
-          return;
-        }
-
-        snapshot.docs.forEach(doc => {
-          const d = doc.data() || {};
-          const fullname = d.fullName || d.name || d.displayName || d.email || 'No name';
-          const opt = document.createElement('option');
-          opt.value = doc.id;
-          opt.textContent = `${fullname} | ${doc.id}`;
-          sel.appendChild(opt);
-        });
-
-        const me = firebase.auth().currentUser?.uid;
-        if (me && [...sel.options].some(o => o.value === me)) {
-          sel.value = me;
-        }
-
-        const updateStartState = () => { if (startBtn) startBtn.disabled = !sel.value; };
-        sel.addEventListener('change', updateStartState);
-        updateStartState();
-      } catch (err) {
-        console.error('Failed to load users', err);
-        sel.innerHTML = '<option value="">Failed to load users</option>';
-        if (startBtn) startBtn.disabled = true;
-      }
-    }
-
-    // use selected user when creating/ saving application
-    async function getSelectedOwnerId() {
-      const sel = document.getElementById('select_user');
-      return (sel && sel.value) ? sel.value : (firebase.auth().currentUser ? firebase.auth().currentUser.uid : null);
-    }
-
-    // ensureApplicationDoc now uses selected owner id if provided in the UI
-    async function ensureApplicationDoc() {
-      if (applicationId) return;
-      const ownerId = await getSelectedOwnerId();
-      if (!ownerId) throw new Error('No owner selected or not signed in');
-      const now = firebase.firestore.FieldValue.serverTimestamp();
-      const ref = await db().collection('applications').add({
-        user_id: ownerId,
-        applicant_id: ownerId,
-        stage: 'draft',
-        createdAt: now,
-        updatedAt: now
-      });
-      applicationId = ref.id;
-    }
-
-    // Start Entry button behaviour (admin)
-    document.getElementById('startEntryBtn')?.addEventListener('click', async () => {
-       try {
-         // prepare templates and show tabs
-         buildTemplates();
-         document.getElementById('datesSection')?.style && (document.getElementById('datesSection').style.display = 'none');
-         document.getElementById('tabSection').style.display = 'block';
-         document.getElementById('tabContent').innerHTML = window._startHereContent;
-         wireTabHandlers();
-         // create draft doc for admin if needed (keeps parity with applicant flow)
-        try { await ensureApplicationDoc(); } catch(e){ console.warn('ensureApplicationDoc failed', e); }
-         setUpStartHereTab();
-       } catch (e) { console.error(e); alert('Failed to open form: ' + (e.message||e)); }
-     });
-    // load users dropdown once auth ready
-    firebase.auth().onAuthStateChanged(user => {
-      currentUser = user || null;
-      loadUsersDropdown().catch(()=>{});
     });
+  }
+  loadAwardsFromFirestore();
+  loadCategoriesFromFirestore();
 
-    // when saving start-here, include selected owner (ensure setUpStartHereTab uses this)
-    const originalSetUp = setUpStartHereTab;
-    async function setUpStartHereTab_wrapper() {
-      try { await loadCategoriesFromFirestore(); } catch(e){console.warn(e);}
-      try { await loadAwardsFromFirestore(); } catch(e){console.warn(e);}
-      originalSetUp();
-      // patch save actions to include selected owner id
-      const form = document.getElementById('startHereForm');
-      if (!form) return;
-      const saveBtn = document.getElementById('saveStartHereBtn');
-      const nextBtn = document.getElementById('saveNextBtn');
-      if (saveBtn) {
-        saveBtn.onclick = async () => {
-          try {
-            await ensureApplicationDoc();
-            const ownerId = await getSelectedOwnerId();
-            const payload = { ...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft', user_id: ownerId, applicant_id: ownerId };
-            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
-            alert('Saved.');
-          } catch (e) { console.error(e); alert('Save failed: ' + (e.message || e)); }
-        };
+  // Get current season
+  async function getCurrentSeasonName() {
+    const snap = await db().collection('season').get();
+    let currentSeason = null;
+    snap.forEach(doc => {
+      if (doc.data().status === 'current') currentSeason = doc.id;
+    });
+    if (!currentSeason) throw new Error('No current season found');
+    return currentSeason;
+  }
+  async function getSeasonQuestions(seasonName) {
+    const snap = await db().collection('applicationInfo').get();
+    let questions = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (data[seasonName]) {
+        questions.push({
+          id: doc.id,
+          question_ID: data.question_ID,
+          question: data.Question,
+          order: data[seasonName],
+          wordLimit: data.wordLimit
+        });
       }
-      if (nextBtn) {
-        nextBtn.onclick = async () => {
-          try {
-            await ensureApplicationDoc();
-            const ownerId = await getSelectedOwnerId();
-            const payload = { ...collectStartHere(form), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), stage: 'draft', user_id: ownerId, applicant_id: ownerId };
-            await db().collection('applications').doc(applicationId).set(payload, { merge: true });
-            document.getElementById('tabCriteria').disabled = false;
-            document.getElementById('tabAttachments').disabled = false;
-            document.getElementById('tabCriteria').click();
-          } catch (e) { console.error(e); alert('Save failed: ' + (e.message || e)); }
-        };
-      }
+    });
+    questions.sort((a, b) => {
+      const nA = Number(a.order.replace(/[^0-9]/g, ''));
+      const nB = Number(b.order.replace(/[^0-9]/g, ''));
+      return nA - nB;
+    });
+    return questions;
+  }
+
+  // Ensure application doc exists
+  async function ensureApplicationDoc() {
+    if (applicationId) return;
+    const userId = document.getElementById('select_user').value;
+    if (!userId) throw new Error('No user selected');
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    // resolve current season (best-effort). If none found, season will be null.
+    let seasonName = null;
+    try { seasonName = await getCurrentSeasonName(); } catch(_) { seasonName = null; }
+    const ref = await db().collection('applications').add({
+      user_id: userId,
+      applicant_id: userId,
+      season: seasonName,
+      stage: 'draft',
+      createdAt: now,
+      updatedAt: now
+    });
+    applicationId = ref.id;
+  }
+
+  async function getApplicationData() {
+    if (!applicationId) return null;
+    try {
+      const snap = await db().collection('applications').doc(applicationId).get();
+      return snap.exists ? snap.data() : null;
+    } catch (e) { return null; }
+  }
+  function setVal(form, id, value) {
+    const el = form.querySelector('#' + id);
+    if (el) el.value = value ?? '';
+  }
+
+  /* Replace Admin's start/criteria/attachments + preview logic with the applicationform versions */
+
+  // Static start here tab (copied from applicationform.html)
+  const startHereContent = `
+    <form id="startHereForm">
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+          <option value="">Select category</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="subcategory">Subcategory</label>
+        <select id="subcategory" name="subcategory" disabled>
+          <option value="">Select subcategory</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="award">Which Awards would you want to enter?</label>
+        <select id="award" name="award" required>
+          <option value="">Select award</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+      <div class="form-group">
+        <label for="website">Website (optional)</label>
+        <input type="text" id="website" name="website" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <div class="form-group">
+        <label for="mobile">Mobile Number</label>
+        <input type="tel" id="mobile" name="mobile" required />
+      </div>
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" required autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label for="instagram">Instagram profile page URL (if applicable)</label>
+        <input type="text" id="instagram" name="instagram" />
+      </div>
+      <div class="form-group">
+        <label for="linkedin">LinkedIn profile page URL (if applicable)</label>
+        <input type="text" id="linkedin" name="linkedin" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="action-btn btn-view" id="saveStartHereBtn">Save</button>
+        <button type="button" class="action-btn btn-view" id="saveNextBtn">Save & Next</button>
+      </div>
+    </form>
+  `;
+
+  // Attachments tab (copied from applicationform.html)
+  const attachmentsContent = `
+    <section>
+      <h2 style="margin-top:0; color:#8c1f4c; background:#faf0f4; padding:10px 12px; border-radius:6px;">
+        Attach your photo
+      </h2>
+      <div>
+        <p style="margin:0 0 10px 0;">Materials to be supplied</p>
+        <p style="margin:0 0 8px 0; font-weight:600;">HIGH RESOLUTION PHOTO TO BE ATTACHED TO YOUR ENTRY FORM</p>
+        <ul style="padding-left:20px; margin-top:6px;">
+          <li>The photo file should be named with your name and business name (e.g., Katy Garner, AusMumpreneur).</li>
+          <li>This photo should be just yourself without other people in it unless you are entering as a partnership or team.</li>
+          <li>Please no text, logos or montages.</li>
+          <li>If you are a finalist this photo will be used for the digital screen at the awards night so please use a good quality image you would be proud to share.</li>
+          <li>Your photo is part of your application and must be included to be eligible. Maximum file size is 5MB per piece.</li>
+        </ul>
+      </div>
+      <div class="upload-card" style="margin-top:14px;">
+        <div class="file-row">
+          <input type="file" id="att_photo" accept="image/*" />
+        </div>
+        <div style="margin-top:10px">
+          <img id="att_preview" class="preview-image" alt="Selected photo preview" />
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:14px;">
+        <button type="button" class="action-btn btn-view" id="att_save_btn">Save</button>
+        <button type="button" class="action-btn btn-view" id="attachmentsPreviewBtn">Preview</button>
+      </div>
+    </section>
+  `;
+
+  // Dynamic criteria builder (copied from applicationform.html)
+  async function buildCriteriaContent() {
+    if (!criteriaQuestions.length) {
+      const seasonName = await getCurrentSeasonName();
+      criteriaQuestions = await getSeasonQuestions(seasonName);
     }
-    // swap wrapper into use after templates built
-    setUpStartHereTab = setUpStartHereTab_wrapper;
-
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "signin.html";
-      });
+    let html = `<form id="criteriaForm">`;
+    for (const q of criteriaQuestions) {
+      html += `
+        <div class="form-group">
+          <label for="${q.question_ID}">${q.question}</label>
+          <textarea id="${q.question_ID}" name="${q.question_ID}" maxlength="${q.wordLimit * 8}" rows="4"></textarea>
+          <span class="word-count" id="count_${q.question_ID}">0/${q.wordLimit}</span>
+        </div>
+      `;
     }
+    html += `
+      <div class="eligibility-check">
+        <input type="checkbox" id="confirm-eligibility" />
+        <label for="confirm-eligibility" style="font-size: 0.98rem; font-weight: 400;">
+          I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="action-btn btn-view" id="saveCriteriaBtn">Save</button>
+        <button type="button" class="action-btn btn-view" id="saveCriteriaNextBtn">Save & Next</button>
+      </div>
+    </form>
+    `;
+    return html;
+  }
 
-    // Modal functionality
-    const modalEl = document.getElementById('viewModal');
-    const modalClose = document.getElementById('modalClose');
-    modalClose.onclick = () => closeModal();
-    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-    
-    function openModal() { 
-      modalEl.classList.add('open'); 
-      modalEl.setAttribute('aria-hidden', 'false'); 
+  // hydrate criteria form (copied)
+  async function hydrateCriteriaForm() {
+    const form = document.getElementById('criteriaForm');
+    if (!form) return;
+    const data = await getApplicationData();
+    if (!data) return;
+    for (const q of criteriaQuestions) {
+      setVal(form, q.question_ID, data[q.question_ID]);
     }
-    
-    function closeModal() { 
-      modalEl.classList.remove('open'); 
-      modalEl.setAttribute('aria-hidden', 'true'); 
-    }
+    const cb = form.querySelector('#confirm-eligibility');
+    if (cb) cb.checked = !!data.eligibility;
+  }
 
-    // Utility functions
-    function esc(s) {
-      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
+  // collect criteria (copied)
+  function collectCriteria(form) {
+    const val = id => (form.querySelector('#' + id)?.value || '');
+    let out = {};
+    for (const q of criteriaQuestions) { out[q.question_ID] = val(q.question_ID); }
+    out.eligibility = form.querySelector('#confirm-eligibility')?.checked ? true : false;
+    return out;
+  }
 
-    function fmt(ts) {
-      try {
-        if (!ts) return "-";
-        if (ts.toDate) return ts.toDate().toLocaleDateString();
-        return new Date(ts).toLocaleDateString();
-      } catch { return "-"; }
-    }
-
-    function kv(label, value) {
-      return `<div class="kv"><div class="k">${esc(label)}</div><div class="v">${esc(value || '-')}</div></div>`;
-    }
-
-    function block(label, value) {
-      const safe = esc(value || '');
-      return `<div class="kv" style="margin-bottom:10px">
-                <div class="k" style="margin-bottom:6px">${esc(label)}</div>
-                <div class="block">${safe || '-'}</div>
-              </div>`;
-    }
-
-    // View application details
-    async function viewApp(id) {
-      try {
-        const db = firebase.firestore();
-        const doc = await db.collection('applications').doc(id).get();
-        if (!doc.exists) { alert("Application not found."); return; }
-        const d = doc.data();
-
-        // Header info
-        document.getElementById('modalAppId').textContent = id;
-
-        // Start here fields 
-        const startHtml = [
-          kv('Category', d.category),
-          kv('Subcategory', d.subcategory),
-          kv('Award', d.awards_choice),
-          kv('Name', d.name),
-          kv('Website', d.website),
-          kv('Email Address', d.email),
-          kv('Mobile Number', d.mobile_number),
-          kv('Address', d.address),
-          kv('Instagram URL', d.instagram_url),
-          kv('LinkedIn URL', d.linkedin_url),
-          kv('Status', d.status),
-          kv('Created', fmt(d.createdAt)),
-          kv('Updated', fmt(d.updatedAt))
-        ].join('');
-        document.getElementById('modalStartFields').innerHTML = startHtml;
-
-        // Criteria fields 
-        const critHtml = [
-          block('Tell us about yourself', d.tell_us_about_yourself),
-          block('Tell us about your work', d.tell_us_about_your_work),
-          block('What inspired you to do this work?', d.what_inspired_you),
-          block('What makes what you do special or unique?', d.what_makes_you_unique),
-          block('What has been your greatest challenge & how have you addressed this?', d.greatest_challenge),
-          block('What have been your top 3 greatest achievements in the past 12 months?', d.top_achievements),
-          block('Why were these achievements significant and what do you attribute your achievements to?', d.achievements_significance),
-          block('What is your big picture vision for the work you are doing?', d.big_picture_vision),
-          block('Why should you be recognised in this category?', d.recognition_reason),
-          kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No')
-        ].join('');
-        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
-
-        openModal();
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load application: " + err.message);
-      }
-    }
-
-    // Load all applications
-    firebase.auth().onAuthStateChanged(async user => {
-      const body = document.getElementById('entriesBody');
-      if (!user) { 
-        window.location.href = "signin.html"; 
-        return; 
-      }
-
-      // Check if user is admin
-      try {
-        const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
-        if (!userDoc.exists || userDoc.data().role !== "admin") {
-          window.location.href = "unauthorized.html";
-          return;
+  // wordcount (copied)
+  function setUpWordCount(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    function countWords(s) { return s.trim().split(/\s+/).filter(Boolean).length; }
+    for (const q of criteriaQuestions) {
+      const ta = form.querySelector('#' + q.question_ID);
+      const span = document.getElementById('count_' + q.question_ID);
+      if (!ta || !span) continue;
+      const max = Number(q.wordLimit);
+      ta.addEventListener('input', () => {
+        let words = countWords(ta.value);
+        if (words > max) {
+          ta.value = ta.value.split(/\s+/).slice(0, max).join(' ');
+          words = max;
         }
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        window.location.href = "signin.html";
+        span.textContent = `${words}/${max}`;
+      });
+      ta.dispatchEvent(new Event('input'));
+    }
+  }
+
+  // hydrate start here form (copied)
+  async function hydrateStartHereForm() {
+    const form = document.getElementById('startHereForm');
+    if (!form) return;
+    const data = await getApplicationData();
+    if (!data) return;
+    setVal(form, 'category', data.category);
+    fillSubcategorySelect(form.querySelector('#subcategory'), data.category, data.subcategory);
+    setVal(form, 'name', data.name);
+    setVal(form, 'website', data.website);
+    setVal(form, 'award', data.awards_choice);
+    setVal(form, 'email', data.email);
+    setVal(form, 'mobile', data.mobile_number);
+    setVal(form, 'address', data.address);
+    setVal(form, 'instagram', data.instagram_url);
+    setVal(form, 'linkedin', data.linkedin_url);
+  }
+
+  // collect start here (copied)
+  function collectStartHere(form) {
+    const val = id => (form.querySelector('#' + id)?.value || '');
+    return {
+      category: val('category'),
+      subcategory: val('subcategory'),
+      name: val('name'),
+      website: val('website'),
+      awards_choice: val('award'),
+      email: val('email'),
+      mobile_number: val('mobile'),
+      address: val('address'),
+      instagram_url: val('instagram'),
+      linkedin_url: val('linkedin')
+    };
+  }
+
+  // setUpStartHereTab (copied)
+  function setUpStartHereTab() {
+    const form = document.getElementById('startHereForm');
+    if (!form) return;
+    form.reset();
+    populateCategorySelects();
+    populateAwardSelects();
+    const cat = form.querySelector('#category');
+    const sub = form.querySelector('#subcategory');
+    cat.addEventListener('change', () => {
+      fillSubcategorySelect(sub, cat.value, '');
+    });
+    hydrateStartHereForm();
+    const saveBtn = document.getElementById('saveStartHereBtn');
+    const nextBtn = document.getElementById('saveNextBtn');
+    async function saveStartHereToFirestore() {
+      await ensureApplicationDoc();
+      const payload = {
+        ...collectStartHere(form),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        stage: 'draft'
+      };
+      await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+    }
+    if (saveBtn) {
+      saveBtn.onclick = async () => {
+        try { await saveStartHereToFirestore(); alert('Saved.'); }
+        catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = async () => {
+        try {
+          await saveStartHereToFirestore();
+          const critTab = document.getElementById('tabCriteria');
+          const attTab = document.getElementById('tabAttachments');
+          if (critTab) critTab.disabled = false;
+          if (attTab) attTab.disabled = false;
+          critTab?.click();
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+  }
+
+  // setUpCriteriaTab (copied)
+  function setUpCriteriaTab() {
+    const form = document.getElementById('criteriaForm');
+    if (!form) return;
+    const saveBtn = document.getElementById('saveCriteriaBtn');
+    const nextBtn = document.getElementById('saveCriteriaNextBtn');
+    if (saveBtn) {
+      saveBtn.onclick = async () => {
+        try {
+          await ensureApplicationDoc();
+          const payload = {
+            ...collectCriteria(form),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            stage: 'draft'
+          };
+          await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+          alert('Saved.');
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = async () => {
+        try {
+          await ensureApplicationDoc();
+          const payload = {
+            ...collectCriteria(form),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            stage: 'draft'
+          };
+          await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+          const attTab = document.getElementById('tabAttachments');
+          if (attTab) attTab.disabled = false;
+          attTab?.click();
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+  }
+
+  // setUpAttachmentsTab (copied)
+  function setUpAttachmentsTab() {
+    const fileInput = document.getElementById('att_photo');
+    const img = document.getElementById('att_preview');
+    const saveBtn = document.getElementById('att_save_btn');
+    const previewBtn = document.getElementById('attachmentsPreviewBtn');
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (f) {
+        const url = URL.createObjectURL(f);
+        img.src = url;
+        img.style.display = 'inline-block';
+      } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+      }
+    });
+    saveBtn?.addEventListener('click', () => {
+      alert('The image saving function is not implemented.');
+    });
+    previewBtn?.addEventListener('click', async () => {
+      try { await openPreviewModal(); }
+      catch (e) { alert('Failed to open preview: ' + e.message); }
+    });
+  }
+
+  // Preview modal + wiring (copied)
+  async function buildPreviewModal() {
+    let html = `
+      <div class="preview-dialog">
+        <div class="preview-header">
+          <strong>Preview your application</strong>
+          <div class="preview-actions">
+            <button id="previewClose" class="preview-close">Close</button>
+            <button id="previewSubmit" class="preview-submit" disabled>Submit Application</button>
+          </div>
+        </div>
+        <div class="preview-body">
+          <h3 class="preview-title">Start here</h3>
+          <div class="preview-grid">
+            <div>
+              <label>Category</label>
+              <select id="pv_category"><option value="">Select category</option></select>
+            </div>
+            <div>
+              <label>Subcategory</label>
+              <select id="pv_subcategory"><option value="">Select subcategory</option></select>
+            </div>
+            <div>
+              <label>Award</label>
+              <select id="pv_award"><option value="">Select award</option></select>
+            </div>
+            <div><label>Name</label><input id="pv_name" type="text"></div>
+            <div><label>Website</label><input id="pv_website" type="text"></div>
+            <div><label>Email</label><input id="pv_email" type="email"></div>
+            <div><label>Mobile Number</label><input id="pv_mobile" type="tel"></div>
+            <div><label>Address</label><input id="pv_address" type="text"></div>
+            <div><label>Instagram URL</label><input id="pv_instagram" type="text"></div>
+            <div><label>LinkedIn URL</label><input id="pv_linkedin" type="text"></div>
+          </div>
+          <h3 class="preview-title">Criteria</h3>
+          <div id="pv_criteria_questions"></div>
+          <div class="eligibility-check">
+            <input type="checkbox" id="pv_confirm_eligibility" />
+            <label for="pv_confirm_eligibility" style="font-size: 0.98rem; font-weight: 400;">
+              I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+    return html;
+  }
+
+  async function openPreviewModal() {
+    if (!criteriaQuestions.length) {
+      const seasonName = await getCurrentSeasonName();
+      criteriaQuestions = await getSeasonQuestions(seasonName);
+    }
+    const modal = document.getElementById('previewModal');
+    if (!modal) return;
+    modal.innerHTML = await buildPreviewModal();
+    const data = await getApplicationData();
+    populateAwardSelects(data?.awards_choice);
+    populateCategorySelects(data?.category);
+    document.getElementById('pv_category').value = data?.category || '';
+    fillSubcategorySelect(document.getElementById('pv_subcategory'), data?.category, data?.subcategory);
+    document.getElementById('pv_award').value = data?.awards_choice || '';
+    document.getElementById('pv_name').value = data?.name || '';
+    document.getElementById('pv_website').value = data?.website || '';
+    document.getElementById('pv_email').value = data?.email || '';
+    document.getElementById('pv_mobile').value = data?.mobile_number || '';
+    document.getElementById('pv_address').value = data?.address || '';
+    document.getElementById('pv_instagram').value = data?.instagram_url || '';
+    document.getElementById('pv_linkedin').value = data?.linkedin_url || '';
+    document.getElementById('pv_category').onchange = (e) => {
+      fillSubcategorySelect(document.getElementById('pv_subcategory'), e.target.value, '');
+    };
+    let qHtml = "";
+    for (const q of criteriaQuestions) {
+      qHtml += `
+        <div class="form-group">
+          <label for="pv_${q.question_ID}">${q.question}</label>
+          <textarea id="pv_${q.question_ID}" name="pv_${q.question_ID}" maxlength="${q.wordLimit * 8}" rows="4"></textarea>
+          <span class="word-count" id="pv_count_${q.question_ID}">0/${q.wordLimit}</span>
+        </div>
+      `;
+    }
+    document.getElementById('pv_criteria_questions').innerHTML = qHtml;
+    for (const q of criteriaQuestions) {
+      document.getElementById('pv_' + q.question_ID).value = data?.[q.question_ID] || '';
+    }
+    document.getElementById('pv_confirm_eligibility').checked = !!data?.eligibility;
+    // hook up preview word count & validation
+    setUpPreviewWordCount();
+    bindPreviewValidation();
+    updatePreviewSubmitState();
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('previewClose')?.addEventListener('click', closePreviewModal);
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closePreviewModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal?.classList.contains('open')) closePreviewModal(); });
+    document.getElementById('previewSubmit').onclick = async function() {
+      if (!previewRequiredOk()) return alert('Please complete all required fields and confirm eligibility.');
+      if (!confirm('Are you sure you want to submit your application? This cannot be undone?')) return;
+      try {
+        const payload = collectPreviewData();
+        await db().collection('applications').doc(applicationId).set({
+          ...payload,
+          submitted: true,
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        alert('Application submitted successfully!');
+        closePreviewModal();
+      } catch (err) {
+        alert('Failed to submit application: ' + err.message);
+      }
+    };
+  }
+
+  function closePreviewModal() {
+    const modal = document.getElementById('previewModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  // setUpPreviewWordCount (copied)
+  function setUpPreviewWordCount() {
+    function countWords(s) { return s.trim().split(/\s+/).filter(Boolean).length; }
+    for (const q of criteriaQuestions) {
+      const ta = document.getElementById('pv_' + q.question_ID);
+      const span = document.getElementById('pv_count_' + q.question_ID);
+      if (!ta || !span) continue;
+      const max = Number(q.wordLimit);
+      ta.addEventListener('input', () => {
+        let words = countWords(ta.value);
+        if (words > max) {
+          ta.value = ta.value.split(/\s+/).slice(0, max).join(' ');
+          words = max;
+        }
+        span.textContent = `${words}/${max}`;
+      });
+      ta.dispatchEvent(new Event('input'));
+    }
+  }
+
+  // previewRequiredOk, getPreviewVal, updatePreviewSubmitState, bindPreviewValidation, collectPreviewData (copied)
+  function previewRequiredOk() {
+    let allFilled = [
+      'pv_award','pv_name','pv_email','pv_mobile'
+    ].every(id => getPreviewVal(id).length > 0);
+    allFilled = allFilled && criteriaQuestions.every(q =>
+      getPreviewVal('pv_' + q.question_ID).length > 0
+    );
+    const eligible = !!document.getElementById('pv_confirm_eligibility')?.checked;
+    return allFilled && eligible;
+  }
+  function getPreviewVal(id) {
+    const el = document.getElementById(id);
+    return (el && typeof el.value === 'string') ? el.value.trim() : '';
+  }
+  function updatePreviewSubmitState() {
+    const btn = document.getElementById('previewSubmit');
+    if (btn) btn.disabled = !previewRequiredOk();
+  }
+  function bindPreviewValidation() {
+    const wire = (id, evt = 'input') => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound === '1') return;
+      el.addEventListener(evt, updatePreviewSubmitState);
+      el.dataset.bound = '1';
+    };
+    ['pv_award','pv_name','pv_email','pv_mobile'].forEach(id => wire(id));
+    criteriaQuestions.forEach(q => wire('pv_' + q.question_ID));
+    wire('pv_confirm_eligibility', 'change');
+    ['pv_category','pv_subcategory','pv_website','pv_address','pv_instagram','pv_linkedin'].forEach(id => wire(id, 'change'));
+  }
+  function collectPreviewData() {
+    let out = {};
+    out.category = getPreviewVal('pv_category');
+    out.subcategory = getPreviewVal('pv_subcategory');
+    out.awards_choice = getPreviewVal('pv_award');
+    out.name = getPreviewVal('pv_name');
+    out.website = getPreviewVal('pv_website');
+    out.email = getPreviewVal('pv_email');
+    out.mobile_number = getPreviewVal('pv_mobile');
+    out.address = getPreviewVal('pv_address');
+    out.instagram_url = getPreviewVal('pv_instagram');
+    out.linkedin_url = getPreviewVal('pv_linkedin');
+    for (const q of criteriaQuestions) {
+      out[q.question_ID] = getPreviewVal('pv_' + q.question_ID);
+    }
+    out.eligibility = !!document.getElementById('pv_confirm_eligibility')?.checked;
+    return out;
+  }
+
+  // User selection wiring and entry
+  async function loadUsersDropdown() {
+    const sel = document.getElementById('select_user');
+    const startBtn = document.getElementById('startEntryBtn');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Loading users…</option>';
+    try {
+      const snapshot = await firebase.firestore().collection('users').get();
+      sel.innerHTML = '';
+      if (snapshot.empty) {
+        sel.innerHTML = '<option value="">No users found</option>';
+        if (startBtn) startBtn.disabled = true;
         return;
       }
-
-      // Load all applications
-      try {
-        const db = firebase.firestore();
-        const snap = await db.collection('applications').get();
-
-        if (snap.empty) {
-          body.innerHTML = `<tr><td colspan="9" class="muted">No applications found.</td></tr>`;
-          return;
-        }
-
-        body.innerHTML = '';
-        snap.docs.forEach(doc => {
-          const id = doc.id;
-          const d = doc.data();
-          const stage = (d.stage || 'draft').toLowerCase();
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${id}</td>
-            <td>${d.name || '-'}</td>
-            <td><span class="muted">${d.stage || 'draft'}</span></td>
-            <td>${d.category || '-'}</td>
-            <td>${d.subcategory || '-'}</td>
-            <td>${fmt(d.updatedAt)}</td>
-            <td>${d.stage === 'submitted' ? fmt(d.submittedAt || d.updatedAt) : '-'}</td>
-            <td>${d.email || '-'}</td>
-            <td>
-              <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
-            </td>
-          `;
-          body.appendChild(tr);
-        });
-      } catch (err) {
-        body.innerHTML = `<tr><td colspan="9" class="muted">Error: ${err.message}</td></tr>`;
-        console.error(err);
+      snapshot.docs.forEach(doc => {
+        const d = doc.data() || {};
+        const fullname = d.fullName || d.name || d.displayName || d.email || 'No name';
+        const opt = document.createElement('option');
+        opt.value = doc.id;
+        opt.textContent = `${fullname} | ${doc.id}`;
+        sel.appendChild(opt);
+      });
+      const me = firebase.auth().currentUser?.uid;
+      if (me && [...sel.options].some(o => o.value === me)) {
+        sel.value = me;
       }
+      const updateStartState = () => { if (startBtn) startBtn.disabled = !sel.value; };
+      sel.addEventListener('change', updateStartState);
+      updateStartState();
+    } catch (err) {
+      sel.innerHTML = '<option value="">Failed to load users</option>';
+      if (startBtn) startBtn.disabled = true;
+    }
+  }
+  firebase.auth().onAuthStateChanged(user => {
+    currentUser = user || null;
+    loadUsersDropdown().catch(()=>{});
+  });
+
+  // Start entry button logic (same behaviour as applicationform: check season then open tabs)
+  document.getElementById('startEntryBtn').onclick = async function() {
+    try {
+      let currentSeason = null;
+      const snap = await db().collection('season').get();
+      snap.forEach(doc => {
+        if (doc.data().status === 'current') currentSeason = doc.id;
+      });
+      if (!currentSeason) {
+        alert('No current season found. Application round is closed / not started.');
+        return;
+      }
+      // hide dates and show tabs
+      document.getElementById('datesSection').style.display = 'none';
+      document.getElementById('tabSection').style.display = 'block';
+      // show start tab content and initialise
+      document.getElementById('tabContent').innerHTML = startHereContent;
+      // ensure correct tab highlight
+      document.getElementById('tabStart').classList.add('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabAttachments').classList.remove('active');
+      setUpStartHereTab();
+    } catch (e) {
+      alert('Error starting entry: ' + (e.message || e));
+    }
+  };
+
+  function wireTabButtons() {
+  const tabStart = document.getElementById('tabStart');
+  const tabCriteria = document.getElementById('tabCriteria');
+  const tabAttachments = document.getElementById('tabAttachments');
+  const tabContent = document.getElementById('tabContent');
+
+  if (tabStart) {
+    tabStart.addEventListener('click', () => {
+      tabStart.classList.add('active');
+      tabCriteria?.classList.remove('active');
+      tabAttachments?.classList.remove('active');
+      tabContent.innerHTML = startHereContent;
+      setUpStartHereTab();
     });
+  }
 
-    async function bulkExport() {
-      try {
-        const db = firebase.firestore();
-        const snap = await db.collection('applications').get();
+  if (tabCriteria) {
+    tabCriteria.addEventListener('click', async () => {
+      if (tabCriteria.disabled) return;
+      tabStart?.classList.remove('active');
+      tabCriteria.classList.add('active');
+      tabAttachments?.classList.remove('active');
+      tabContent.innerHTML = await buildCriteriaContent();
+      setUpWordCount('criteriaForm');
+      hydrateCriteriaForm();
+      setUpCriteriaTab();
+    });
+  }
 
-        if (snap.empty) {
-          alert('No applications found to export.');
-          return;
-        }
+  if (tabAttachments) {
+    tabAttachments.addEventListener('click', () => {
+      if (tabAttachments.disabled) return;
+      tabStart?.classList.remove('active');
+      tabCriteria?.classList.remove('active');
+      tabAttachments.classList.add('active');
+      tabContent.innerHTML = attachmentsContent;
+      setUpAttachmentsTab();
+    });
+  }
+}
 
-        const applications = snap.docs.map(doc => {
-          const data = doc.data();
-          return {
-            'Applicant ID': doc.id,
-            'Full Name': data.name || '-',
-            'Award': data.awards_choice || '-',
-            'Status': data.stage || 'draft',
-            'Category': data.category || '-',
-            'Subcategory': data.subcategory || '-',
-            'Updated': data.updatedAt?.toDate().toLocaleDateString() || '-',
-            'Submitted': data.submittedAt?.toDate().toLocaleDateString() || '-',
-            'Email': data.email || '-',
-            'Mobile Number': data.mobile_number || '-',
-            'Website': data.website || '-',
-            'Instagram URL': data.instagram_url || '-',
-            'LinkedIn URL': data.linkedin_url || '-',
-            'Q1: Tell us about yourself': data.tell_us_about_yourself || '-',
-            'Q2: Tell us about your work': data.tell_us_about_your_work || '-',
-            'Q3: What inspired you to do this work?': data.what_inspired_you || '-',
-            'Q4: What makes what you do special or unique?': data.what_makes_you_unique || '-',
-            'Q5: What has been your greatest challenge & how have you addressed this?': data.greatest_challenge || '-',
-            'Q6: What have been your top 3 greatest achievements in the past 12 months?': data.top_achievements || '-',
-            'Q7: Why were these achievements significant and what do you attribute your achievements to?': data.achievements_significance || '-',
-            'Q8: What is your big picture vision for the work you are doing?': data.big_picture_vision || '-',
-            'Q9: Why should you be recognised in this category?': data.recognition_reason || '-',
-            'Eligibility confirmed': data.eligibility ? 'Yes' : 'No'  
-          };
-        });
-
-        // Create a worksheet and workbook
-        const worksheet = XLSX.utils.json_to_sheet(applications);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
-
-        // Generate Excel file and trigger download
-        const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
-        const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'Applications.xlsx';
-        link.click();
-
-        URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error('Error exporting applications:', error);
-        alert('Failed to export applications: ' + error.message);
-      }
-    }
-
-    // Helper function to convert string to ArrayBuffer
-    function s2ab(s) {
-      const buf = new ArrayBuffer(s.length);
-      const view = new Uint8Array(buf);
-      for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-      return buf;
-    }
+wireTabButtons();
   </script>
 </body>
 </html>

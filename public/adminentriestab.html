@@ -42,7 +42,7 @@
       left: 0;
       width: 220px;
       height: 100vh;
-      background-color: #d62d83;
+      background-color: #d7336f;
       padding: 20px;
       color: white;
       display: flex;
@@ -74,7 +74,7 @@
     }
 
     header {
-      background-color: #d62d83;
+      background-color: #d7336f;
       color: white;
       padding: 20px;
       border-radius: 8px;
@@ -218,9 +218,7 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      margin: 30px auto;
-      max-width: none;
-      width: 100%;
+      margin: 0px -28px;
     }
 
 
@@ -519,6 +517,9 @@
     .filter-dropdown .fd-search { width:100%; box-sizing:border-box; padding:8px 10px; border:none; border-bottom:1px solid #f0f0f0; outline:none; }
     .filter-dropdown .fd-empty { padding:12px; color:#777; }
 
+    .filter-group h4 { color: #8c1f4c; }
+    #flt_eligibility { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    #flt_eligibility .chk { display:inline-flex; gap:8px; align-items:center; margin:0; }
    </style>
 </head>
 <body>
@@ -544,7 +545,7 @@
         <!-- Management Buttons -->
         <div class="manage-buttons">
           <button class="manage-btn" onclick="window.location.href='adminnewform.html'">Start Entry</button>
-          <button class="manage-btn" onclick="alert('Edit Form Content functionality will be implemented')">Edit Form Content</button>
+          <button class="manage-btn" onclick="window.location.href='admineditform.html'">Edit Form Content</button>
           <button class="manage-btn" onclick="bulkExport()">Bulk Export</button>
           <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
             <div class="sort-dropdown" id="sortDropdown">
@@ -570,8 +571,8 @@
               <th>Status</th>
               <th>Category</th>
               <th>Subcategory</th>
+              <th>Season</th>
               <th>Updated</th>
-              <th>Submitted</th>
               <th>Email</th>
               <th>Action</th>
             </tr>
@@ -602,7 +603,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Confirm Delete/Withdraw Modal -->
   <div id="confirmModal" class="modal" aria-hidden="true">
     <div class="modal-dialog">
@@ -649,6 +650,10 @@
           <div class="filter-group">
             <h4>Award</h4>
             <div id="flt_awards"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Season</h4>
+            <div id="flt_seasons"></div>
           </div>
           <div class="filter-group">
             <h4>Eligibility</h4>
@@ -790,10 +795,11 @@
         // Header info
         document.getElementById('modalAppId').textContent = id;
 
-        // Start here fields 
+        // Start here fields
         const startHtml = [
           kv('Category', d.category),
           kv('Subcategory', d.subcategory),
+          kv('Season', d.season),
           kv('Award', d.awards_choice),
           kv('Name', d.name),
           kv('Website', d.website),
@@ -808,86 +814,109 @@
         ].join('');
         document.getElementById('modalStartFields').innerHTML = startHtml;
 
-        // Criteria fields 
-        const critHtml = [
-          block('Tell us about yourself', d.tell_us_about_yourself),
-          block('Tell us about your work', d.tell_us_about_your_work),
-          block('What inspired you to do this work?', d.what_inspired_you),
-          block('What makes what you do special or unique?', d.what_makes_you_unique),
-          block('What has been your greatest challenge & how have you addressed this', d.greatest_challenge),
-          block('What have been your top 3 greatest achievements in the past 12 months', d.top_achievements),
-          block('Why were these achievements significant and what do you attribute your achievements to', d.achievements_significance),
-          block('What is your big picture vision for the work you are doing', d.big_picture_vision),
-          block('Why should you be recognised in this category', d.recognition_reason),
-          kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No')
-        ].join('');
-        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
+        // Criteria fields: build dynamically from applicationInfo for the application's season
+        let seasonName = d.season || null;
+        if (!seasonName) {
+          // fallback to current season if doc doesn't have one
+          try {
+            const sSnap = await db.collection('season').get();
+            sSnap.forEach(sdoc => { if (sdoc.data().status === 'current') seasonName = sdoc.id; });
+          } catch (e) { seasonName = null; }
+        }
+        let critHtml = '';
+        if (seasonName) {
+          const qSnap = await db.collection('applicationInfo').get();
+          const questions = [];
+          qSnap.forEach(qdoc => {
+            if (qdoc.id === 'DatesInfo') return;
+            const qd = qdoc.data() || {};
+            if (Object.prototype.hasOwnProperty.call(qd, seasonName)) {
+              const orderLabel = String(qd[seasonName] || '');
+              const orderNum = Number(String(orderLabel).replace(/[^0-9]/g, '')) || 999;
+              questions.push({ id: qdoc.id, label: qd.Question || qd.label || qdoc.id, order: orderNum });
+            }
+          });
+          questions.sort((a,b) => a.order - b.order);
+          for (const q of questions) {
+            critHtml += block(q.label, d[q.id]);
+          }
+        } else {
+          // no season information -> no dynamic criteria available
+          critHtml = `<div class="muted">No criteria available for this application (season not set).</div>`;
+        }
 
+        // eligibility last
+        critHtml += kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No');
+        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
         openModal();
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load application: " + err.message);
-      }
-    }
+       } catch (err) {
+         console.error(err);
+         alert("Failed to load application: " + err.message);
+       }
+     }
 
     async function bulkExport() {
       try {
         const db = firebase.firestore();
         const snap = await db.collection('applications').get();
+        if (snap.empty) { alert('No applications found to export.'); return; }
 
-        if (snap.empty) {
-          alert('No applications found to export.');
-          return;
-        }
+        // load question docs (exclude DatesInfo)
+        const qSnap = await db.collection('applicationInfo').get();
+        const questionDocs = qSnap.docs.filter(d => d.id !== 'DatesInfo').map(d => {
+          const data = d.data() || {};
+          return { id: d.id, label: data.Question || data.label || d.id, raw: data };
+        });
 
+        // build header row: base fields + dynamic question labels
+        const baseHeaders = [
+          'Applicant ID','Full Name','Award','Status','Category','Subcategory','Season',
+          'Updated','Submitted','Email','Mobile Number','Website','Instagram URL','LinkedIn URL'
+        ];
+        const questionHeaders = questionDocs.map(q => `${q.label} (${q.id})`);
+        const headers = baseHeaders.concat(questionHeaders);
+
+        // build rows
         const applications = snap.docs.map(doc => {
-          const data = doc.data();
-          return {
+          const data = doc.data() || {};
+          const row = {
             'Applicant ID': doc.id,
             'Full Name': data.name || '-',
             'Award': data.awards_choice || '-',
             'Status': data.stage || 'draft',
             'Category': data.category || '-',
             'Subcategory': data.subcategory || '-',
-            'Updated': data.updatedAt?.toDate().toLocaleDateString() || '-',
-            'Submitted': data.submittedAt?.toDate().toLocaleDateString() || '-',
+            'Season': data.season || '-',
+            'Updated': data.updatedAt?.toDate?.().toLocaleDateString?.() || '-',
+            'Submitted': data.submittedAt?.toDate?.().toLocaleDateString?.() || '-',
             'Email': data.email || '-',
             'Mobile Number': data.mobile_number || '-',
             'Website': data.website || '-',
             'Instagram URL': data.instagram_url || '-',
-            'LinkedIn URL': data.linkedin_url || '-',
-            'Q1: Tell us about yourself': data.tell_us_about_yourself || '-',
-            'Q2: Tell us about your work': data.tell_us_about_your_work || '-',
-            'Q3: What inspired you to do this work?': data.what_inspired_you || '-',
-            'Q4: What makes what you do special or unique?': data.what_makes_you_unique || '-',
-            'Q5: What has been your greatest challenge & how have you addressed this?': data.greatest_challenge || '-',
-            'Q6: What have been your top 3 greatest achievements in the past 12 months?': data.top_achievements || '-',
-            'Q7: Why were these achievements significant and what do you attribute your achievements to?': data.achievements_significance || '-',
-            'Q8: What is your big picture vision for the work you are doing?': data.big_picture_vision || '-',
-            'Q9: Why should you be recognised in this category?': data.recognition_reason || '-',
-            'Eligibility confirmed': data.eligibility ? 'Yes' : 'No'  
+            'LinkedIn URL': data.linkedin_url || '-'
           };
+          // dynamic question columns
+          questionDocs.forEach(q => {
+            row[`${q.label} (${q.id})`] = data[q.id] || '-';
+          });
+          return row;
         });
 
-        // Create a worksheet and workbook
-        const worksheet = XLSX.utils.json_to_sheet(applications);
+        // Create worksheet & download (XLSX)
+        const worksheet = XLSX.utils.json_to_sheet(applications, { header: headers });
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
-
-        // Generate Excel file and trigger download
         const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
         const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
-
         const link = document.createElement('a');
         link.href = url;
         link.download = 'Applications.xlsx';
         link.click();
-
         URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Error exporting applications:', error);
-        alert('Failed to export applications: ' + error.message);
+        alert('Failed to export applications: ' + (error.message || error));
       }
     }
 
@@ -921,17 +950,43 @@
           kv('LinkedIn', d.linkedin_url)
         ].join('');
 
-        const criteriaHtml = [
-          block('Tell us about yourself', d.tell_us_about_yourself),
-          block('Tell us about your work', d.tell_us_about_your_work),
-          block('What inspired you to do this work?', d.what_inspired_you),
-          block('What makes what you do special or unique?', d.what_makes_you_unique),
-          block('What has been your greatest challenge & how have you addressed this?', d.greatest_challenge),
-          block('What have been your top 3 greatest achievements in the past 12 months?', d.top_achievements),
-          block('Why were these achievements significant and what do you attribute your achievements to?', d.achievements_significance),
-          block('What is your big picture vision for the work you are doing?', d.big_picture_vision),
-          block('Why should you be recognised in this category?', d.recognition_reason),
-        ].join('');
+        // build criteriaHtml dynamically based on application's season (fallback to older fields)
+        let criteriaHtml = '';
+        try {
+          // determine season for this application (d variable exists in exportAppPdf scope)
+          let seasonName = d.season || null;
+          if (!seasonName) {
+            const sSnap = await db.collection('season').get();
+            sSnap.forEach(sdoc => { if (sdoc.data().status === 'current') seasonName = sdoc.id; });
+          }
+
+          if (seasonName) {
+            const qSnap = await db.collection('applicationInfo').get();
+            const questions = [];
+            qSnap.forEach(qdoc => {
+              if (qdoc.id === 'DatesInfo') return;
+              const qd = qdoc.data() || {};
+              if (Object.prototype.hasOwnProperty.call(qd, seasonName)) {
+                const orderLabel = String(qd[seasonName] || '');
+                const orderNum = Number(String(orderLabel).replace(/[^0-9]/g, '')) || 999;
+                questions.push({ id: qdoc.id, label: qd.Question || qd.label || qdoc.id, order: orderNum });
+              }
+            });
+            questions.sort((a,b) => a.order - b.order);
+            for (const q of questions) {
+              criteriaHtml += block(q.label, d[q.id]);
+            }
+          } else {
+            // no season information -> no dynamic criteria available for PDF
+            criteriaHtml = `<div class="muted">No criteria available for this application (season not set).</div>`;
+          }
+
+          // add eligibility
+          criteriaHtml += kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No');
+        } catch (err) {
+          console.warn('Failed to build dynamic criteria for PDF:', err);
+          // fallback: existing static blocks (or leave blank)
+        }
 
         const html = `
            <!doctype html>
@@ -1068,15 +1123,31 @@
   const CATEGORY_TO_SUBS = new Map();  
   // awards collection data 
   let AWARDS = [];                  
+  // seasons collection data
+  let SEASONS = [];
   const FILTERS = {
     categories: new Set(),
     subcategories: new Set(),
     awards: new Set(),
+    seasons: new Set(),
     stages: new Set(),
     applicants: new Set(),   
     eligibility: 'any'
   };
   let SORT_MODE = 'none';
+  
+   async function loadSeasonsFromFirestore(db) {
+     try {
+       const snap = await db.collection('season').get();
+       SEASONS = snap.docs.map(d => String(d.id)).filter(Boolean).sort((a,b) => a.localeCompare(b));
+     } catch (err) {
+       console.warn('Failed to load season collection:', err);
+       SEASONS = [];
+     }
+   }
+   function renderSeasonDropdown(containerId, selectedSet) {
+     renderSingleDropdown(containerId, SEASONS, null, selectedSet, '-select-');
+   }
   
   async function loadCategoriesFromFirestore(db) {
     try {
@@ -1296,6 +1367,7 @@
     renderCategoryDropdown('flt_categories', FILTERS.categories);
     renderSubcategoryDropdown('flt_subcategories', FILTERS.subcategories);
     renderAwardDropdown('flt_awards', FILTERS.awards);
+    renderSeasonDropdown('flt_seasons', FILTERS.seasons);
     renderUserDropdown('flt_name', FILTERS.applicants);
     renderCheckboxList('flt_stages', stgs, FILTERS.stages);
 
@@ -1324,13 +1396,14 @@
        const catOk  = FILTERS.categories.size     ? FILTERS.categories.has(d.category || '')      : true;
        const subOk  = FILTERS.subcategories.size  ? FILTERS.subcategories.has(d.subcategory || ''): true;
        const awdOk  = FILTERS.awards.size         ? FILTERS.awards.has(d.awards_choice || '')      : true;
+       const seasonOk = FILTERS.seasons.size      ? FILTERS.seasons.has(d.season || '')            : true;
        const nameOk = FILTERS.applicants.size
          ? FILTERS.applicants.has(String(d.user_id || d.applicant_id || d.userId || ''))
          : true;
        const stgOk  = FILTERS.stages.size         ? FILTERS.stages.has(stage)                      : true;
        const elig = FILTERS.eligibility;
        const eligOk = elig === 'any' ? true : (elig === 'yes' ? !!d.eligibility : !d.eligibility);
-       return catOk && subOk && awdOk && stgOk && nameOk && eligOk;
+       return catOk && subOk && awdOk && seasonOk && stgOk && nameOk && eligOk;
      });
      renderTable(matches);
    }
@@ -1360,27 +1433,27 @@
         const tr = document.createElement('tr');
         tr.id = 'row_' + id;
         tr.innerHTML = `
-          <td>${esc(id)}</td>
-          <td>${esc(d.name || '-')}</td>
-          <td><span class="muted">${esc(d.stage || 'draft')}</span></td>
-          <td>${esc(d.category || '-')}</td>
-          <td>${esc(d.subcategory || '-')}</td>
-          <td>${fmt(d.updatedAt)}</td>
-          <td>${d.stage === 'submitted' ? fmt(d.submittedAt || d.updatedAt) : '-'}</td>
-          <td>${esc(d.email || '-')}</td>
-          <td>
-            <div class="actions-inline">
-              <button class="pdf-btn" title="Open printable preview (save as PDF)" onclick="exportAppPdf('${id}')">
-                <span class="material-symbols-outlined pdf-icon" aria-hidden="true">picture_as_pdf</span>
-              </button>
-              <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
-              ${delBtnHtml}
-            </div>
-          </td>
-        `;
-        body.appendChild(tr);
-      });
-    }
+           <td>${esc(id)}</td>
+           <td>${esc(d.name || '-')}</td>
+           <td><span class="muted">${esc(d.stage || 'draft')}</span></td>
+           <td>${esc(d.category || '-')}</td>
+           <td>${esc(d.subcategory || '-')}</td>
+           <td>${esc(d.season || '-')}</td>
+           <td>${fmt(d.updatedAt)}</td>
+           <td>${esc(d.email || '-')}</td>
+           <td>
+             <div class="actions-inline">
+               <button class="pdf-btn" title="Open printable preview (save as PDF)" onclick="exportAppPdf('${id}')">
+                 <span class="material-symbols-outlined pdf-icon" aria-hidden="true">picture_as_pdf</span>
+               </button>
+               <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
+               ${delBtnHtml}
+             </div>
+           </td>
+         `;
+         body.appendChild(tr);
+       });
+     }
 
     /* Sort dropdown behaviour */
     const sortBtn = document.getElementById('sortBtn');
@@ -1420,7 +1493,12 @@
       fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true');
     });
     fClear?.addEventListener('click', () => {
-      FILTERS.categories.clear(); FILTERS.subcategories.clear(); FILTERS.awards.clear(); FILTERS.stages.clear(); FILTERS.applicants.clear();
+      FILTERS.categories.clear();
+      FILTERS.subcategories.clear();
+      FILTERS.awards.clear();
++     FILTERS.seasons.clear(); // clear season selection as requested
+      FILTERS.stages.clear();
+      FILTERS.applicants.clear();
       FILTERS.eligibility = 'any';
       buildFilterUI(); applyFiltersAndRender();
     });
@@ -1431,7 +1509,7 @@
       try {
         const db = firebase.firestore();
         const snap = await db.collection('applications').get();
-        await Promise.all([ loadCategoriesFromFirestore(db), loadAwardsFromFirestore(db), loadUsersFromFirestore(db) ]);
+        await Promise.all([ loadCategoriesFromFirestore(db), loadAwardsFromFirestore(db), loadUsersFromFirestore(db), loadSeasonsFromFirestore(db) ]);
         ALL_APPS = snap.docs.map(doc => ({ id: doc.id, d: doc.data() }));
         computeSubsByCat();
         // initial render
