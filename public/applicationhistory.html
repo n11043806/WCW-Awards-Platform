@@ -79,8 +79,6 @@
     }
     .modal-body { padding: 18px; max-height: 75vh; overflow: auto; }
     .meta { font-size: 13px; color: #666; margin-bottom: 10px; }
-
-
     .section-title {
       margin: 18px 0 10px;
       color: #8c1f4c;
@@ -88,12 +86,10 @@
       padding: 8px 12px;
       border-radius: 6px;
     }
-
     .field-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
     }
     @media (max-width: 800px) { .field-grid { grid-template-columns: 1fr; } }
-
     .kv .k { font-weight: 600; font-size: 13px; color: #444; }
     .kv .v { font-size: 14px; color: #000; word-break: break-word; }
     .block {
@@ -103,7 +99,7 @@
 
     /* Close button */
     .close-btn {
-      background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c;  /* updated */
+      background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c;
       border-radius: 6px; padding: 6px 12px; font-weight: 700; cursor: pointer;
     }
     .close-btn:hover { background: #ffe6ee; }
@@ -115,7 +111,6 @@
       border-radius: 6px; padding: 6px 12px; font-weight: 700; cursor: pointer;
     }
     .btn-secondary:hover { background: #f1f3f5; }
-
     .list-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 
     /* Filter modal */
@@ -125,7 +120,6 @@
     .filter-group h4 { margin: 0 0 8px; color: #8c1f4c; font-size: 16px; }
     .chk { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
     .filters-actions { display: flex; gap: 10px; margin-top: 10px; }
-
     .sort-dropdown {
       position: relative;
       display: inline-block;
@@ -174,7 +168,6 @@
     .sort-list button:hover {
       background: #f0e4e9;
     }
-
     .user-menu-container { display: flex; align-items: center; gap: 10px; position: relative; }
     .user-fullname {
       font-weight: 600;
@@ -411,7 +404,6 @@
       </button>
     </div>
   </header>
-
   <main>
     <div class="container">
       <div class="list-header">
@@ -438,6 +430,7 @@
             <th>Subcategory</th>
             <th>Award</th>
             <th>Stage</th>
+            <th>Season</th>
             <th>Created</th>
             <th>Updated</th>
             <th>Action</th>
@@ -463,7 +456,6 @@
       <div class="modal-body">
         <h3 class="section-title">Start here</h3>
         <div id="modalStartFields" class="field-grid"></div>
-
         <h3 class="section-title">Criteria</h3>
         <div id="modalCriteriaFields"></div>
       </div>
@@ -520,7 +512,6 @@
       </div>
     </div>
   </div>
-
   <script>
     function logout() {
       firebase.auth().signOut().then(() => {
@@ -535,7 +526,6 @@
     function goBack() { 
       window.location.href = "applicantdashboard.html"; 
     }
-
     firebase.auth().onAuthStateChanged(user => {
       const fullNameEl = document.getElementById("userFullName");
       const circleEl = document.getElementById("userCircle");
@@ -560,18 +550,14 @@
         }).catch(() => {
           document.body.classList.remove("dark-mode");
         });
-
       } else {
         window.location.href = "signin.html";
       }
     });
-    
     function continueApplication(id) {
       sessionStorage.setItem('continueApplicationId', id);
       window.location.href = `applicationform.html?application=${encodeURIComponent(id)}`;
     }
-
-    
     const modalEl = document.getElementById('viewModal');
     const modalClose = document.getElementById('modalClose');
     modalClose.onclick = () => closeModal();
@@ -579,7 +565,6 @@
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
     function openModal() { modalEl.classList.add('open'); modalEl.setAttribute('aria-hidden', 'false'); }
     function closeModal() { modalEl.classList.remove('open'); modalEl.setAttribute('aria-hidden', 'true'); }
-
     function esc(s) {
       return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
@@ -600,8 +585,28 @@
                 <div class="block">${safe || '-'}</div>
               </div>`;
     }
-
-    // 
+    async function getSeasonQuestions(seasonName) {
+      const db = firebase.firestore();
+      const snap = await db.collection('applicationInfo').get();
+      let questions = [];
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data[seasonName]) {
+          questions.push({
+            id: doc.id,
+            question_ID: data.question_ID,
+            question: data.Question,
+            order: data[seasonName]
+          });
+        }
+      });
+      questions.sort((a, b) => {
+        const nA = Number(a.order.replace(/[^0-9]/g, ''));
+        const nB = Number(b.order.replace(/[^0-9]/g, ''));
+        return nA - nB;
+      });
+      return questions;
+    }
     async function viewApp(id) {
       try {
         const db = firebase.firestore();
@@ -625,42 +630,36 @@
           kv('Instagram URL', d.instagram_url),
           kv('LinkedIn URL', d.linkedin_url),
           kv('Stage', d.stage),
+          kv('Season', d.season),
           kv('Created', fmt(d.createdAt)),
           kv('Updated', fmt(d.updatedAt))
         ].join('');
         document.getElementById('modalStartFields').innerHTML = startHtml;
-
-        // Criteria fields 
-        const critHtml = [
-          block('Tell us about yourself', d.tell_us_about_yourself),
-          block('Tell us about your work', d.tell_us_about_your_work),
-          block('What inspired you to do this work?', d.what_inspired_you),
-          block('What makes what you do special or unique?', d.what_makes_you_unique),
-          block('What has been your greatest challenge & how have you addressed this?', d.greatest_challenge),
-          block('What have been your top 3 greatest achievements in the past 12 months?', d.top_achievements),
-          block('Why were these achievements significant and what do you attribute your achievements to?', d.achievements_significance),
-          block('What is your big picture vision for the work you are doing?', d.big_picture_vision),
-          block('Why should you be recognised in this category?', d.recognition_reason),
-          kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No')
-        ].join('');
+        // --- Dynamic criteria preview ---
+        let critHtml = '';
+        if (d.season) {
+          const questions = await getSeasonQuestions(d.season);
+          questions.forEach(q => {
+            critHtml += block(q.question, d[q.question_ID]);
+          });
+        } else {
+          critHtml = `<div class="muted">No criteria questions found for this application.</div>`;
+        }
+        critHtml += kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No');
         document.getElementById('modalCriteriaFields').innerHTML = critHtml;
-
         openModal();
       } catch (err) {
         console.error(err);
         alert("Failed to load application: " + err.message);
       }
     }
-
-    // Confirm modal logic
     const cModal = document.getElementById('confirmModal');
     const cTitle = document.getElementById('confirmTitle');
     const cText = document.getElementById('confirmText');
     const cClose = document.getElementById('confirmClose');
     const cNo = document.getElementById('confirmNo');
     const cYes = document.getElementById('confirmYes');
-    let pendingAction = null; // { type: 'delete'|'withdraw', id: 'docId' }
-
+    let pendingAction = null;
     function openConfirm(type, id) {
       pendingAction = { type, id };
       cTitle.textContent = type === 'delete' ? 'Delete application' : 'Withdraw application';
@@ -679,7 +678,6 @@
     cNo.onclick = closeConfirm;
     cModal.addEventListener('click', (e) => { if (e.target === cModal) closeConfirm(); });
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
-
     cYes.onclick = async () => {
       if (!pendingAction) return closeConfirm();
       try {
@@ -697,7 +695,6 @@
           location.reload();
         }
       } catch (err) {
-        console.error(err);
         alert('Operation failed: ' + err.message);
       } finally {
         closeConfirm();
@@ -712,22 +709,19 @@
       'WCWA Americas','WCWA Middle East & North Africa (MENA)','WCWA Czech Republic','WCWA South Africa','WCWA Global 2025'
     ];
     const KNOWN_STAGES = ['draft','submitted'];
-
-    let ALL_APPS = [];            
-    let SUBS_BY_CAT = new Map();    
+    let ALL_APPS = [];
+    let SUBS_BY_CAT = new Map();
     const FILTERS = {
       categories: new Set(),
       subcategories: new Set(),
       awards: new Set(),
       stages: new Set()
     };
-
     const fModal = document.getElementById('filterModal');
     const fOpen  = document.getElementById('openFilter');
     const fClose = document.getElementById('filterClose');
     const fApply = document.getElementById('filterApply');
     const fClear = document.getElementById('filterClear');
-
     function openFilterModal() {
       buildFilterUI();
       fModal.classList.add('open'); fModal.setAttribute('aria-hidden','false');
@@ -739,7 +733,6 @@
     fClose?.addEventListener('click', closeFilterModal);
     fModal?.addEventListener('click', (e) => { if (e.target === fModal) closeFilterModal(); });
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFilterModal(); });
-
     function uniqSorted(arr) {
       return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b)));
     }
@@ -752,7 +745,6 @@
         SUBS_BY_CAT.get(c).add(s);
       });
     }
-
     function renderCheckboxList(containerId, values, selectedSet, onChange) {
       const el = document.getElementById(containerId);
       if (!el) return;
@@ -773,7 +765,6 @@
         }
       };
     }
-
     function categoriesList() {
       const fromData = uniqSorted(ALL_APPS.map(({d}) => d.category));
       return uniqSorted([...KNOWN_CATEGORIES, ...fromData]);
@@ -800,13 +791,11 @@
       });
       return uniqSorted(sets);
     }
-
     function buildFilterUI() {
       // build lists
       const cats = categoriesList();
       const awds = awardsList();
       const stgs = stagesList();
-
       renderCheckboxList('flt_categories', cats, FILTERS.categories, () => {
         const allowed = new Set(subcategoriesForSelectedCats());
         FILTERS.subcategories.forEach(v => { if (!allowed.has(v)) FILTERS.subcategories.delete(v); });
@@ -818,7 +807,6 @@
       // initial subcategories
       renderCheckboxList('flt_subcategories', subcategoriesForSelectedCats(), FILTERS.subcategories);
     }
-
     function applyFiltersAndRender() {
       const matches = ALL_APPS.filter(({d}) => {
         const stage = (d.stage || 'draft').toLowerCase();
@@ -830,7 +818,6 @@
       });
       renderTable(matches);
     }
-
     fApply?.addEventListener('click', () => { applyFiltersAndRender(); closeFilterModal(); });
     fClear?.addEventListener('click', () => {
       FILTERS.categories.clear();
@@ -842,123 +829,124 @@
     });
 
     // Sorting
-let SORT_MODE = 'none'; 
+    let SORT_MODE = 'none';
+    const sortBtn = document.getElementById('sortBtn');
+    const sortList = document.getElementById('sortList');
+    const sortDropdown = document.getElementById('sortDropdown');
+    sortBtn.onclick = function(e) {
+      sortList.classList.toggle('open');
+    };
+    sortList.onclick = function(e) {
+      if (e.target.tagName === 'BUTTON') {
+        SORT_MODE = e.target.dataset.sort;
+        sortBtn.textContent = 'SORT BY: ' + (
+          SORT_MODE === 'asc' ? 'Application ID Ascending' :
+          SORT_MODE === 'desc' ? 'Application ID Descending' :
+          SORT_MODE === 'updated_desc' ? 'Updated (Newest to Oldest)' :
+          SORT_MODE === 'updated_asc' ? 'Updated (Oldest to Newest)' :
+          '-select-'
+        );
+        sortList.classList.remove('open');
+        applyFiltersAndRender();
+      }
+    };
 
-const sortBtn = document.getElementById('sortBtn');
-const sortList = document.getElementById('sortList');
-const sortDropdown = document.getElementById('sortDropdown');
-
-sortBtn.onclick = function(e) {
-  sortList.classList.toggle('open');
-};
-
-sortList.onclick = function(e) {
-  if (e.target.tagName === 'BUTTON') {
-    SORT_MODE = e.target.dataset.sort;
-    sortBtn.textContent = 'SORT BY: ' + (
-      SORT_MODE === 'asc' ? 'Application ID Ascending' :
-      SORT_MODE === 'desc' ? 'Application ID Descending' :
-      SORT_MODE === 'updated_desc' ? 'Updated (Newest to Oldest)' :
-      SORT_MODE === 'updated_asc' ? 'Updated (Oldest to Newest)' :
-      '-select-'
-    );
-    sortList.classList.remove('open');
-    applyFiltersAndRender();
-  }
-};
-
-// Close dropdown if clicking outside
-document.addEventListener('click', function(e) {
-  if (!sortDropdown.contains(e.target)) {
-    sortList.classList.remove('open');
-  }
-});
-
-function renderTable(items) {
-  const body = document.getElementById('appsBody');
-  if (!items.length) {
-    body.innerHTML = `<tr><td colspan="10" class="muted">No applications match your filters.</td></tr>`;
-    return;
-  }
-
-  let sorted = [...items];
-  if (SORT_MODE === 'asc') {
-    sorted.sort((a, b) => String(a.id).localeCompare(String(b.id)));
-  } else if (SORT_MODE === 'desc') {
-    sorted.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-  } else if (SORT_MODE === 'updated_desc') {
-    sorted.sort((a, b) => {
-      const ta = a.d.updatedAt?.toMillis?.() ?? new Date(a.d.updatedAt).getTime() ?? 0;
-      const tb = b.d.updatedAt?.toMillis?.() ?? new Date(b.d.updatedAt).getTime() ?? 0;
-      return tb - ta;
+    // Close dropdown if clicking outside
+    document.addEventListener('click', function(e) {
+      if (!sortDropdown.contains(e.target)) {
+        sortList.classList.remove('open');
+      }
     });
-  } else if (SORT_MODE === 'updated_asc') {
-    sorted.sort((a, b) => {
-      const ta = a.d.updatedAt?.toMillis?.() ?? new Date(a.d.updatedAt).getTime() ?? 0;
-      const tb = b.d.updatedAt?.toMillis?.() ?? new Date(b.d.updatedAt).getTime() ?? 0;
-      return ta - tb;
-    });
-  }
+    function renderTable(items) {
+      const body = document.getElementById('appsBody');
+      if (!items.length) {
+        body.innerHTML = `<tr><td colspan="10" class="muted">No applications match your filters.</td></tr>`;
+        return;
+      }
+      let sorted = [...items];
+      if (SORT_MODE === 'asc') {
+        sorted.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      } else if (SORT_MODE === 'desc') {
+        sorted.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+      } else if (SORT_MODE === 'updated_desc') {
+        sorted.sort((a, b) => {
+          const ta = a.d.updatedAt?.toMillis?.() ?? new Date(a.d.updatedAt).getTime() ?? 0;
+          const tb = b.d.updatedAt?.toMillis?.() ?? new Date(b.d.updatedAt).getTime() ?? 0;
+          return tb - ta;
+        });
+      } else if (SORT_MODE === 'updated_asc') {
+        sorted.sort((a, b) => {
+          const ta = a.d.updatedAt?.toMillis?.() ?? new Date(a.d.updatedAt).getTime() ?? 0;
+          const tb = b.d.updatedAt?.toMillis?.() ?? new Date(b.d.updatedAt).getTime() ?? 0;
+          return ta - tb;
+        });
+      }
+      body.innerHTML = '';
+      sorted.forEach(({id, d}) => {
+        const stage = (d.stage || 'draft').toLowerCase();
+        const isWithdrawn = stage === 'withdrawn';
+        let label = 'VIEW';
+        let handler = `viewApp('${id}')`;
+        let btnClass = 'btn-view';
+        if (window.CURRENT_SEASON && d.season === window.CURRENT_SEASON && !isWithdrawn && stage !== 'submitted') {
+          label = 'CONTINUE';
+          handler = `continueApplication('${id}')`;
+          btnClass = 'btn-continue';
+        }
+        const delLabel = stage === 'submitted' ? 'WITHDRAW' : 'DELETE';
+        const delType = stage === 'submitted' ? 'withdraw' : 'delete';
+        const delBtn = isWithdrawn
+          ? `<span class="muted">WITHDRAWN</span>`
+          : `<button class="action-btn btn-danger" onclick="openConfirm('${delType}','${id}')">${delLabel}</button>`;
+        const tr = document.createElement('tr');
+        tr.id = 'row_' + id;
+        tr.innerHTML = `
+          <td>${id}</td>
+          <td>${d.category || '-'}</td>
+          <td>${d.subcategory || '-'}</td>
+          <td>${d.awards_choice || '-'}</td>
+          <td>${d.stage || '-'}</td>
+          <td>${d.season || '-'}</td>
+          <td>${fmt(d.createdAt)}</td>
+          <td>${fmt(d.updatedAt)}</td>
+          <td><button class="action-btn ${btnClass}" onclick="${handler}">${label}</button></td>
+          <td>${delBtn}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
 
-  body.innerHTML = '';
-  sorted.forEach(({id, d}) => {
-    const stage = (d.stage || 'draft').toLowerCase();
-    const isSubmitted = stage === 'submitted';
-    const isWithdrawn = stage === 'withdrawn';
-
-    const label = isSubmitted ? 'VIEW' : 'CONTINUE';
-    const handler = isSubmitted ? `viewApp('${id}')` : `continueApplication('${id}')`;
-    const btnClass = isSubmitted ? 'btn-view' : 'btn-continue';
-
-    const delLabel = isSubmitted ? 'WITHDRAW' : 'DELETE';
-    const delType = isSubmitted ? 'withdraw' : 'delete';
-    const delBtn = isWithdrawn
-      ? `<span class="muted">WITHDRAWN</span>`
-      : `<button class="action-btn btn-danger" onclick="openConfirm('${delType}','${id}')">${delLabel}</button>`;
-
-    const tr = document.createElement('tr');
-    tr.id = 'row_' + id;
-    tr.innerHTML = `
-      <td>${id}</td>
-      <td>${d.category || '-'}</td>
-      <td>${d.subcategory || '-'}</td>
-      <td>${d.awards_choice || '-'}</td>
-      <td>${d.stage || '-'}</td>
-      <td>${fmt(d.createdAt)}</td>
-      <td>${fmt(d.updatedAt)}</td>
-      <td><button class="action-btn ${btnClass}" onclick="${handler}">${label}</button></td>
-      <td>${delBtn}</td>
-    `;
-    body.appendChild(tr);
-  });
-}
-
-    // Load and wire table 
+    // Load and wire table
     firebase.auth().onAuthStateChanged(async user => {
       const body = document.getElementById('appsBody');
       if (!user) { window.location.href = "signin.html"; return; }
       try {
         const db = firebase.firestore();
+        const seasonSnap = await db.collection('season').get();
+        let currentSeason = null;
+        seasonSnap.forEach(doc => {
+          const val = doc.data();
+          if (val && val.status === 'current') currentSeason = doc.id;
+        });
+        window.CURRENT_SEASON = currentSeason;
         const snap = await db.collection('applications').where('user_id', '==', user.uid).get();
-
         ALL_APPS = snap.docs.map(doc => ({ id: doc.id, d: doc.data() }));
         computeSubsByCat();
         renderTable(ALL_APPS);
       } catch (err) {
         body.innerHTML = `<tr><td colspan="10" class="muted">Error: ${err.message}</td></tr>`;
-        console.error(err);
       }
     });
-const userCircle = document.getElementById("userCircle");
-const userDropdown = document.getElementById("userDropdown");
-userCircle.onclick = function(e) {
-  userDropdown.classList.toggle("open");
-};
-document.addEventListener("click", function(e) {
-  if (!userCircle.contains(e.target) && !userDropdown.contains(e.target)) {
-    userDropdown.classList.remove("open");
-  }
-});    
+    const userCircle = document.getElementById("userCircle");
+    const userDropdown = document.getElementById("userDropdown");
+    userCircle.onclick = function(e) {
+      userDropdown.classList.toggle("open");
+    };
+    document.addEventListener("click", function(e) {
+      if (!userCircle.contains(e.target) && !userDropdown.contains(e.target)) {
+        userDropdown.classList.remove("open");
+      }
+    });
   </script>
 </body>
 </html>

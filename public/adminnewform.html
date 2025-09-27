@@ -201,6 +201,15 @@
       margin: 0;
     }
 
+    /* Make headings inside the Dates body match applicant form */
+    #datesSection h2,
+    #datesSection h3,
+    #datesSection h4 {
+      color: #d7336f;
+    }
+    #datesSection ul { font-size: 16px; line-height: 1.5; }
+    #datesSection a { color: #1a0dab; }
+
     /* Users dropdown style (match dates/support color) */
     .users-row { margin: 12px 0 18px; }
     .users-row label { color: #d7336f; font-weight:700; margin-right:8px; display:inline-block; }
@@ -336,46 +345,19 @@
           
 
           <div id="datesSection" style="margin-top:40px; background:#fff; padding:28px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
-            <h2 style="margin-top:0; color:#d7336f;">Dates</h2>
-            <!-- users selector moved next to buttons (rendered below) -->
-            <ul style="margin-bottom:1.2em; font-size:15px; line-height:1.5;">
-              <li>Please note the entry deadline, this date is final and there will be no extensions provided.</li>
-              <li>You may edit your entry after submitting, up until the entry deadline for your region.</li>
-              <li>Please make sure all your personal details are entered accurately, including contact details.</li>
-              <li>You are eligible to enter more than one category, as long as the work submitted meets the criteria.</li>
-            </ul>
-            <p style="font-style:italic; margin-bottom:1.5em;">* You can use the ‘copy’ feature to create a copy of your entry and change the category as required.</p>
-
-            <h3 style="color:#d7336f; margin-bottom:6px;">IMPORTANT DATES</h3>
-            <h4 style="margin:0 0 8px 0; color:#d7336f;">GLOBAL:</h4>
-            <p style="margin-top:0;">
-              All nominations have now closed for 2025<br>
-              Finalists in all categories announced - 17 FEBRUARY 2025
-            </p>
-            <p style="margin-top:12px;">
-              People’s Choice Voting starts - 24 FEBRUARY 2025<br>
-              People’s Choice Voting ends - 10 MARCH 2025
-            </p>
-            <p style="margin-top:12px;">
-              Winners Announced Global Awards & Summit - London 2-3 APRIL 2025
-            </p>
-            <p style="margin-top:12px;">
-              For any questions, please contact <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a>
-            </p>
-
-            <h3 style="color:#d7336f; margin-top:18px;">Support</h3>
-            <p>If you have any questions on the entry process, please contact the organisers by email to <a href="mailto:awards@thewomenchangingtheworld.com">awards@thewomenchangingtheworld.com</a></p>
+            <!-- Dynamic body loaded from Firestore -->
+            <div id="datesBody">Loading dates…</div>
 
             <div style="margin-top:20px; display:flex; gap:12px; align-items:center;">
-              <label for="select_user" style="color:#d7336f;font-weight:700;margin:0 8px 0 0;">Users:</label>
-              <select id="select_user" aria-label="Select user for this application" style="padding:8px;border-radius:6px;border:1px solid #ddd;min-width:320px;">
-                <option value="">Loading users…</option>
-              </select>
-              <div style="flex:1"></div>
-              <button class="save-like" id="startEntryBtn" disabled>Start Entry</button>
-              <button class="save-like" onclick="window.location.href='adminentriestab.html'">Back</button>
+               <label for="select_user" style="color:#d7336f;font-weight:700;margin:0 8px 0 0;">Users:</label>
+               <select id="select_user" aria-label="Select user for this application" style="padding:8px;border-radius:6px;border:1px solid #ddd;min-width:320px;">
+                 <option value="">Loading users…</option>
+               </select>
+               <div style="flex:1"></div>
+               <button class="save-like" id="startEntryBtn" disabled>Start Entry</button>
+               <button class="save-like" onclick="window.location.href='adminentriestab.html'">Back</button>
+             </div>
             </div>
-           </div>
          </div>
 
       <!-- moved: Tabs section sits inside the same container so it replaces Dates in-place -->
@@ -480,6 +462,27 @@
 
     loadCategoriesFromFirestore();
     loadAwardsFromFirestore();
+
+    // Load DatesInfo Body from applicationInfo and inject into #datesBody
+    async function loadDatesFromFirestore() {
+      try {
+        const doc = await db().collection('applicationInfo').doc('DatesInfo').get();
+        if (doc.exists) {
+          const data = doc.data() || {};
+          const el = document.getElementById('datesBody');
+          if (el && data.Body) {
+            // remove literal "\n" sequences if present and unescape common escapes
+            let html = String(data.Body).replace(/\\n/g, '').replace(/\\"/g, '"').replace(/\\'/g, "'");
+            el.innerHTML = html.trim();
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load DatesInfo from Firestore', e);
+      }
+    }
+
+    // call loader (safe no-op if element not mounted yet)
+    loadDatesFromFirestore();
 
     // templates copied from applicationform
     const startHereContent = `...`; // will be set below by building via function to avoid huge inline string duplication

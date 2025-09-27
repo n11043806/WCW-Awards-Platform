@@ -146,6 +146,7 @@
       border-radius: 5px;
       font-size: 16px;
       cursor: pointer;
+      transition: background 0.15s;
     }
 
     .dashboard-section button:hover {
@@ -178,7 +179,7 @@
       vertical-align: middle;
     }
 
-        /* Dark mode styles */
+    /* Dark mode styles */
     @media (prefers-color-scheme: dark) {
       body {
         background-color: #121212;
@@ -230,7 +231,7 @@
       <h2>Submit a New Application</h2>
       <p>Ready to apply for an award? Click below to start your submission.</p>
       <div class="button-row">
-        <button onclick="startNewApplication()">Start New Application</button>
+        <button id="startNewAppBtn">Start New Application</button>
       </div>
     </div>
 
@@ -260,6 +261,8 @@
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
   <script>
+    let applicationRoundOpen = false;
+
     // Log out function
     function logout() {
       firebase.auth().signOut().then(() => {
@@ -271,7 +274,11 @@
 
     // Redirect to application form
     function startNewApplication() {
-      window.location.href = "applicationform.html";
+      if (applicationRoundOpen) {
+        window.location.href = "applicationform.html";
+      } else {
+        alert("Application round is closed / not started.");
+      }
     }
 
     // Redirect to history page
@@ -333,6 +340,31 @@
         window.location.href = "signin.html";
       }
     });
+
+    // Check season status and set applicationRoundOpen
+    async function checkSeasonStatus() {
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('season').get();
+        let foundCurrent = false;
+        snap.forEach(doc => {
+          const val = doc.data();
+          if (val && val.status === 'current') {
+            foundCurrent = true;
+          }
+        });
+        applicationRoundOpen = foundCurrent;
+      } catch (e) {
+        applicationRoundOpen = false;
+      }
+    }
+
+    document.getElementById("startNewAppBtn").onclick = function() {
+      startNewApplication();
+    };
+
+    // Run season check on page load
+    checkSeasonStatus();
   </script>
 </body>
 </html>
