@@ -230,6 +230,12 @@
     .seasons-table { margin-top:14px; border-collapse: collapse; width: 100%; }
     .seasons-table th, .seasons-table td { padding: 10px 12px; border: 1px solid #eee; text-align: left; }
     .seasons-table th { background:#fafafa; color:#d7336f; }
+    #questionsTable td .q-actions { display:flex; gap:8px; justify-content:flex-end; align-items:center; }
+    #questionsTable td .manage-btn, #questionsTable td .manage-btn.small {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
 
     #datesBodyContent h2,
     #datesBodyContent h3,
@@ -239,6 +245,20 @@
     #datesBodyContent a { color: #d62d83; }
     #datesBodyContent ul { margin-left:18px; }
     #datesBodyContent p { margin: 8px 0; }
+    .manage-btn[disabled], .manage-btn.small[disabled] {
+      opacity: 0.6;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .season-edit-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+    .season-edit-input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; }
+    .footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -267,43 +287,47 @@
         </div>
 
         <!-- Manage Seasons card -->
-        <div class="seasons-card" aria-hidden="false">
-          <div class="left" style="gap:16px; align-items:flex-start;">
-            <div>
-              <strong>Manage seasons</strong>
+        <div class="seasons-card" aria-hidden="false" style="flex-direction:column; align-items:stretch;">
+          <div style="display:flex; gap:16px; align-items:flex-start; justify-content:space-between;">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div>
+                <strong>Manage Seasons</strong>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input id="newSeasonName" placeholder="Season name (doc id)" style="padding:8px; border:1px solid #ddd; border-radius:4px;" />
+                <select id="newSeasonStatus" style="padding:8px; border:1px solid #ddd; border-radius:4px;">
+                  <option value="">(no status)</option>
+                  <option value="current">current</option>
+                  <option value="past">past</option>
+                </select>
+              </div>
             </div>
-            <div style="display:flex; gap:10px; align-items:center;">
-              <input id="newSeasonName" placeholder="Season name (doc id)" style="padding:8px; border:1px solid #ddd; border-radius:4px;" />
-              <select id="newSeasonStatus" style="padding:8px; border:1px solid #ddd; border-radius:4px;">
-                <option value="">(no status)</option>
-                <option value="current">current</option>
-                <option value="past">past</option>
-              </select>
-              <button class="manage-btn small" id="saveSeasonsBtn">Add</button>
+            <div style="display:flex; align-items:center;">
+              <button class="manage-btn small" id="saveSeasonsBtn" disabled>Add</button>
             </div>
           </div>
-        </div>
 
-        <!-- Seasons table -->
-        <div style="margin-top:12px;">
-          <table class="seasons-table" id="seasonsTable">
-            <thead>
-              <tr><th>Season Name</th><th>Status</th><th style="text-align:right">Actions</th></tr>
-            </thead>
-            <tbody><tr><td colspan="3" class="muted">Loading seasons…</td></tr></tbody>
-          </table>
+          <!-- Seasons table -->
+          <div style="margin-top:12px; width:100%;">
+            <table class="seasons-table" id="seasonsTable">
+              <thead>
+                <tr><th>Season Name</th><th>Status</th><th style="text-align:right">Actions</th></tr>
+              </thead>
+              <tbody><tr><td colspan="3" class="muted">Loading seasons…</td></tr></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Dates Body editable card -->
         <div class="seasons-card" id="datesBodyCard" style="margin-top:12px; flex-direction:column; align-items:stretch;">
           <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
             <div>
-              <strong>Dates Body</strong>
+              <strong>Manage Dates Body</strong>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <span id="datesLastUpdated" class="muted" style="font-size:13px;"></span>
-              <button class="manage-btn small" id="editDatesBtn">Edit</button>
-              <button class="manage-btn small" id="saveDatesBodyBtn">Save</button>
+              <button class="manage-btn small" id="editDatesBtn" disabled>Edit</button>
+              <button class="manage-btn small" id="saveDatesBodyBtn" disabled>Save</button>
               <button class="manage-btn small" id="cancelEditDatesBtn" style="display:none; background:#eee; color:#d7336f;">Cancel</button>
             </div>
           </div>
@@ -316,17 +340,79 @@
         <div class="seasons-card" style="margin-top:12px;">
           <div class="left">
             <div>
-              <strong>Manage questions</strong>
+              <strong>Manage Questions</strong>
             </div>
           </div>
           <div class="right">
-            <button class="manage-btn small" id="saveQuestionsBtn" onclick="/* no-op save for now */">Save</button>
+            <button class="manage-btn small" id="saveQuestionsBtn" onclick="/* no-op save for now */" disabled>Save</button>
+          </div>
+        </div>
+        <div class="seasons-card" id="questionsCard" style="margin-top:12px; flex-direction:column; align-items:stretch;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+            <div>
+              <strong>Manage Questions</strong>
+            </div>
+          </div>
+          <!-- Add new question -->
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;">
+            <input id="q_Question" placeholder="Question text" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+            <input id="q_question_ID" placeholder="question_ID (unique)" style="width:220px; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+            <input id="q_wordLimit" placeholder="wordLimit" type="number" min="0" style="width:120px; padding:8px; border:1px solid #ddd; border-radius:4px;" />
+            <button class="manage-btn small" id="addQuestionBtn" disabled>Add</button>
+          </div>
+          <!-- Questions table -->
+          <div style="margin-top:12px; width:100%; overflow:auto;">
+            <table class="seasons-table" id="questionsTable">
+              <thead>
+                <tr>
+                  <th style="width:60%">Question</th>
+                  <th style="width:15%">question_ID</th>
+                  <th style="width:10%">wordLimit</th>
+                  <th style="text-align:right; width:15%">Actions</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="4" class="muted">Loading questions…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Manage Seasons and Questions combined card -->
+        <div class="seasons-card" id="linkCard" style="margin-top:14px; flex-direction:column; align-items:stretch;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>Manage Linking Seasons and Questions</strong>
+            </div>
+          </div>
+
+          <!-- add mapping form -->
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="link_q_select" style="padding:8px; min-width:320px;"></select>
+            <select id="link_season_select" style="padding:8px; min-width:180px;"></select>
+            <input id="link_value" placeholder="Value (e.g. Q1)" style="padding:8px; width:140px; border-radius:4px; border:1px solid #ddd;" />
+            <button class="manage-btn small" id="addLinkBtn" disabled>Add</button>
+          </div>
+
+          <!-- mapping table -->
+          <div style="margin-top:12px; width:100%; overflow:auto;">
+            <table class="seasons-table" id="linksTable">
+              <thead>
+                <tr>
+                  <th style="width:55%">Question</th>
+                  <th style="width:25%">Season fields</th>
+                  <th style="text-align:right; width:20%">Actions</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
+            </table>
           </div>
         </div>
 
       <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
       </div>
     </main>
+    <footer>
+       &copy; 2025 WCW Awards Platform. All rights reserved.
+    </footer>
   </div>
 
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
@@ -335,7 +421,7 @@
   <script src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
   <script>
-        function logout() {
+    function logout() {
       firebase.auth().signOut().then(() => {
         window.location.href = "signin.html";
       });
@@ -349,7 +435,7 @@
     }
 
     // Load seasons and render rows with edit/delete
-    async function loadSeasonsList() {
+    async function loadSeasonsList(adminEnabled) {
       const tbody = document.querySelector('#seasonsTable tbody');
       if (!tbody) return;
       try {
@@ -368,38 +454,40 @@
             <tr data-season="${escapeHtml(id)}">
               <td style="vertical-align:middle">${escapeHtml(id)}</td>
               <td style="vertical-align:middle">
-                <select data-season-select="${escapeHtml(id)}" style="padding:6px; border-radius:4px;">
+                <select data-season-select="${escapeHtml(id)}" style="padding:6px; border-radius:4px;" ${adminEnabled ? '' : 'disabled'}>
                   <option value="" ${status === '' ? 'selected' : ''}>(no status)</option>
                   <option value="current" ${status === 'current' ? 'selected' : ''}>current</option>
                   <option value="past" ${status === 'past' ? 'selected' : ''}>past</option>
                 </select>
               </td>
               <td style="text-align:right; vertical-align:middle">
-                <button class="manage-btn small" data-save-row="${escapeHtml(id)}">Save</button>
-                <button class="manage-btn small" style="background:#f8d7da;color:#8c1f1f;margin-left:8px;" data-delete-row="${escapeHtml(id)}">Delete</button>
+                <button class="manage-btn small" data-save-row="${escapeHtml(id)}" ${adminEnabled ? '' : 'disabled'}>Save</button>
+                <button class="manage-btn small" style="background:#f8d7da;color:#8c1f1f;margin-left:8px;" data-delete-row="${escapeHtml(id)}" ${adminEnabled ? '' : 'disabled'}>Delete</button>
               </td>
             </tr>
           `);
         });
         tbody.innerHTML = rows.join('');
-        // wire per-row buttons
-        document.querySelectorAll('[data-save-row]').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const season = btn.getAttribute('data-save-row');
-            const sel = document.querySelector('[data-season-select="' + CSS.escape(season) + '"]');
-            const newStatus = sel ? sel.value : '';
-            await saveSeason(season, newStatus);
-            await loadSeasonsList();
+        // wire per-row buttons 
+        if (adminEnabled) {
+          document.querySelectorAll('[data-save-row]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const season = btn.getAttribute('data-save-row');
+              const sel = document.querySelector('[data-season-select="' + CSS.escape(season) + '"]');
+              const newStatus = sel ? sel.value : '';
+              await saveSeason(season, newStatus);
+              await loadSeasonsList(adminEnabled);
+            });
           });
-        });
-        document.querySelectorAll('[data-delete-row]').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            const season = btn.getAttribute('data-delete-row');
-            if (!confirm('Delete season "' + season + '"? This cannot be undone.')) return;
-            await deleteSeason(season);
-            await loadSeasonsList();
+          document.querySelectorAll('[data-delete-row]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const season = btn.getAttribute('data-delete-row');
+              if (!confirm('Delete season "' + season + '"? This cannot be undone.')) return;
+              await deleteSeason(season);
+              await loadSeasonsList(adminEnabled);
+            });
           });
-        });
+        }
       } catch (err) {
         console.error('loadSeasonsList error', err);
         tbody.innerHTML = `<tr><td colspan="3" class="muted">Failed to load seasons: ${escapeHtml(err.message || String(err))}</td></tr>`;
@@ -412,7 +500,6 @@
       const db = firebase.firestore();
       const docRef = db.collection('season').doc(seasonName);
       try {
-        // if doc exists update, otherwise create with status field (may be empty string)
         await docRef.set({ status: status || '' }, { merge: true });
         alert('Saved season: ' + seasonName);
       } catch (err) {
@@ -421,7 +508,6 @@
       }
     }
 
-    // Check whether seasonName is used in applicationInfo fields OR application documents
     async function checkSeasonInUse(seasonName) {
       const db = firebase.firestore();
       try {
@@ -429,7 +515,6 @@
         if (!appSnap.empty) return true;
       } catch (err) {
         console.warn('applications check failed', err);
-        // continue to check applicationInfo
       }
       try {
         const infoSnap = await db.collection('applicationInfo').get();
@@ -447,7 +532,6 @@
       return false;
     }
 
-    // Delete season after checking usage
     async function deleteSeason(seasonName) {
       try {
         const inUse = await checkSeasonInUse(seasonName);
@@ -464,33 +548,6 @@
       }
     }
 
-    // Handler for top Save button (create new season or update status if exists)
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('saveSeasonsBtn')?.addEventListener('click', async () => {
-        const nameEl = document.getElementById('newSeasonName');
-        const statusEl = document.getElementById('newSeasonStatus');
-        const name = nameEl?.value?.trim();
-        const status = statusEl?.value || '';
-        if (!name) { alert('Enter a season name'); return; }
-        try {
-          await saveSeason(name, status);
-          // clear input name but leave status
-          nameEl.value = '';
-          await loadSeasonsList();
-        } catch (err) {
-          console.error(err);
-          alert('Failed to save season: ' + (err.message || err));
-        }
-      });
-
-      // initial loads (delay to allow firebase init)
-      setTimeout(() => {
-        loadSeasonsList();
-        if (typeof loadDatesInfoBody === 'function') setTimeout(loadDatesInfoBody, 200);
-      }, 200);
-    });
-
-    // Dates Info: load, edit, save
     function formatTimestamp(ts) {
       if (!ts) return '';
       try {
@@ -557,33 +614,501 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      // wire buttons
-      document.getElementById('editDatesBtn')?.addEventListener('click', async () => {
-        const el = document.getElementById('datesBodyContent');
-        if (!el) return;
-        const ok = await isCurrentUserAdmin();
-        if (!ok) { alert('You are not authorised to edit Dates Body.'); return; }
-        el.contentEditable = 'true';
-        el.focus();
-        document.getElementById('editDatesBtn').style.display = 'none';
-        document.getElementById('cancelEditDatesBtn').style.display = '';
-      });
+    // ---------------- Manage Questions logic ----------------
+    async function loadQuestionsList(adminEnabled) {
+      const tbody = document.querySelector('#questionsTable tbody');
+      if (!tbody) return;
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applicationInfo').get();
+        const rows = [];
+        snap.forEach(doc => {
+          if (doc.id === 'DatesInfo') return; // exclude DatesInfo
+          const d = doc.data() || {};
+          const qText = d.Question || '';
+          const qId = d.question_ID || '';
+          const wLimit = d.wordLimit != null ? String(d.wordLimit) : '';
+          rows.push(`
+            <tr data-doc="${escapeHtml(doc.id)}">
+              <td class="q-question"><div class="q-text">${escapeHtml(qText)}</div></td>
+              <td class="q-id">${escapeHtml(qId)}</td>
+              <td class="q-word">${escapeHtml(wLimit)}</td>
+              <td style="text-align:right">
+                <div class="q-actions">
+                  <button class="manage-btn small" data-edit="${escapeHtml(doc.id)}" ${adminEnabled ? '' : 'disabled'}>Edit</button>
+                  <button class="manage-btn small" data-delete="${escapeHtml(doc.id)}" style="background:#f8d7da;color:#8c1f1f;" ${adminEnabled ? '' : 'disabled'}>Delete</button>
+                </div>
+              </td>
+            </tr>
+          `);
+        });
+        tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="4" class="muted">No questions found</td></tr>';
 
-      document.getElementById('cancelEditDatesBtn')?.addEventListener('click', async () => {
-        // discard edits and reload original
-        await loadDatesInfoBody();
-      });
+        if (adminEnabled) {
+          // wire edit buttons
+          document.querySelectorAll('[data-edit]').forEach(btn => {
+            btn.addEventListener('click', (e) => startEditQuestion(btn.getAttribute('data-edit')));
+          });
+          // wire delete buttons
+          document.querySelectorAll('[data-delete]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const docId = btn.getAttribute('data-delete');
+              const Question = btn.closest('tr').querySelector('.q-text').innerText;
+              if (!confirm('Delete question "' + Question + '"? This cannot be undone.')) return;
+              await deleteQuestion(docId);
+              await loadQuestionsList(adminEnabled);
+            });
+          });
+        }
+      } catch (err) {
+        console.error('loadQuestionsList error', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted">Failed to load questions: ${escapeHtml(err.message || String(err))}</td></tr>`;
+      }
+    }
 
-      document.getElementById('saveDatesBodyBtn')?.addEventListener('click', async () => {
-        // save current html
-        await saveDatesInfoBody();
-      });
+    // Add a new question (auto-generated doc ID)
+    async function addQuestion() {
+      const qText = document.getElementById('q_Question').value.trim();
+      const qID = document.getElementById('q_question_ID').value.trim();
+      const wLimitVal = document.getElementById('q_wordLimit').value;
+      const wordLimit = wLimitVal === '' ? null : Number(wLimitVal);
+      if (!qText || !qID) { alert('Question and question_ID are required'); return; }
+      try {
+        const db = firebase.firestore();
+        // uniqueness check for question_ID
+        const dup = await db.collection('applicationInfo').where('question_ID', '==', qID).limit(1).get();
+        if (!dup.empty) { alert('question_ID must be unique. A question with this ID already exists.'); return; }
+        // create document with autogenerated id
+        await db.collection('applicationInfo').add({
+          Question: qText,
+          question_ID: qID,
+          wordLimit: wordLimit
+        });
+        alert('Question added.');
+        // clear inputs
+        document.getElementById('q_Question').value = '';
+        document.getElementById('q_question_ID').value = '';
+        document.getElementById('q_wordLimit').value = '';
+      } catch (err) {
+        console.error('addQuestion error', err);
+        alert('Failed to add question: ' + (err.message || err));
+      }
+    }
 
-      // initial load (allow firebase.init to run)
-      setTimeout(() => { loadDatesInfoBody(); }, 250);
-    });
-  </script>
+    // Start inline edit for a question doc
+    async function startEditQuestion(docId) {
+      const row = document.querySelector('tr[data-doc="' + CSS.escape(docId) + '"]');
+      if (!row) return;
+      const qCell = row.querySelector('.q-question');
+      const wCell = row.querySelector('.q-word');
+      const qText = qCell.textContent || '';
+      const wVal = wCell.textContent || '';
+      qCell.innerHTML = `<textarea style="width:100%; min-height:60px; padding:6px; border:1px solid #ddd; border-radius:4px;" data-edit-q>${escapeHtml(qText)}</textarea>`;
+      wCell.innerHTML = `<input type="number" min="0" style="width:100px; padding:6px; border:1px solid #ddd; border-radius:4px;" data-edit-w value="${escapeHtml(wVal)}" />`;
+      const actionTd = row.querySelector('td:last-child');
+      actionTd.innerHTML = `
+        <div class="q-actions">
+          <button class="manage-btn small" data-save-edit="${escapeHtml(docId)}">Save</button>
+          <button class="manage-btn small" data-cancel-edit style="background:#eee;color:#d7336f;">Cancel</button>
+        </div>
+      `;
+      // wire save/cancel
+      actionTd.querySelector('[data-save-edit]').addEventListener('click', async () => {
+        const newQ = row.querySelector('[data-edit-q]').value.trim();
+        const newW = row.querySelector('[data-edit-w]').value;
+        const update = { Question: newQ, wordLimit: newW === '' ? null : Number(newW) };
+        await updateQuestion(docId, update);
+        await loadQuestionsList(true);
+      });
+      actionTd.querySelector('[data-cancel-edit]').addEventListener('click', async () => {
+        await loadQuestionsList(true);
+      });
+    }
+
+    async function updateQuestion(docId, update) {
+      try {
+        const db = firebase.firestore();
+        await db.collection('applicationInfo').doc(docId).set(update, { merge: true });
+        alert('Question updated.');
+      } catch (err) {
+        console.error('updateQuestion error', err);
+        alert('Failed to update question: ' + (err.message || err));
+      }
+    }
+
+    // Delete question if it doesn't contain any season-named fields
+    async function deleteQuestion(docId) {
+      try {
+        const db = firebase.firestore();
+        const docRef = db.collection('applicationInfo').doc(docId);
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) { alert('Document not found'); return; }
+        const data = docSnap.data() || {};
+        const sSnap = await db.collection('season').get();
+        const seasonIds = sSnap.docs.map(d => d.id);
+        const keys = Object.keys(data);
+        for (const sid of seasonIds) {
+          if (keys.includes(sid)) {
+            alert('Cannot delete this question document because it contains season-specific fields (e.g. "' + sid + '").');
+            return;
+          }
+        }
+        await docRef.delete();
+        alert('Question deleted.');
+      } catch (err) {
+        console.error('deleteQuestion error', err);
+        alert('Failed to delete question: ' + (err.message || err));
+      }
+    }
   
+    // ----------- AUTH LOGIC TO ENABLE BUTTONS -----------
+    document.addEventListener('DOMContentLoaded', () => {
+      // Admin flag used by input validation
+      let __adminEnabled = false;
+      // Initial load: leave most buttons disabled until auth is checked
+      function setAdminEnabled(enabled) {
+        __adminEnabled = !!enabled;
+        document.getElementById('saveSeasonsBtn').disabled = !enabled;
+        document.getElementById('editDatesBtn').disabled = !enabled;
+        document.getElementById('saveDatesBodyBtn').disabled = !enabled;
+        document.getElementById('saveQuestionsBtn').disabled = !enabled;
+        updateAddButtonState();
+        loadSeasonsList(enabled);
+        loadQuestionsList(enabled);
+      }
+
+      // wire add-question input validation so Add becomes enabled only when required fields are filled
+      function updateAddButtonState() {
+        const addBtn = document.getElementById('addQuestionBtn');
+        if (!addBtn) return;
+        const okInputs = qQuestion && qQuestion.value.trim() && qId && qId.value.trim();
+        addBtn.disabled = !(okInputs && __adminEnabled);
+      }
+      // get references to add-question inputs
+      const qQuestion = document.getElementById('q_Question');
+      const qId = document.getElementById('q_question_ID');
+      const qWord = document.getElementById('q_wordLimit');
+      [qQuestion, qId, qWord].forEach(el => el && el.addEventListener('input', updateAddButtonState));
+      updateAddButtonState();
+
+      // wire Add button to addQuestion() and refresh list after add
+      document.getElementById('addQuestionBtn')?.addEventListener('click', async () => {
+        await addQuestion();
+        const isAdmin = await isCurrentUserAdmin();
+        await loadQuestionsList(isAdmin);
+      });
+
+       // Listen for auth state and check admin role
+       firebase.auth().onAuthStateChanged(async (user) => {
+         if (!user) {
+           setAdminEnabled(false);
+           return;
+         }
+         const isAdmin = await isCurrentUserAdmin();
+         setAdminEnabled(isAdmin);
+ 
+         // Wire up admin actions only if admin
+         if (isAdmin) {
+           document.getElementById('saveSeasonsBtn')?.addEventListener('click', async () => {
+            const nameEl = document.getElementById('newSeasonName');
+            const statusEl = document.getElementById('newSeasonStatus');
+            const name = nameEl?.value?.trim();
+            const status = statusEl?.value || '';
+            if (!name) { alert('Enter a season name'); return; }
+            try {
+              await saveSeason(name, status);
+              nameEl.value = '';
+              await loadSeasonsList(true);
+            } catch (err) {
+              console.error(err);
+              alert('Failed to save season: ' + (err.message || err));
+            }
+          });
+
+          document.getElementById('editDatesBtn')?.addEventListener('click', async () => {
+            const el = document.getElementById('datesBodyContent');
+            if (!el) return;
+            const ok = await isCurrentUserAdmin();
+            if (!ok) { alert('You are not authorised to edit Dates Body.'); return; }
+            el.contentEditable = 'true';
+            el.focus();
+            document.getElementById('editDatesBtn').style.display = 'none';
+            document.getElementById('cancelEditDatesBtn').style.display = '';
+          });
+
+          document.getElementById('cancelEditDatesBtn')?.addEventListener('click', async () => {
+            await loadDatesInfoBody();
+          });
+
+          document.getElementById('saveDatesBodyBtn')?.addEventListener('click', async () => {
+            await saveDatesInfoBody();
+          });
+
+          document.getElementById('saveQuestionsBtn')?.addEventListener('click', async () => {
+            // Implement save questions logic here
+          });
+        }
+
+        // initial loads 
+        setTimeout(() => {
+          loadSeasonsList(isAdmin);
+          loadQuestionsList(isAdmin);
+          if (typeof loadDatesInfoBody === 'function') setTimeout(loadDatesInfoBody, 200);
+        }, 200);
+
+        // initial load (allow firebase.init to run)
+        setTimeout(() => { loadDatesInfoBody(); }, 250);
+      });
+    });
+    // ---------------- Manage Links (Seasons <-> Questions) ----------------
+    async function populateLinkForm() {
+      const qSel = document.getElementById('link_q_select');
+      const sSel = document.getElementById('link_season_select');
+      if (!qSel || !sSel) return;
+      qSel.innerHTML = '<option>Loading…</option>';
+      sSel.innerHTML = '<option>Loading…</option>';
+      try {
+        const db = firebase.firestore();
+        const [qSnap, sSnap] = await Promise.all([
+          db.collection('applicationInfo').get(),
+          db.collection('season').get()
+        ]);
+        // questions (exclude DatesInfo)
+        const qOptions = [];
+        qSnap.forEach(doc => {
+          if (doc.id === 'DatesInfo') return;
+          const d = doc.data() || {};
+          const label = d.Question || d.label || doc.id;
+          qOptions.push(`<option value="${escapeHtml(doc.id)}">${escapeHtml(label)} — ${escapeHtml(doc.id)}</option>`);
+        });
+        qSel.innerHTML = qOptions.length ? ['<option value="">(select question)</option>', ...qOptions].join('') : '<option disabled>No questions</option>';
+
+        // seasons
+        const sOptions = [];
+        sSnap.forEach(doc => sOptions.push(`<option value="${escapeHtml(doc.id)}">${escapeHtml(doc.id)}</option>`));
+        sSel.innerHTML = sOptions.length ? ['<option value="">(select season)</option>', ...sOptions].join('') : '<option disabled>No seasons</option>';
+
+      } catch (err) {
+        console.error('populateLinkForm error', err);
+        qSel.innerHTML = '<option disabled>Failed to load</option>';
+        sSel.innerHTML = '<option disabled>Failed to load</option>';
+      }
+      updateAddLinkState();
+    }
+
+    function updateAddLinkState() {
+      const qSel = document.getElementById('link_q_select');
+      const sSel = document.getElementById('link_season_select');
+      const val = document.getElementById('link_value');
+      const addBtn = document.getElementById('addLinkBtn');
+      if (!addBtn) return;
+      const ok = qSel && sSel && val && qSel.value && sSel.value && val.value.trim();
+      addBtn.disabled = !ok;
+    }
+
+    async function saveSeasonFieldValue(docId, seasonName, newValue) {
+      try {
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('Not authorised'); return; }
+
+        const db = firebase.firestore();
+        const update = {};
+        update[seasonName] = newValue;
+        await db.collection('applicationInfo').doc(docId).set(update, { merge: true });
+        alert('Saved order value: ' + newValue + ' for season: ' + seasonName);
+      } catch (err) {
+        console.error('saveSeasonFieldValue error', err);
+        alert('Failed to save season value: ' + (err.message || err));
+      }
+    }
+
+    async function addSeasonFieldToQuestion() {
+      const qSel = document.getElementById('link_q_select');
+      const sSel = document.getElementById('link_season_select');
+      const valInput = document.getElementById('link_value');
+      if (!qSel || !sSel || !valInput) return;
+      const docId = qSel.value;
+      const seasonName = sSel.value;
+      const value = valInput.value.trim();
+      if (!docId || !seasonName || !value) return alert('Select question, season and enter a value.');
+      try {
+        const db = firebase.firestore();
+        const docRef = db.collection('applicationInfo').doc(docId);
+        const snap = await docRef.get();
+        if (!snap.exists) return alert('Selected question document not found.');
+        const data = snap.data() || {};
+        if (Object.prototype.hasOwnProperty.call(data, seasonName)) return alert('This question already has a field for that season.');
+        const patch = {};
+        patch[seasonName] = value;
+        await docRef.set(patch, { merge: true });
+        valInput.value = '';
+        alert('Added season field to question.');
+        await loadQuestionSeasonLinks();
+        await populateLinkForm(); // refresh selects in case needed
+      } catch (err) {
+        console.error('addSeasonFieldToQuestion error', err);
+        alert('Failed to add season field: ' + (err.message || err));
+      }
+    }
+
+    async function loadQuestionSeasonLinks() {
+      const tbody = document.querySelector('#linksTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="3" class="muted">Loading…</td></tr>';
+      try {
+        const db = firebase.firestore();
+        const [qSnap, sSnap] = await Promise.all([db.collection('applicationInfo').get(), db.collection('season').get()]);
+        const seasonIds = sSnap.docs.map(d => d.id);
+        const rows = [];
+        qSnap.forEach(doc => {
+          if (doc.id === 'DatesInfo') return;
+          const d = doc.data() || {};
+          const fields = seasonIds.filter(sid => Object.prototype.hasOwnProperty.call(d, sid));
+          const seasonsHtml = fields.length ? fields.map(sid => {
+            const val = d[sid];
+            return `<div data-season="${escapeHtml(sid)}" style="margin-bottom:6px;">
+                      <strong style="color:#d62d83">${escapeHtml(sid)}</strong>: 
+                      <span class="season-val">${escapeHtml(String(val))}</span>
+                    </div>`;
+          }).join('') : '<span class="muted">—</span>';
+
+          // Build actions: Edit (left) and Delete (right)
+          const actionsArr = fields.length ? fields.map(sid => {
+            return `<div style="margin-bottom:8px; display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+                      <button class="manage-btn small" data-edit-season-doc="${escapeHtml(doc.id)}" data-edit-season="${escapeHtml(sid)}">Edit</button>
+                      <button class="manage-btn small" style="background:#f8d7da;color:#8c1f1f;" data-delete-season-doc="${escapeHtml(doc.id)}" data-delete-season="${escapeHtml(sid)}">Delete</button>
+                    </div>`;
+          }).join('') : '<span class="muted">—</span>';
+
+          const label = (d.Question || '') || doc.id;
+          rows.push(`<tr data-doc="${escapeHtml(doc.id)}">
+            <td>${escapeHtml(label)}<div class="muted" style="font-size:12px;">${escapeHtml(doc.id)}</div></td>
+            <td>${seasonsHtml}</td>
+            <td style="text-align:right; vertical-align:middle">${actionsArr}</td>
+          </tr>`);
+        });
+        tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="3" class="muted">No questions found</td></tr>';
+
+        // wire Edit buttons (show input + Save/Cancel; Save writes the changed season value)
+        document.querySelectorAll('[data-edit-season]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const docId = btn.getAttribute('data-edit-season-doc') || '';
+            const seasonName = btn.getAttribute('data-edit-season') || '';
+            const actionBlock = btn.parentElement;
+            if (!actionBlock) return;
+
+            // find the row and the season div to replace the displayed value with an input
+            const row = btn.closest('tr') || document.querySelector(`tr[data-doc="${CSS.escape(docId)}"]`);
+            if (!row) return;
+            const seasonDiv = Array.from(row.querySelectorAll('div[data-season]')).find(d => d.getAttribute('data-season') === seasonName);
+            if (!seasonDiv) return;
+
+            // replace the displayed value span with an input if not already editing
+            if (!seasonDiv.querySelector('[data-season-input]')) {
+              const valSpan = seasonDiv.querySelector('.season-val');
+              const currentVal = valSpan ? valSpan.innerText : '';
+              if (valSpan) {
+                valSpan.outerHTML = '<input data-season-input type="text" value="' + escapeHtml(currentVal) + '" class="season-edit-input" />';
+              } else {
+                seasonDiv.insertAdjacentHTML('beforeend', '<input data-season-input type="text" value="' + escapeHtml(currentVal) + '" class="season-edit-input" />');
+              }
+            }
+
+            // replace actions with Save + Cancel
+            actionBlock.innerHTML = ''
+              + '<button class="manage-btn small" data-save-season-doc="' + escapeHtml(docId) + '" data-save-season="' + escapeHtml(seasonName) + '">Save</button>'
+              + '<button class="manage-btn small" data-cancel-season style="background:#eee;color:#d7336f; margin-left:8px;">Cancel</button>';
+
+            // Cancel: reload original view
+            actionBlock.querySelector('[data-cancel-season]')?.addEventListener('click', async () => {
+              await loadQuestionSeasonLinks();
+            });
+
+            // Save: read input and persist the new value for that season field, then reload
+            actionBlock.querySelector('[data-save-season]')?.addEventListener('click', async () => {
+              try {
+                const inp = seasonDiv.querySelector('[data-season-input]');
+                const newVal = inp ? inp.value.trim() : '';
+                // require admin
+                const ok = await isCurrentUserAdmin();
+                if (!ok) { alert('Not authorised'); return; }
+                await saveSeasonFieldValue(docId, seasonName, newVal);
+                await loadQuestionSeasonLinks();
+              } catch (err) {
+                console.error('Save season value error', err);
+                alert('Failed to save season value: ' + (err.message || err));
+              }
+            });
+          });
+        });
+
+        // wire Delete buttons
+        document.querySelectorAll('[data-delete-season]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const raw = btn.getAttribute('data-delete-season') || '';
+            const rawDoc = btn.getAttribute('data-delete-season-doc') || '';
+            const docId = rawDoc;
+            const seasonName = raw;
+            if (!confirm(`Delete field "${seasonName}" from question doc "${docId}"?`)) return;
+            await deleteSeasonFieldFromQuestion(docId, seasonName);
+            await loadQuestionSeasonLinks();
+          });
+        });
+
+      } catch (err) {
+        console.error('loadQuestionSeasonLinks error', err);
+        tbody.innerHTML = `<tr><td colspan="3" class="muted">Failed to load: ${escapeHtml(err.message || String(err))}</td></tr>`;
+      }
+    }
+
+    async function deleteSeasonFieldFromQuestion(docId, seasonName) {
+      try {
+        const db = firebase.firestore();
+        let inUse = false;
+        try {
+          const appSnap = await db.collection('applications').where(seasonName, '!=', null).limit(1).get();
+          if (!appSnap.empty) inUse = true;
+        } catch (qerr) {
+          const appAll = await db.collection('applications').get();
+          appAll.forEach(a => {
+            if (Object.prototype.hasOwnProperty.call(a.data() || {}, seasonName)) inUse = true;
+          });
+        }
+        if (inUse) { alert('Cannot delete: some application(s) contain this season field.'); return; }
+        const docRef = db.collection('applicationInfo').doc(docId);
+        const patch = {};
+        patch[seasonName] = firebase.firestore.FieldValue.delete();
+        await docRef.update(patch);
+        alert('Field removed.');
+      } catch (err) {
+        console.error('deleteSeasonFieldFromQuestion error', err);
+        alert('Failed to delete field: ' + (err.message || err));
+      }
+    }
+
+    // wire link card controls on DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('link_q_select')?.addEventListener('change', updateAddLinkState);
+      document.getElementById('link_season_select')?.addEventListener('change', updateAddLinkState);
+      document.getElementById('link_value')?.addEventListener('input', updateAddLinkState);
+      document.getElementById('addLinkBtn')?.addEventListener('click', async () => {
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('Not authorised'); return; }
+        await addSeasonFieldToQuestion();
+      });
+      document.getElementById('refreshLinksBtn')?.addEventListener('click', async () => {
+        await populateLinkForm();
+        await loadQuestionSeasonLinks();
+      });
+    });
+
+    // ensure the link UI is populated as part of initial loads (after auth check)
+    // add these calls to the block that performs initial loads below (inside onAuthStateChanged)
+    setTimeout(() => {
+      populateLinkForm();
+      loadQuestionSeasonLinks();
+    }, 300);
+    // filepath marker end
+  </script>
 </body>
 </html>
