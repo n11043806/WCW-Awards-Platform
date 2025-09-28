@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Manage Users - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; }
     body {
@@ -218,6 +219,12 @@
       background-color: #f0f0f0;
       color: #333;
     }
+
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-circle{ background:#8d57a0;color:#fff;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
+    .user-dropdown{display:none;position:absolute;top:48px;right:0;background:#fff0f6;border:1px solid #b8235a;border-radius:8px;min-width:180px;z-index:100;flex-direction:column;}
+    .user-dropdown.open{display:flex;}
+    .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;}
   </style>
 </head>
 <body>
@@ -232,8 +239,17 @@
 
   <div class="main-content">
     <header>
-      <h1>User Management</h1>
-      <button class="logout-btn" onclick="logout()">Log Out</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>User Management</h1>
+        <div class="user-menu-container" id="adminUserMenu">
+          <span id="userFullName" class="user-fullname"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account">A</button>
+          <div id="userDropdown" class="user-dropdown">
+            <button onclick="window.location.href='adminprofile.html'">Profile</button>
+            <button onclick="logout()">Log out</button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <h2 class="section-title">Registered Users</h2>
@@ -389,6 +405,8 @@
           });
       }
     }
+
+    (function(){ const uc=document.getElementById('userCircle'), ud=document.getElementById('userDropdown'), uf=document.getElementById('userFullName'); if(uc && ud){ uc.addEventListener('click',()=>{ ud.classList.toggle('open'); }); document.addEventListener('click', e=>{ if(!document.getElementById('adminUserMenu')?.contains(e.target)){ ud.classList.remove('open'); }}); } if(window.firebase&&firebase.auth){ firebase.auth().onAuthStateChanged(u=>{ if(!u) return; if(uf) uf.textContent = u.displayName||u.email||'Admin'; if(uc) uc.textContent = u.displayName ? u.displayName.split(' ').map(w=>w[0]).join('').toUpperCase() : (u.email?u.email[0].toUpperCase():'A'); }); } })();
   </script>
 </body>
 </html>

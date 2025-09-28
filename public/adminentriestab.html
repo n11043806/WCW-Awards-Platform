@@ -520,13 +520,52 @@
     .filter-group h4 { color: #8c1f4c; }
     #flt_eligibility { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     #flt_eligibility .chk { display:inline-flex; gap:8px; align-items:center; margin:0; }
-    footer {
-      text-align: center;
-      color: #888;
-      margin-top: 40px;
-      font-size: 14px;
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-   </style>
+    .user-circle:hover { background: #5f386d; }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 48px;
+      right: 0;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 180px;
+      z-index: 100;
+      flex-direction: column;
+    }
+    .user-dropdown.open { display:flex; }
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .user-dropdown button:hover { background: #ffe6ee; }
+  </style>
 </head>
 <body>
   <div class="sidebar">
@@ -540,8 +579,24 @@
 
   <div class="main-content">
     <header>
-      <h1>Entries Management</h1>
-      <button class="logout-btn" onclick="logout()">Log Out</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>Entries Management</h1>
+        <div class="user-menu-container" id="adminUserMenu" style="display:flex;align-items:center;gap:10px;position:relative;">
+          <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <button onclick="window.location.href='adminprofile.html'">
+              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+            </button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+            </button>
+            <button onclick="logout()">
+              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main>
@@ -588,9 +643,6 @@
           </tbody>
         </table>
       </div>
-      <footer>
-       &copy; 2025 WCW Awards Platform. All rights reserved.
-      </footer>
     </main>
   </div>
 
@@ -1512,6 +1564,39 @@
       buildFilterUI(); applyFiltersAndRender();
     });
 
+    // user menu wiring
+    const userCircle = document.getElementById('userCircle');
+    const userDropdown = document.getElementById('userDropdown');
+    const userFullNameEl = document.getElementById('userFullName');
+
+    if (userCircle && userDropdown) {
+      userCircle.addEventListener('click', (e) => {
+        const open = userDropdown.classList.toggle('open');
+        userCircle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      // close when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!document.getElementById('adminUserMenu')?.contains(e.target)) {
+          userDropdown.classList.remove('open');
+          userCircle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return;
+      const name = user.displayName || user.email || "Admin";
+      if (userFullNameEl) userFullNameEl.textContent = name;
+      if (userCircle) {
+        let initials = "A";
+        if (user.displayName) {
+          initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+        } else if (user.email) {
+          initials = user.email[0].toUpperCase();
+        }
+        userCircle.textContent = initials;
+      }
+    });
     firebase.auth().onAuthStateChanged(async user => {
       const body = document.getElementById('entriesBody');
       if (!user) { window.location.href = "signin.html"; return; }
