@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Entries - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    .pdf-btn {
+      background: #faf0f4;               
+      border: 2px solid transparent;
+      padding: 6px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .pdf-btn:active { transform: translateY(1px); }
+    .pdf-btn:hover { background: #d62d83; } 
+
+    .material-symbols-outlined.pdf-icon {
+      font-variation-settings: 'wght' 700;
+      font-size: 22px;                   
+      vertical-align: middle;
+      color: #8c1f4c;                   
+      transition: color .12s ease;
+    }
+    .pdf-btn:hover .pdf-icon { color: #fff; } 
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      color: #333;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d7336f;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+    }
+
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background-color: white;
+      color: #d62d83;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #ffe6ee;
+    }
+
+    h2.section-title {
+      margin-top: 30px;
+      color: #d62d83;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .controls input {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 70%;
+    }
+
+    .controls select, .controls button {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .controls button {
+      background-color: #d62d83;
+      color: white;
+      font-weight: bold;
+    }
+
+    .controls button:hover {
+      background-color: #b8235a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #fafafa;
+      color: #d62d83;
+    }
+
+    .action-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #d62d83;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .action-btn:hover {
+      background-color: #b8235a;
+    }
+
+    .actions-inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    .actions-inline .action-btn,
+    .actions-inline .pdf-btn {
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 300px;
+      text-align: center;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+        main {
+      padding: 40px 30px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      margin: 0px -28px;
+    }
+
+
+    .manage-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .manage-btn {
+      background: #d7336f;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .manage-btn:hover {
+      background: #b8235a;
+    }
+
+    .manage-title {
+      color: #d7336f;
+      margin-top: 0;
+      font-size: 20px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    th {
+      background: #faf0f4;
+      color: #8c1f4c;
+    }
+
+    .muted {
+      color: #777;
+    }
+
+    .action-btn {
+      border: 2px solid transparent;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color .15s ease-in-out, transform .05s ease-in-out;
+    }
+
+    .action-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-view {
+      background: #e1faed;
+      color: #1f7a4b;
+      border-color: #c9f2da;
+    }
+
+    .btn-view:hover {
+      background: #1f7a4b;
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: #eca1a1;
+      color: #572338;
+      border: 2px solid #eca1a1;
+    }
+
+    .btn-danger:hover {
+      background: #572338;
+      color: #f0e4e9;
+      border: 2px solid #f0e4e9;
+    }
+
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.4);
+      z-index: 1000;
+      padding: 24px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: #fff;
+      border-radius: 10px;
+      max-width: 980px;
+      width: 100%;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: #faf0f4;
+      color: #8c1f4c;
+    }
+
+    .modal-body {
+      padding: 18px;
+      max-height: 75vh;
+      overflow: auto;
+    }
+
+    .section-title {
+      margin: 18px 0 10px;
+      color: #8c1f4c;
+      background: #faf0f4;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+    }
+
+    @media (max-width: 800px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kv .k {
+      font-weight: 600;
+      font-size: 13px;
+      color: #444;
+    }
+
+    .kv .v {
+      font-size: 14px;
+      color: #000;
+      word-break: break-word;
+    }
+
+    .block {
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 10px;
+      background: #fcfcfc;
+      white-space: pre-wrap;
+    }
+
+    .close-btn {
+      background: #fff;
+      color: #8c1f4c;
+      border: 2px solid #8c1f4c;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .close-btn:hover {
+      background: #ffe6ee;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #popup h3 {
+      margin-bottom: 20px;
+      color: #d62d83;
+      font-size: 20px;
+    }
+
+    #popup select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #popup button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    #popup button:first-of-type {
+      background-color: #d62d83;
+      color: white;
+    }
+
+    #popup button:last-of-type {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    /* Sort / Filter styles */
+    .btn-filter {
+      background: #a1466b;
+      color: #eec5d6;
+      border: 2px solid #572338;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-filter:hover { background: #eec5d6; color: #572338; }
+
+    .sort-dropdown { position: relative; display: inline-block; }
+    .sort-btn {
+      background: #fff;
+      color: #572338;
+      border: 2px solid #572338;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      min-width: 180px;
+      text-align: left;
+    }
+    .sort-btn:after { content: "▼"; float: right; font-size: 12px; margin-left: 8px; }
+    .sort-list {
+      display: none;
+      position: absolute;
+      top: 110%;
+      left: 0;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-width: 220px;
+      z-index: 10;
+    }
+    .sort-list.open { display: block; }
+    .sort-list button {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 14px;
+      color: #572338;
+      cursor: pointer;
+    }
+    .sort-list button:hover { background: #f0e4e9; }
+   
+    .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+    .filter-group { border: 1px solid #eee; padding: 10px; border-radius: 6px; background: #fcfcfc; }
+    .confirm-actions { display:flex; gap:10px; margin-top:12px; }
+    .chk { display:flex; gap:8px; align-items:center; margin:8px 0; }
+    .filter-input { width:100%; padding:8px; border-radius:4px; border:1px solid #ccc; }
+
+    .filter-dropdown { position: relative; font-size: 14px; }
+    .filter-dropdown .fd-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px; border-radius:6px; border:1px solid #e6e6e6;
+      background:#fff; cursor:pointer; min-height:42px;
+    }
+    .filter-dropdown .fd-label { color:#333; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .filter-dropdown .fd-placeholder { color:#999; font-weight:600; }
+    .filter-dropdown .fd-caret { font-size:14px; color:#333; margin-left:8px; }
+    .filter-dropdown .fd-list {
+      position:absolute; left:0; right:0; margin-top:8px; z-index:60;
+      background:#fff; border:1px solid #eee; border-radius:6px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.08); max-height:260px; overflow:auto; display:none;
+    }
+    .filter-dropdown.open .fd-list { display:block; }
+    .filter-dropdown .fd-item { padding:8px 12px; cursor:pointer; }
+    .filter-dropdown .fd-item:hover { background:#faf0f4; color:#8c1f4c; }
+    .filter-dropdown .fd-search { width:100%; box-sizing:border-box; padding:8px 10px; border:none; border-bottom:1px solid #f0f0f0; outline:none; }
+    .filter-dropdown .fd-empty { padding:12px; color:#777; }
+
+    .filter-group h4 { color: #8c1f4c; }
+    #flt_eligibility { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    #flt_eligibility .chk { display:inline-flex; gap:8px; align-items:center; margin:0; }
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .user-circle:hover { background: #5f386d; }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 48px;
+      right: 0;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 180px;
+      z-index: 100;
+      flex-direction: column;
+    }
+    .user-dropdown.open { display:flex; }
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .user-dropdown button:hover { background: #ffe6ee; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html" class="active">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="adminjudgetab.html">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>Entries Management</h1>
+        <div class="user-menu-container" id="adminUserMenu" style="display:flex;align-items:center;gap:10px;position:relative;">
+          <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <button onclick="window.location.href='adminprofile.html'">
+              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+            </button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+            </button>
+            <button onclick="logout()">
+              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <h2 class="manage-title">Manage Entries</h2>
+        
+        <!-- Management Buttons -->
+        <div class="manage-buttons">
+          <button class="manage-btn" onclick="window.location.href='adminnewform.html'">Start Entry</button>
+          <button class="manage-btn" onclick="window.location.href='admineditform.html'">Edit Form Content</button>
+          <button class="manage-btn" onclick="bulkExport()">Bulk Export</button>
+          <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+            <div class="sort-dropdown" id="sortDropdown">
+              <button class="sort-btn" id="sortBtn">SORT BY: -select-</button>
+              <div class="sort-list" id="sortList">
+                <button data-sort="none">-select-</button>
+                <button data-sort="asc">Application ID Ascending</button>
+                <button data-sort="desc">Application ID Descending</button>
+                <button data-sort="updated_desc">Updated (Newest first)</button>
+                <button data-sort="updated_asc">Updated (Oldest first)</button>
+              </div>
+            </div>
+            <button id="openFilter" class="btn-filter">Filter</button>
+          </div>
+        </div>
+
+        <!-- Entries Table -->
+        <table>
+          <thead>
+            <tr>
+              <th>Application ID</th>
+              <th>Full Name</th>
+              <th>Status</th>
+              <th>Category</th>
+              <th>Subcategory</th>
+              <th>Season</th>
+              <th>Updated</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="entriesBody">
+            <tr><td colspan="9" class="muted">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- View Application Modal -->
+  <div id="viewModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <strong>Application ID:</strong> <span id="modalAppId"></span>
+        </div>
+        <button id="modalClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <h3 class="section-title">Start here</h3>
+        <div id="modalStartFields" class="field-grid"></div>
+
+        <h3 class="section-title">Criteria</h3>
+        <div id="modalCriteriaFields"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Confirm Delete/Withdraw Modal -->
+  <div id="confirmModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <strong id="confirmTitle">Confirm</strong>
+        <button id="confirmClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmText" style="margin-top:0">Are you sure?</p>
+        <div class="confirm-actions">
+          <button id="confirmYes" class="action-btn btn-danger">Yes</button>
+          <button id="confirmNo" class="close-btn">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div id="filterModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <strong>Filter</strong>
+        <button id="filterClose" class="close-btn">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <h4>Category</h4>
+            <div id="flt_categories"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Applicant name</h4>
+            <div id="flt_name"></div>
+            <div id="selected_name" style="margin-top:8px;font-size:13px;color:#333"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Subcategory</h4>
+            <div id="flt_subcategories"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Status</h4>
+            <div id="flt_stages"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Award</h4>
+            <div id="flt_awards"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Season</h4>
+            <div id="flt_seasons"></div>
+          </div>
+          <div class="filter-group">
+            <h4>Eligibility</h4>
+            <div id="flt_eligibility">
+              <label class="chk"><input type="radio" name="elig" value="any" checked/> Any</label>
+              <label class="chk"><input type="radio" name="elig" value="yes"/> Yes</label>
+              <label class="chk"><input type="radio" name="elig" value="no"/> No</label>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:12px;">
+          <button id="filterApply" class="action-btn btn-view">Done</button>
+          <button id="filterClear" class="close-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- Include xlsx library -->
+
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+
+    // Modal functionality
+    const modalEl = document.getElementById('viewModal');
+    const modalClose = document.getElementById('modalClose');
+    modalClose.onclick = () => closeModal();
+    modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    
+    function openModal() { 
+      modalEl.classList.add('open'); 
+      modalEl.setAttribute('aria-hidden', 'false'); 
+    }
+    
+    function closeModal() { 
+      modalEl.classList.remove('open'); 
+      modalEl.setAttribute('aria-hidden', 'true'); 
+    }
+
+    // Confirm modal logic
+    const cModal = document.getElementById('confirmModal');
+    const cTitle = document.getElementById('confirmTitle');
+    const cText = document.getElementById('confirmText');
+    const cClose = document.getElementById('confirmClose');
+    const cNo = document.getElementById('confirmNo');
+    const cYes = document.getElementById('confirmYes');
+    let pendingAction = null; // { type: 'delete'|'withdraw', id: 'docId' }
+
+    function openConfirm(type, id) {
+      pendingAction = { type, id };
+      cTitle.textContent = type === 'delete' ? 'Delete application' : 'Withdraw application';
+      cText.textContent = type === 'delete'
+        ? 'Are you sure you want to delete this application? This cannot be undone!'
+        : 'Are you sure you want to withdraw this application? This cannot be undone!';
+      cModal.classList.add('open');
+      cModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeConfirm() {
+      cModal.classList.remove('open');
+      cModal.setAttribute('aria-hidden', 'true');
+      pendingAction = null;
+    }
+
+    cClose.onclick = closeConfirm;
+    cNo.onclick = closeConfirm;
+    cModal.addEventListener('click', (e) => { if (e.target === cModal) closeConfirm(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
+
+    cYes.onclick = async () => {
+      if (!pendingAction) return closeConfirm();
+      try {
+        const db = firebase.firestore();
+        const id = pendingAction.id;
+        if (pendingAction.type === 'delete') {
+          await db.collection('applications').doc(id).delete();
+          const row = document.getElementById('row_' + id);
+          if (row) row.remove();
+          location.reload();
+        } else {
+          await db.collection('applications').doc(id).set({
+            stage: 'withdrawn',
+            withdrawnAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Operation failed: ' + (err.message || err));
+      } finally {
+        closeConfirm();
+      }
+    };
+
+    // Utility functions
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function fmt(ts) {
+      try {
+        if (!ts) return "-";
+        if (ts.toDate) return ts.toDate().toLocaleDateString();
+        return new Date(ts).toLocaleDateString();
+      } catch { return "-"; }
+    }
+
+    function kv(label, value) {
+      return `<div class="kv"><div class="k">${esc(label)}</div><div class="v">${esc(value || '-')}</div></div>`;
+    }
+
+    function block(label, value) {
+      const safe = esc(value || '');
+      return `<div class="kv" style="margin-bottom:10px">
+                <div class="k" style="margin-bottom:6px">${esc(label)}</div>
+                <div class="block">${safe || '-'}</div>
+              </div>`;
+    }
+
+    // View application details
+    async function viewApp(id) {
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('applications').doc(id).get();
+        if (!doc.exists) { alert("Application not found."); return; }
+        const d = doc.data();
+
+        // Header info
+        document.getElementById('modalAppId').textContent = id;
+
+        // Start here fields
+        const startHtml = [
+          kv('Category', d.category),
+          kv('Subcategory', d.subcategory),
+          kv('Season', d.season),
+          kv('Award', d.awards_choice),
+          kv('Name', d.name),
+          kv('Website', d.website),
+          kv('Email Address', d.email),
+          kv('Mobile Number', d.mobile_number),
+          kv('Address', d.address),
+          kv('Instagram URL', d.instagram_url),
+          kv('LinkedIn URL', d.linkedin_url),
+          kv('Status', d.status),
+          kv('Created', fmt(d.createdAt)),
+          kv('Updated', fmt(d.updatedAt))
+        ].join('');
+        document.getElementById('modalStartFields').innerHTML = startHtml;
+
+        // Criteria fields: build dynamically from applicationInfo for the application's season
+        let seasonName = d.season || null;
+        if (!seasonName) {
+          // fallback to current season if doc doesn't have one
+          try {
+            const sSnap = await db.collection('season').get();
+            sSnap.forEach(sdoc => { if (sdoc.data().status === 'current') seasonName = sdoc.id; });
+          } catch (e) { seasonName = null; }
+        }
+        let critHtml = '';
+        if (seasonName) {
+          const qSnap = await db.collection('applicationInfo').get();
+          const questions = [];
+          qSnap.forEach(qdoc => {
+            if (qdoc.id === 'DatesInfo') return;
+            const qd = qdoc.data() || {};
+            if (Object.prototype.hasOwnProperty.call(qd, seasonName)) {
+              const orderLabel = String(qd[seasonName] || '');
+              const orderNum = Number(String(orderLabel).replace(/[^0-9]/g, '')) || 999;
+              questions.push({ id: qdoc.id, label: qd.Question || qd.label || qdoc.id, order: orderNum });
+            }
+          });
+          questions.sort((a,b) => a.order - b.order);
+          for (const q of questions) {
+            critHtml += block(q.label, d[q.id]);
+          }
+        } else {
+          // no season information -> no dynamic criteria available
+          critHtml = `<div class="muted">No criteria available for this application (season not set).</div>`;
+        }
+
+        // eligibility last
+        critHtml += kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No');
+        document.getElementById('modalCriteriaFields').innerHTML = critHtml;
+        openModal();
+       } catch (err) {
+         console.error(err);
+         alert("Failed to load application: " + err.message);
+       }
+     }
+
+    async function bulkExport() {
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+        if (snap.empty) { alert('No applications found to export.'); return; }
+
+        // load question docs (exclude DatesInfo)
+        const qSnap = await db.collection('applicationInfo').get();
+        const questionDocs = qSnap.docs.filter(d => d.id !== 'DatesInfo').map(d => {
+          const data = d.data() || {};
+          return { id: d.id, label: data.Question || data.label || d.id, raw: data };
+        });
+
+        // build header row: base fields + dynamic question labels
+        const baseHeaders = [
+          'Applicant ID','Full Name','Award','Status','Category','Subcategory','Season',
+          'Updated','Submitted','Email','Mobile Number','Website','Instagram URL','LinkedIn URL'
+        ];
+        const questionHeaders = questionDocs.map(q => `${q.label} (${q.id})`);
+        const headers = baseHeaders.concat(questionHeaders);
+
+        // build rows
+        const applications = snap.docs.map(doc => {
+          const data = doc.data() || {};
+          const row = {
+            'Applicant ID': doc.id,
+            'Full Name': data.name || '-',
+            'Award': data.awards_choice || '-',
+            'Status': data.stage || 'draft',
+            'Category': data.category || '-',
+            'Subcategory': data.subcategory || '-',
+            'Season': data.season || '-',
+            'Updated': data.updatedAt?.toDate?.().toLocaleDateString?.() || '-',
+            'Submitted': data.submittedAt?.toDate?.().toLocaleDateString?.() || '-',
+            'Email': data.email || '-',
+            'Mobile Number': data.mobile_number || '-',
+            'Website': data.website || '-',
+            'Instagram URL': data.instagram_url || '-',
+            'LinkedIn URL': data.linkedin_url || '-'
+          };
+          // dynamic question columns
+          questionDocs.forEach(q => {
+            row[`${q.label} (${q.id})`] = data[q.id] || '-';
+          });
+          return row;
+        });
+
+        // Create worksheet & download (XLSX)
+        const worksheet = XLSX.utils.json_to_sheet(applications, { header: headers });
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
+        const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+        const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Applications.xlsx';
+        link.click();
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error exporting applications:', error);
+        alert('Failed to export applications: ' + (error.message || error));
+      }
+    }
+
+    // Helper function to convert string to ArrayBuffer
+    function s2ab(s) {
+      const buf = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
+    }
+
+    async function exportAppPdf(id) {
+      try {
+        const doc = await firebase.firestore().collection('applications').doc(id).get();
+        if (!doc.exists) { alert("Application not found."); return; }
+        const d = doc.data();
+
+        const leftCols = [
+          kv('Full name', d.name),
+          kv('Email', d.email),
+          kv('Address', d.address),
+          kv('Mobile No.', d.mobile_number),
+          kv('Website', d.website)
+        ].join('');
+
+        const rightCols = [
+          kv('Category', d.category),
+          kv('Subcategory', d.subcategory),
+          kv('Award', d.awards_choice),
+          kv('Instagram', d.instagram_url),
+          kv('LinkedIn', d.linkedin_url)
+        ].join('');
+
+        // build criteriaHtml dynamically based on application's season (fallback to older fields)
+        let criteriaHtml = '';
+        try {
+          // determine season for this application (d variable exists in exportAppPdf scope)
+          let seasonName = d.season || null;
+          if (!seasonName) {
+            const sSnap = await db.collection('season').get();
+            sSnap.forEach(sdoc => { if (sdoc.data().status === 'current') seasonName = sdoc.id; });
+          }
+
+          if (seasonName) {
+            const qSnap = await db.collection('applicationInfo').get();
+            const questions = [];
+            qSnap.forEach(qdoc => {
+              if (qdoc.id === 'DatesInfo') return;
+              const qd = qdoc.data() || {};
+              if (Object.prototype.hasOwnProperty.call(qd, seasonName)) {
+                const orderLabel = String(qd[seasonName] || '');
+                const orderNum = Number(String(orderLabel).replace(/[^0-9]/g, '')) || 999;
+                questions.push({ id: qdoc.id, label: qd.Question || qd.label || qdoc.id, order: orderNum });
+              }
+            });
+            questions.sort((a,b) => a.order - b.order);
+            for (const q of questions) {
+              criteriaHtml += block(q.label, d[q.id]);
+            }
+          } else {
+            // no season information -> no dynamic criteria available for PDF
+            criteriaHtml = `<div class="muted">No criteria available for this application (season not set).</div>`;
+          }
+
+          // add eligibility
+          criteriaHtml += kv('Eligibility confirmed', d.eligibility ? 'Yes' : 'No');
+        } catch (err) {
+          console.warn('Failed to build dynamic criteria for PDF:', err);
+          // fallback: existing static blocks (or leave blank)
+        }
+
+        const html = `
+           <!doctype html>
+           <html>
+           <head>
+             <meta charset="utf-8">
+             <title>Application Preview - ${esc(id)}</title>
+             <style>
+              :root{
+                --pink:#d62d83;        /* darker header */
+                --pink-strong:#b8235a; /* section title / main pink */
+                --meta-pink:#8c1f4c;   /* application id color + border */
+                --pink-light:#faf0f4;  /* light wash for rows */
+                --pink-row:#fde6ee;    /* slightly darker wash for header-row */
+                --card-width:760px;
+              }
+
+              /* page / print settings */
+              @page { margin: 12mm; }
+              html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;color:#222;background:#fff}
+              @media print {
+                html,body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                /* remove any default focus outlines in print */
+                * { -webkit-print-color-adjust: exact; }
+              }
+
+              /* dark pink header bar with WCW AWARDS label */
+              .pink-bar{background:var(--pink);height:56px;display:flex;align-items:center;padding:0 22px;color:#fff;font-weight:700}
+              .wrap{display:flex;align-items:flex-start;justify-content:center;padding:18px 12px}
+              .card{width:100%;max-width:var(--card-width);background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.08);border-radius:6px;overflow:hidden}
+              .card .inner{padding:20px 28px}
+
+              /* header-row full-width lighter row (slightly darker than section wash) */
+              .header-row{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                background:var(--pink-row);
+                padding:12px;
+                gap:12px;
+                border-radius:6px;
+                margin-bottom:12px;
+              }
+
+              h1{font-size:18px;color:var(--pink-strong);margin:0;font-weight:700}
+
+              /* Application ID box: keep current pink shade and add matching border */
+              .meta {
+                font-size:13px;
+                color:var(--meta-pink);
+                background:var(--pink-light);
+                padding:6px 10px;
+                border-radius:6px;
+                border:2px solid var(--meta-pink); /* border added as requested */
+                box-shadow: none;
+              }
+
+              .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+              .kv{margin-bottom:8px}
+              .kv .k{font-weight:700;color:#444;font-size:13px;margin-bottom:4px}
+              .kv .v{font-size:14px;color:#111}
+
+              /* Start here / Criteria header rows: use the light pink wash */
+              .section-title{
+                display:block;
+                margin:12px 0 8px;
+                color:var(--pink-strong);
+                font-weight:700;
+                background:var(--pink-light);
+                padding:8px 10px;
+                border-radius:6px;
+              }
+
+              /* reduce block spacing/padding to remove big gaps between questions */
+              .block{border:1px solid #eee;padding:10px;border-radius:6px;background:#fff;white-space:pre-wrap;margin-bottom:10px}
+
+              /* ensure printed card uses full card width and consistent padding */
+              @media (max-width:800px){
+                .form-grid{grid-template-columns:1fr}
+                .card .inner{padding:16px}
+              }
+             </style>
+           </head>
+           <body>
+            <div class="pink-bar" aria-hidden="true">WCW AWARDS</div>
+
+             <div class="wrap">
+               <div class="card" role="document" aria-label="Application preview">
+                 <div class="inner">
+                   <div class="header-row">
+                     <h1>Application Preview</h1>
+                     <div class="meta">Application ID: ${esc(id)}</div>
+                   </div>
+
+                   <h2 class="section-title">Start here</h2>
+                   <div class="form-grid">
+                     <div>
+                       ${leftCols}
+                     </div>
+                     <div>
+                       ${rightCols}
+                     </div>
+                   </div>
+
+                   <h2 class="section-title">Criteria</h2>
+                   <div>
+                     ${criteriaHtml}
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </body>
+           </html>
+         `;
+
+         const win = window.open('', '_blank');
+         if (!win) { alert('Please allow popups to generate preview.'); return; }
+         win.document.open();
+         win.document.write(html);
+         win.document.close();
+         win.focus();
+         setTimeout(() => win.print(), 700);
+       } catch (err) {
+         console.error(err);
+         alert('Failed to open printable preview: ' + (err.message || err));
+       }
+     }
+
+     /* ---------- Filter / Sort logic ---------- */
+  let ALL_APPS = [];        // [{ id, d }]
+  let SUBS_BY_CAT = new Map();
+  // categories collection data 
+  let CATEGORIES = [];                 
+  const CATEGORY_TO_SUBS = new Map();  
+  // awards collection data 
+  let AWARDS = [];                  
+  // seasons collection data
+  let SEASONS = [];
+  const FILTERS = {
+    categories: new Set(),
+    subcategories: new Set(),
+    awards: new Set(),
+    seasons: new Set(),
+    stages: new Set(),
+    applicants: new Set(),   
+    eligibility: 'any'
+  };
+  let SORT_MODE = 'none';
+  
+   async function loadSeasonsFromFirestore(db) {
+     try {
+       const snap = await db.collection('season').get();
+       SEASONS = snap.docs.map(d => String(d.id)).filter(Boolean).sort((a,b) => a.localeCompare(b));
+     } catch (err) {
+       console.warn('Failed to load season collection:', err);
+       SEASONS = [];
+     }
+   }
+   function renderSeasonDropdown(containerId, selectedSet) {
+     renderSingleDropdown(containerId, SEASONS, null, selectedSet, '-select-');
+   }
+  
+  async function loadCategoriesFromFirestore(db) {
+    try {
+      const snap = await db.collection('Categories').get();
+      CATEGORIES = [];
+      CATEGORY_TO_SUBS.clear();
+      snap.docs.forEach(doc => {
+        const cat = doc.id;
+        CATEGORIES.push(cat);
+        const vals = Object.values(doc.data() || {}).filter(Boolean).map(String);
+        CATEGORY_TO_SUBS.set(cat, uniqSorted(vals));
+      });
+      CATEGORIES = uniqSorted(CATEGORIES);
+    } catch (err) {
+      console.warn('Failed to load Categories collection:', err);
+    }
+  }
+  
+  async function loadAwardsFromFirestore(db) {
+    try {
+      const snap = await db.collection('Award').get();
+      AWARDS = snap.docs.map(d => String(d.id)).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+    } catch (err) {
+      console.warn('Failed to load Award collection:', err);
+      AWARDS = [];
+    }
+  }
+  
+  // users info for quick lookup
+  let USERS = [];
+  const USERS_MAP = new Map();
+
+  async function loadUsersFromFirestore(db) {
+    try {
+      const snap = await db.collection('users').get();
+      USERS = snap.docs.map(d => {
+        const data = d.data() || {};
+        const name = String((data.fullName || data.displayName || data.name || '').trim()) || d.id;
+        const email = String(data.email || data.identifier || '').trim();
+        return { uid: d.id, name, email };
+      }).sort((a,b) => a.name.localeCompare(b.name));
+      USERS_MAP.clear();
+      USERS.forEach(u => USERS_MAP.set(u.uid, { name: u.name, email: u.email }));
+    } catch (err) {
+      console.warn('Failed to load users collection:', err);
+      USERS = [];
+      USERS_MAP.clear();
+    }
+  }
+
+  function renderUserDropdown(containerId, selectedSet) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!USERS || !USERS.length) { el.innerHTML = `<div class="muted">No applicants</div>`; return; }
+    const options = USERS.map(u => {
+      const idOrEmail = u.email ? u.email : u.uid;
+      return `<option value="${esc(u.uid)}" ${selectedSet.has(u.uid) ? 'selected' : ''}>${esc(u.name)} | ${esc(idOrEmail)}</option>`;
+    }).join('');
+    el.innerHTML = `<select multiple size="${Math.min(8, USERS.length)}" class="filter-input" id="${containerId}_sel">${options}</select>`;
+    const sel = document.getElementById(containerId + '_sel');
+    sel.onchange = () => {
+      selectedSet.clear();
+      Array.from(sel.selectedOptions).forEach(o => selectedSet.add(o.value));
+    };
+  }
+  
+  function uniqSorted(arr) { return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b))); }
+  function computeSubsByCat() {
+    SUBS_BY_CAT = new Map();
+    ALL_APPS.forEach(({d}) => {
+      const c = d.category || ''; const s = d.subcategory || '';
+      if (!c || !s) return;
+      if (!SUBS_BY_CAT.has(c)) SUBS_BY_CAT.set(c, new Set());
+      SUBS_BY_CAT.get(c).add(s);
+    });
+  }
+
+  function renderCheckboxList(containerId, values, selectedSet) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = values.length
+      ? values.map(v => `
+          <label class="chk">
+            <input type="checkbox" value="${esc(v)}" ${selectedSet.has(v) ? 'checked' : ''}/>
+            <span>${esc(v)}</span>
+          </label>
+        `).join('')
+      : `<div class="muted">No options</div>`;
+    el.onchange = (e) => {
+      if (e.target && e.target.type === 'checkbox') {
+        const val = e.target.value;
+        if (e.target.checked) selectedSet.add(val);
+        else selectedSet.delete(val);
+      }
+    };
+  }
+
+  function categoriesList() {
+    const fromData = uniqSorted(ALL_APPS.map(({d}) => d.category));
+    return uniqSorted(fromData);
+  }
+  function awardsList() {
+    const fromData = uniqSorted(ALL_APPS.map(({d}) => d.awards_choice));
+    return uniqSorted(fromData);
+  }
+  function stagesList() {
+    return ['draft','submitted'];
+  }
+  function subcategoriesForSelectedCats() {
+    const selectedCats = FILTERS.categories;
+    const sets = [];
+    const sourceMap = CATEGORY_TO_SUBS.size ? CATEGORY_TO_SUBS : SUBS_BY_CAT;
+    if (selectedCats.size === 0) {
+      sourceMap.forEach(s => sets.push(...(Array.isArray(s) ? s : Array.from(s))));
+      return uniqSorted(sets);
+    }
+    selectedCats.forEach(cat => {
+      const set = sourceMap.get(cat);
+      if (!set) return;
+      sets.push(...(Array.isArray(set) ? set : Array.from(set)));
+    });
+    return uniqSorted(sets);
+  }
+
+  function renderSingleDropdown(containerId, items, valueForLabel = null, selectedSet = new Set(), placeholder = '-select-', onChange) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = `<div class="muted">No options</div>`; return; }
+
+    const chosenValue = Array.from(selectedSet)[0] || '';
+    const chosenLabel = chosenValue ? (items.find(it => (valueForLabel ? valueForLabel(it) : it) === chosenValue) || chosenValue) : '';
+
+    el.innerHTML = `
+      <div class="filter-dropdown" tabindex="0">
+        <div class="fd-bar" role="button" aria-haspopup="listbox">
+          <div class="fd-label">${esc(chosenLabel) || `<span class="fd-placeholder">${esc(placeholder)}</span>`}</div>
+          <div class="fd-caret">▾</div>
+        </div>
+        <div class="fd-list" role="listbox" aria-hidden="true">
+          <input class="fd-search" placeholder="Search.." />
+          <div class="fd-items">
+            ${items.map(it => `<div class="fd-item" data-label="${esc(it)}">${esc(it)}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const wrapper = el.querySelector('.filter-dropdown');
+    const bar = wrapper.querySelector('.fd-bar');
+    const list = wrapper.querySelector('.fd-list');
+    const search = wrapper.querySelector('.fd-search');
+
+    function openList() {
+      wrapper.classList.add('open');
+      list.setAttribute('aria-hidden','false');
+      search.value = '';
+      Array.from(list.querySelectorAll('.fd-item')).forEach(i => i.style.display = '');
+      search.focus();
+    }
+    function closeList() {
+      wrapper.classList.remove('open');
+      list.setAttribute('aria-hidden','true');
+    }
+
+    bar.addEventListener('click', (e) => { e.stopPropagation(); wrapper.classList.contains('open') ? closeList() : openList(); });
+
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      Array.from(list.querySelectorAll('.fd-item')).forEach(item => {
+        const txt = item.textContent.toLowerCase();
+        item.style.display = q === '' || txt.includes(q) ? '' : 'none';
+      });
+    });
+
+    list.addEventListener('click', (e) => {
+      const it = e.target.closest('.fd-item');
+      if (!it) return;
+      const label = it.getAttribute('data-label');
+      const value = valueForLabel ? valueForLabel(label) : label;
+      selectedSet.clear();
+      if (value) selectedSet.add(value);
+      wrapper.querySelector('.fd-label').textContent = label || '';
+      if (containerId === 'flt_categories') renderSubcategoryDropdown('flt_subcategories', FILTERS.subcategories);
+      if (typeof onChange === 'function') onChange(value);
+      closeList();
+    });
+
+    document.addEventListener('click', (ev) => { if (!el.contains(ev.target)) closeList(); });
+    wrapper.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeList(); });
+  }
+
+  function renderCategoryDropdown(containerId, selectedSet) {
+    renderSingleDropdown(containerId, CATEGORIES, null, selectedSet, '-select-');
+  }
+
+  function renderSubcategoryDropdown(containerId, selectedSet) {
+    renderSingleDropdown(containerId, subcategoriesForSelectedCats(), null, selectedSet, '-select-');
+  }
+
+  function renderAwardDropdown(containerId, selectedSet) {
+    renderSingleDropdown(containerId, AWARDS, null, selectedSet, '-select-');
+  }
+
+  function renderUserDropdown(containerId, selectedSet) {
+    if (!USERS || !USERS.length) { const el = document.getElementById(containerId); if (el) el.innerHTML = `<div class="muted">No applicants</div>`; return; }
+    const displayList = USERS.map(u => `${u.name} | ${u.email ? u.email : u.uid}`);
+    const displayToUid = new Map(USERS.map(u => [`${u.name} | ${u.email ? u.email : u.uid}`, u.uid]));
+    renderSingleDropdown(containerId, displayList, label => (displayToUid.get(label) || ''), selectedSet, '-select-', (chosenDisplay) => {
+      selectedSet.clear();
+      const uid = displayToUid.get(chosenDisplay);
+      if (uid) selectedSet.add(uid);
+    });
+  }
+  
+  function buildFilterUI() {
+    const stgs = stagesList();
+    renderCategoryDropdown('flt_categories', FILTERS.categories);
+    renderSubcategoryDropdown('flt_subcategories', FILTERS.subcategories);
+    renderAwardDropdown('flt_awards', FILTERS.awards);
+    renderSeasonDropdown('flt_seasons', FILTERS.seasons);
+    renderUserDropdown('flt_name', FILTERS.applicants);
+    renderCheckboxList('flt_stages', stgs, FILTERS.stages);
+
+    const selName = document.getElementById('selected_name');
+    selName.textContent = FILTERS.applicants.size
+      ? `Selected: ${Array.from(FILTERS.applicants).map(uid => {
+          const info = USERS_MAP.get(uid) || { name: uid, email: '' };
+          return `${info.name}${info.email ? ' | ' + info.email : ' | ' + uid}`;
+        }).join(', ')}`
+      : '';
+
+    setTimeout(()=> {
+      const sel = document.getElementById('flt_name_sel');
+      if (sel) sel.onchange = () => {
+        selName.textContent = Array.from(sel.selectedOptions).map(o => {
+          const info = USERS_MAP.get(o.value) || { name: o.value, email: '' };
+          return `${info.name}${info.email ? ' | ' + info.email : ' | ' + o.value}`;
+        }).join(', ');
+      };
+    }, 0);
+  }
+
+  function applyFiltersAndRender() {
+     const matches = ALL_APPS.filter(({d}) => {
+       const stage = (d.stage || 'draft').toLowerCase();
+       const catOk  = FILTERS.categories.size     ? FILTERS.categories.has(d.category || '')      : true;
+       const subOk  = FILTERS.subcategories.size  ? FILTERS.subcategories.has(d.subcategory || ''): true;
+       const awdOk  = FILTERS.awards.size         ? FILTERS.awards.has(d.awards_choice || '')      : true;
+       const seasonOk = FILTERS.seasons.size      ? FILTERS.seasons.has(d.season || '')            : true;
+       const nameOk = FILTERS.applicants.size
+         ? FILTERS.applicants.has(String(d.user_id || d.applicant_id || d.userId || ''))
+         : true;
+       const stgOk  = FILTERS.stages.size         ? FILTERS.stages.has(stage)                      : true;
+       const elig = FILTERS.eligibility;
+       const eligOk = elig === 'any' ? true : (elig === 'yes' ? !!d.eligibility : !d.eligibility);
+       return catOk && subOk && awdOk && seasonOk && stgOk && nameOk && eligOk;
+     });
+     renderTable(matches);
+   }
+ 
+    function renderTable(items) {
+      const body = document.getElementById('entriesBody');
+      if (!items.length) {
+        body.innerHTML = `<tr><td colspan="9" class="muted">No applications found.</td></tr>`;
+        return;
+      }
+      let sorted = [...items];
+      if (SORT_MODE === 'asc') sorted.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+      else if (SORT_MODE === 'desc') sorted.sort((a,b) => String(b.id).localeCompare(String(a.id)));
+      else if (SORT_MODE === 'updated_desc') sorted.sort((a,b) => ((b.d.updatedAt?.toMillis?.()||0) - (a.d.updatedAt?.toMillis?.()||0)));
+      else if (SORT_MODE === 'updated_asc') sorted.sort((a,b) => ((a.d.updatedAt?.toMillis?.()||0) - (b.d.updatedAt?.toMillis?.()||0)));
+
+      body.innerHTML = '';
+      sorted.forEach(({id,d}) => {
+        const stage = (d.stage || 'draft').toLowerCase();
+        const isWithdrawn = stage === 'withdrawn';
+        const delLabel = stage === 'submitted' ? 'WITHDRAW' : 'DELETE';
+        const delType = stage === 'submitted' ? 'withdraw' : 'delete';
+        const delBtnHtml = isWithdrawn
+          ? `<span class="muted">WITHDRAWN</span>`
+          : `<button class="action-btn btn-danger" onclick="openConfirm('${delType}','${id}')">${delLabel}</button>`;
+
+        const tr = document.createElement('tr');
+        tr.id = 'row_' + id;
+        tr.innerHTML = `
+           <td>${esc(id)}</td>
+           <td>${esc(d.name || '-')}</td>
+           <td><span class="muted">${esc(d.stage || 'draft')}</span></td>
+           <td>${esc(d.category || '-')}</td>
+           <td>${esc(d.subcategory || '-')}</td>
+           <td>${esc(d.season || '-')}</td>
+           <td>${fmt(d.updatedAt)}</td>
+           <td>${esc(d.email || '-')}</td>
+           <td>
+             <div class="actions-inline">
+               <button class="pdf-btn" title="Open printable preview (save as PDF)" onclick="exportAppPdf('${id}')">
+                 <span class="material-symbols-outlined pdf-icon" aria-hidden="true">picture_as_pdf</span>
+               </button>
+               <button class="action-btn btn-view" onclick="viewApp('${id}')">VIEW</button>
+               ${delBtnHtml}
+             </div>
+           </td>
+         `;
+         body.appendChild(tr);
+       });
+     }
+
+    /* Sort dropdown behaviour */
+    const sortBtn = document.getElementById('sortBtn');
+    const sortList = document.getElementById('sortList');
+    const sortDropdown = document.getElementById('sortDropdown');
+    sortBtn.onclick = () => sortList.classList.toggle('open');
+    sortList.onclick = (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        SORT_MODE = e.target.dataset.sort;
+        sortBtn.textContent = 'SORT BY: ' + (
+          SORT_MODE === 'asc' ? 'Application ID Ascending' :
+          SORT_MODE === 'desc' ? 'Application ID Descending' :
+          SORT_MODE === 'updated_desc' ? 'Updated (Newest to Oldest)' :
+          SORT_MODE === 'updated_asc' ? 'Updated (Oldest to Newest)' :
+          '-select-'
+        );
+        sortList.classList.remove('open');
+        applyFiltersAndRender();
+      }
+    };
+    document.addEventListener('click', function(e){ if (!sortDropdown.contains(e.target)) sortList.classList.remove('open'); });
+
+    /* Filter modal wiring */
+    const fModal = document.getElementById('filterModal');
+    const fOpen  = document.getElementById('openFilter');
+    const fClose = document.getElementById('filterClose');
+    const fApply = document.getElementById('filterApply');
+    const fClear = document.getElementById('filterClear');
+    fOpen?.addEventListener('click', () => { buildFilterUI(); fModal.classList.add('open'); fModal.setAttribute('aria-hidden','false'); });
+    fClose?.addEventListener('click', () => { fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true'); });
+    fModal?.addEventListener('click', (e) => { if (e.target === fModal) { fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true'); } });
+    fApply?.addEventListener('click', () => {
+      const elig = document.querySelector('input[name="elig"]:checked');
+      FILTERS.eligibility = elig ? elig.value : 'any';
+      FILTERS.subcategories = FILTERS.subcategories || new Set();
+      applyFiltersAndRender();
+      fModal.classList.remove('open'); fModal.setAttribute('aria-hidden','true');
+    });
+    fClear?.addEventListener('click', () => {
+      FILTERS.categories.clear();
+      FILTERS.subcategories.clear();
+      FILTERS.awards.clear();
++     FILTERS.seasons.clear(); // clear season selection as requested
+      FILTERS.stages.clear();
+      FILTERS.applicants.clear();
+      FILTERS.eligibility = 'any';
+      buildFilterUI(); applyFiltersAndRender();
+    });
+
+    // user menu wiring
+    const userCircle = document.getElementById('userCircle');
+    const userDropdown = document.getElementById('userDropdown');
+    const userFullNameEl = document.getElementById('userFullName');
+
+    if (userCircle && userDropdown) {
+      userCircle.addEventListener('click', (e) => {
+        const open = userDropdown.classList.toggle('open');
+        userCircle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      // close when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!document.getElementById('adminUserMenu')?.contains(e.target)) {
+          userDropdown.classList.remove('open');
+          userCircle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return;
+      const name = user.displayName || user.email || "Admin";
+      if (userFullNameEl) userFullNameEl.textContent = name;
+      if (userCircle) {
+        let initials = "A";
+        if (user.displayName) {
+          initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+        } else if (user.email) {
+          initials = user.email[0].toUpperCase();
+        }
+        userCircle.textContent = initials;
+      }
+    });
+    firebase.auth().onAuthStateChanged(async user => {
+      const body = document.getElementById('entriesBody');
+      if (!user) { window.location.href = "signin.html"; return; }
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').get();
+        await Promise.all([ loadCategoriesFromFirestore(db), loadAwardsFromFirestore(db), loadUsersFromFirestore(db), loadSeasonsFromFirestore(db) ]);
+        ALL_APPS = snap.docs.map(doc => ({ id: doc.id, d: doc.data() }));
+        computeSubsByCat();
+        // initial render
+        applyFiltersAndRender();
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="9" class="muted">Error: ${esc(err.message || err)}</td></tr>`;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
