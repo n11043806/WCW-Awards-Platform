@@ -243,11 +243,14 @@ document.addEventListener('DOMContentLoaded', function() {
           <td>${row.status}</td>
           <td>${row.lastUpdated}</td>
           <td>
-            <button class="logout-btn" onclick="window.location.href='judgeapplicationview.html?id=${row.applicationId}'">View</button>
+            <button class="logout-btn" onclick="onView('${row.applicationId}')">View</button>
           </td>
         </tr>
       `;
     }
+
+    // Store the filtered application IDs for navigation in application view
+    localStorage.setItem('judgeFilteredAppIds', JSON.stringify(filteredRows.map(r => r.applicationId)));
   }
 
   sortDropdown.addEventListener('change', function() {
@@ -263,6 +266,9 @@ document.addEventListener('DOMContentLoaded', function() {
       filtered = filtered.filter(r => r.status === "saved");
     } else if (val === "status_submitted") {
       filtered = filtered.filter(r => r.status === "submitted");
+    } else {
+      localStorage.removeItem('judgeFilteredAppIds');
+      localStorage.removeItem('judgeCurrentIndex');
     }
     renderTable(filtered);
   });
@@ -323,6 +329,13 @@ document.addEventListener('DOMContentLoaded', function() {
       tableBody.innerHTML = '<tr><td colspan="7">Error loading assignments.</td></tr>';
     }
   });
+
+  window.onView = function(applicationId) {
+    const filteredAppIds = JSON.parse(localStorage.getItem('judgeFilteredAppIds') || '[]');
+    const currentIndex = filteredAppIds.indexOf(applicationId);
+    localStorage.setItem('judgeCurrentIndex', currentIndex);
+    window.location.href = `judgeapplicationview.html?id=${applicationId}`;
+  }
 });
   </script>
 </body>

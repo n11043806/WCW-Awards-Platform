@@ -41,6 +41,39 @@
     .btn-save { background:#f7cfd6; color:#8b2a4a; border:2px solid #f7cfd6; }
     .btn-submit { background:#fff; color:#8b2a4a; border:2px solid #8b2a4a; }
 
+    /* New styles for judge actions buttons */
+    .judge-actions {
+      display: flex;
+      gap: 32px;
+      margin-top: 32px;
+      justify-content: center;
+      align-items: center;
+    }
+    .action-btn {
+      background: #fff;
+      color: #d7336f;
+      border: 2px solid #d7336f;
+      border-radius: 8px;
+      padding: 12px 40px;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .action-btn:hover {
+      background: #ffe6ee;
+      color: #b8235a;
+    }
+    #bottomSaveBtn {
+      background: #ffe6ee;
+      border-color: #ffe6ee;
+      color: #d7336f;
+    }
+    #bottomSaveBtn:hover {
+      background: #ffd6e6;
+      color: #b8235a;
+    }
+
     @media(max-width:1000px){
       .criteria-row { flex-direction:column-reverse; }
       .crit-judge { width:100%; min-width:0; }
@@ -101,9 +134,11 @@
 
       <div id="applicationSections"></div>
 
-      <div class="bottom-actions">
-        <button class="btn btn-save" id="bottomSaveBtn">SAVE</button>
-        <button class="btn btn-submit" id="bottomSubmitBtn">SUBMIT</button>
+      <!-- Place this where your action buttons go -->
+      <div class="judge-actions">
+        <button id="bottomSaveBtn" class="btn action-btn">Save</button>
+        <button id="bottomSubmitBtn" class="btn action-btn">Submit</button>
+        <button id="nextBtn" class="btn action-btn" style="display:none;">Next</button>
       </div>
     </div>
   </main>
@@ -281,6 +316,20 @@
       console.error('Failed to load application:', err);
     }
   });
+
+  const filteredAppIds = JSON.parse(localStorage.getItem('judgeFilteredAppIds') || '[]');
+  let currentIndex = parseInt(localStorage.getItem('judgeCurrentIndex'), 10) || 0;
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (filteredAppIds.length > 1 && currentIndex < filteredAppIds.length - 1) {
+    nextBtn.style.display = '';
+    nextBtn.onclick = function() {
+      localStorage.setItem('judgeCurrentIndex', currentIndex + 1);
+      window.location.href = `judgeapplicationview.html?id=${filteredAppIds[currentIndex + 1]}`;
+    };
+  } else {
+    nextBtn.style.display = 'none';
+  }
   </script>
 </body>
 </html>
