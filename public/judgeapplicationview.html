@@ -53,7 +53,7 @@
   <header>
     <h1>Welcome, <span id="judgeName">Judge</span></h1>
     <div style="display:flex;gap:10px;align-items:center;">
-      <button class="logout-btn" onclick="window.location.href='judgedashboard.html'">Back</button>
+      <!-- Only keep the logout button, remove the top-right back button -->
       <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
   </header>
@@ -186,7 +186,7 @@
         judgeId: uid,
         applicationId: APP_ID,
         scores: scores,
-        status: "draft",
+        status: "saved",
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
       alert('Progress saved!');
@@ -194,9 +194,30 @@
       alert('Error saving: ' + err.message);
     }
   });
-  document.getElementById('bottomSubmitBtn').addEventListener('click', function(e){
+  document.getElementById('bottomSubmitBtn').addEventListener('click', async function(e){
     e.preventDefault();
-    // intentionally no-op
+    const uid = firebase.auth().currentUser.uid;
+    const scores = {};
+    CRITERIA_DEFS.forEach(c => {
+      const score = parseInt(document.getElementById('score_' + c.key).value, 10);
+      const comment = document.getElementById('comment_' + c.key).value;
+      if (!isNaN(score) || comment) {
+        scores[c.key] = { score: isNaN(score) ? null : score, comment: comment || "" };
+      }
+    });
+
+    try {
+      await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set({
+        judgeId: uid,
+        applicationId: APP_ID,
+        scores: scores,
+        status: "submitted", // <-- set status to submitted
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      alert('Judging submitted!');
+    } catch (err) {
+      alert('Error submitting: ' + err.message);
+    }
   });
 
   // load application and populate fields + inline criteria

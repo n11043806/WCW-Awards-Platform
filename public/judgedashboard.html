@@ -181,9 +181,9 @@
             <option value="">(Clear All)</option>
             <option value="category_asc">Category (Ascending)</option>
             <option value="category_desc">Category (Descending)</option>
-            <option value="status_pending">Status (Pending)</option>
-            <option value="status_notstarted">Status (Not Started)</option>
-            <option value="status_completed">Status (Completed)</option>
+            <option value="status_new">Status (New)</option>
+            <option value="status_saved">Status (Saved)</option>
+            <option value="status_submitted">Status (Submitted)</option>
           </select>
         </div>
       </div>
@@ -257,14 +257,12 @@ document.addEventListener('DOMContentLoaded', function() {
       filtered.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
     } else if (val === "category_desc") {
       filtered.sort((a, b) => (b.category || '').localeCompare(a.category || ''));
-    } else if (val === "status_pending") {
-      filtered = filtered.filter(r => (r.status || '').toLowerCase() === "pending");
-    } else if (val === "status_notstarted") {
-      // Placeholder: filter by status "not started"
-      filtered = filtered.filter(r => (r.status || '').toLowerCase() === "not started");
-    } else if (val === "status_completed") {
-      // Placeholder: filter by status "completed"
-      filtered = filtered.filter(r => (r.status || '').toLowerCase() === "completed");
+    } else if (val === "status_new") {
+      filtered = filtered.filter(r => r.status === "new");
+    } else if (val === "status_saved") {
+      filtered = filtered.filter(r => r.status === "saved");
+    } else if (val === "status_submitted") {
+      filtered = filtered.filter(r => r.status === "submitted");
     }
     renderTable(filtered);
   });
@@ -298,12 +296,24 @@ document.addEventListener('DOMContentLoaded', function() {
             appData = appDoc.data();
           }
         }
+
+        // Fetch judgeResponses status
+        let judgeStatus = "new";
+        try {
+          const judgeRespDoc = await db.collection('judgeResponses').doc(judgeId + '_' + appId).get();
+          if (judgeRespDoc.exists && judgeRespDoc.data().status) {
+            judgeStatus = judgeRespDoc.data().status;
+          }
+        } catch (e) {
+          // ignore, fallback to "new"
+        }
+
         rows.push({
           applicationId: appId || '-',
           name: appData.name || assign.entryName || '-',
           category: appData.category || '-',
           subcategory: appData.subcategory || '-',
-          status: assign.status || '-',
+          status: judgeStatus,
           lastUpdated: assign.updatedAt ? new Date(assign.updatedAt.seconds * 1000).toLocaleString() : '-'
         });
       }
