@@ -6,85 +6,148 @@
   <title>Judge Dashboard - WCW Awards</title>
 
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
-    }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+  }
 
-    header {
-      background-color: #d7336f;
-      color: white;
-      padding: 20px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+  header {
+    background-color: #d7336f;
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    /* Flush header content to the left */
+    justify-content: flex-start;
+  }
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+  header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
 
-    .logout-btn {
-      background-color: white;
-      color: #d7336f;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+  .logout-btn {
+    background-color: white;
+    color: #d7336f;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: auto;
+  }
 
-    .logout-btn:hover {
-      background-color: #ffe6ee;
-    }
+  .logout-btn:hover {
+    background-color: #ffe6ee;
+  }
 
-    main {
-      padding: 40px 30px;
-    }
+  main {
+    padding: 40px 30px;
+  }
 
-    .dashboard-section {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 900px;
-      margin: 30px auto;
-    }
+  .dashboard-section {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    max-width: 1100px;
+    margin: 30px auto;
+  }
 
-    .dashboard-section h2 {
-      color: #d7336f;
-      margin-bottom: 20px;
-    }
+  .dashboard-section h2 {
+    color: #d7336f;
+    margin-bottom: 20px;
+    text-align: left;
+  }
 
-    .dashboard-section p {
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
+  .dashboard-section p {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
 
-    .dashboard-section button {
-      padding: 12px 20px;
-      background-color: #d7336f;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+  .dashboard-section button {
+    padding: 12px 20px;
+    background-color: #d7336f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
 
-    .dashboard-section button:hover {
-      background-color: #b8235a;
-    }
+  .dashboard-section button:hover {
+    background-color: #b8235a;
+  }
 
-    footer {
-      text-align: center;
-      margin-top: 60px;
-      font-size: 14px;
-      color: #888;
-    }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-top: 10px;
+  }
+
+  thead tr {
+    background: #faf0f4;
+  }
+
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 15px;
+  }
+
+  th {
+    color: #8c1f4c;
+    font-weight: 700;
+  }
+
+  tbody tr {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(215,51,111,0.04);
+  }
+
+  tbody tr td {
+    border-top: 1px solid #f4f4f4;
+    border-bottom: 1px solid #f4f4f4;
+  }
+
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .list-header label {
+    font-weight: 700;
+    color: #d7336f;
+    font-size: 1.1em;
+    margin-bottom: 6px;
+  }
+
+  .list-header select {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 1px solid #d7336f;
+    font-size: 1em;
+    background: #fff;
+    color: #d7336f;
+    min-width: 220px;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 60px;
+    font-size: 14px;
+    color: #888;
+  }
   </style>
 </head>
 
@@ -113,15 +176,14 @@
       </div>
       <div class="list-header" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:18px;">
         <div style="display:flex;flex-direction:column;align-items:flex-end;width:100%;">
-          <label style="font-weight:700;color:#d7336f;font-size:1.1em;margin-bottom:6px;">Sort By</label>
+          <label style="font-weight:700;color:#d7336f;font-size:1.1em;margin-bottom:6px;">Sort/Filter By</label>
           <select id="sortDropdown" style="padding:10px 16px;border-radius:6px;border:1px solid #d7336f;font-size:1em;background:#fff;color:#d7336f;min-width:220px;">
-            <option value="category_asc">Category (A-Z)</option>
-            <option value="category_desc">Category (Z-A)</option>
-            <option value="status_draft">Status (Draft)</option>
-            <option value="status_complete">Status (Complete)</option>
-            <option value="status_incomplete">Status (Incomplete)</option>
-            <option value="updated_desc">Last Updated (Newest)</option>
-            <option value="updated_asc">Last Updated (Oldest)</option>
+            <option value="">(Clear All)</option>
+            <option value="category_asc">Category (Ascending)</option>
+            <option value="category_desc">Category (Descending)</option>
+            <option value="status_pending">Status (Pending)</option>
+            <option value="status_notstarted">Status (Not Started)</option>
+            <option value="status_completed">Status (Completed)</option>
           </select>
         </div>
       </div>
@@ -159,145 +221,99 @@
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
-
   <script>
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "signin.html";
-      }).catch((error) => {
-        alert("Error signing out: " + error.message);
-      });
+document.addEventListener('DOMContentLoaded', function() {
+  const tableBody = document.getElementById('appsBody');
+  const sortDropdown = document.getElementById('sortDropdown');
+  let rows = [];
+
+  function renderTable(filteredRows) {
+    tableBody.innerHTML = '';
+    if (!filteredRows.length) {
+      tableBody.innerHTML = '<tr><td colspan="7">No assigned applications found.</td></tr>';
+      return;
     }
+    for (const row of filteredRows) {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${row.applicationId}</td>
+          <td>${row.name}</td>
+          <td>${row.category}</td>
+          <td>${row.subcategory}</td>
+          <td>${row.status}</td>
+          <td>${row.lastUpdated}</td>
+          <td>
+            <button class="logout-btn" onclick="window.location.href='judgeapplicationview.html?id=${row.applicationId}'">View</button>
+          </td>
+        </tr>
+      `;
+    }
+  }
 
-    // Table rendering and sort logic for assigned applications
-    let ALL_APPS = [];
-    let SORT_MODE = 'category_asc';
+  sortDropdown.addEventListener('change', function() {
+    let filtered = [...rows];
+    const val = sortDropdown.value;
+    if (val === "category_asc") {
+      filtered.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+    } else if (val === "category_desc") {
+      filtered.sort((a, b) => (b.category || '').localeCompare(a.category || ''));
+    } else if (val === "status_pending") {
+      filtered = filtered.filter(r => (r.status || '').toLowerCase() === "pending");
+    } else if (val === "status_notstarted") {
+      // Placeholder: filter by status "not started"
+      filtered = filtered.filter(r => (r.status || '').toLowerCase() === "not started");
+    } else if (val === "status_completed") {
+      // Placeholder: filter by status "completed"
+      filtered = filtered.filter(r => (r.status || '').toLowerCase() === "completed");
+    }
+    renderTable(filtered);
+  });
 
-    function renderTable(items) {
-      const body = document.getElementById('appsBody');
-      let filtered = [...items];
-      switch (SORT_MODE) {
-        case 'category_asc':
-          filtered.sort((a, b) => String(a.category).localeCompare(String(b.category)));
-          break;
-        case 'category_desc':
-          filtered.sort((a, b) => String(b.category).localeCompare(String(a.category)));
-          break;
-        case 'status_draft':
-          filtered = filtered.filter(a => (a.judgeStatus || '').toLowerCase() === 'draft');
-          break;
-        case 'status_complete':
-          filtered = filtered.filter(a => (a.judgeStatus || '').toLowerCase() === 'complete');
-          break;
-        case 'status_incomplete':
-          filtered = filtered.filter(a => (a.judgeStatus || '').toLowerCase() === 'incomplete');
-          break;
-        case 'updated_desc':
-          filtered.sort((a, b) => b.updated - a.updated);
-          break;
-        case 'updated_asc':
-          filtered.sort((a, b) => a.updated - b.updated);
-          break;
-        default:
-          break;
-      }
-      if (!filtered.length) {
-        body.innerHTML = `<tr><td colspan="6" class="muted" style="padding:24px 0;text-align:center;font-size:16px;">No assigned applications found.</td></tr>`;
+  firebase.auth().onAuthStateChanged(async user => {
+    if (!user) {
+      tableBody.innerHTML = '<tr><td colspan="7">Please log in.</td></tr>';
+      return;
+    }
+    const judgeId = user.uid;
+    const db = firebase.firestore();
+
+    try {
+      const assignmentsSnap = await db.collection('judgeAssignments')
+        .where('judgeId', '==', judgeId)
+        .get();
+
+      if (assignmentsSnap.empty) {
+        tableBody.innerHTML = '<tr><td colspan="7">No assigned applications found.</td></tr>';
         return;
       }
-      body.innerHTML = '';
-      filtered.forEach(({id, name, category, subcategory, judgeStatus, updated}) => {
-        body.innerHTML += `
-          <tr style="background:#fff;border-radius:8px;box-shadow:0 0 8px rgba(0,0,0,0.04);">
-            <td style="padding:12px 16px;">${id}</td>
-            <td style="padding:12px 16px;">${name}</td>
-            <td style="padding:12px 16px;">${category}</td>
-            <td style="padding:12px 16px;">${subcategory}</td>
-            <td style="padding:12px 16px;">${judgeStatus}</td>
-            <td style="padding:12px 16px;">${updated ? new Date(updated).toLocaleString() : '-'} </td>
-            <td style="padding:12px 16px;"><button class="action-btn btn-view" onclick="window.location.href='judgeapplicationview.html?id=${id}'">View</button></td>
-          </tr>
-        `;
-      });
-    }
 
-    document.getElementById('sortDropdown').onchange = function(e) {
-      SORT_MODE = e.target.value;
-      renderTable(ALL_APPS);
-    };
-
-    function viewEntry(id) {
-  // Now handled by direct navigation to judgeapplicationview.html
-    }
-
-    // Fetch assigned applications from Firestore
-    firebase.auth().onAuthStateChanged(async user => {
-      if (user) {
-        const uid = user.uid;
-        firebase.firestore().collection("users").doc(uid).get()
-          .then(doc => {
-            if (doc.exists) {
-              const name = doc.data().fullName || user.displayName || "Judge";
-              document.getElementById("judgeName").textContent = name;
-            } else {
-              document.getElementById("judgeName").textContent = "Judge";
-            }
-          }).catch(error => {
-            console.error("Failed to fetch judge name:", error);
-          });
-
-        // Fetch all judge docs for this judge
-        try {
-          const judgeQuery = await firebase.firestore().collection('judge').where('judgeid', '==', uid).get();
-          let judgeAssignments = [];
-          judgeQuery.forEach(doc => {
-            const data = doc.data();
-            if (data.AssignedApplication) {
-              judgeAssignments.push({
-                appId: data.AssignedApplication
-              });
-            }
-          });
-          // Remove duplicates by appId
-          const uniqueAssignments = Array.from(new Map(judgeAssignments.map(a => [a.appId, a])).values());
-
-          // Fetch details for each application and judgeResponses status
-          const appPromises = uniqueAssignments.map(async a => {
-            const appDoc = await firebase.firestore().collection('applications').doc(a.appId).get();
-            let judgeStatus = 'incomplete'; // default if no judgeResponses doc
-            try {
-              const judgeRespDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + a.appId).get();
-              if (judgeRespDoc.exists) {
-                const respData = judgeRespDoc.data();
-                judgeStatus = respData.status || 'draft';
-              }
-            } catch (err) {
-              // If error, keep as incomplete
-            }
-            if (!appDoc.exists) return null;
-            const d = appDoc.data();
-            return {
-              id: appDoc.id,
-              name: d.name || '-',
-              category: d.category || '-',
-              subcategory: d.subcategory || '-',
-              judgeStatus: judgeStatus,
-              updated: d.updated || null
-            };
-          });
-
-          const appDocs = await Promise.all(appPromises);
-          ALL_APPS = appDocs.filter(Boolean);
-          renderTable(ALL_APPS);
-        } catch (err) {
-          console.error('Error fetching assigned applications:', err);
-          ALL_APPS = [];
-          renderTable(ALL_APPS);
+      rows = [];
+      for (const doc of assignmentsSnap.docs) {
+        const assign = doc.data();
+        const appId = assign.applicationId;
+        let appData = {};
+        if (appId) {
+          const appDoc = await db.collection('applications').doc(appId).get();
+          if (appDoc.exists) {
+            appData = appDoc.data();
+          }
         }
-      } else {
-        window.location.href = "signin.html";
+        rows.push({
+          applicationId: appId || '-',
+          name: appData.name || assign.entryName || '-',
+          category: appData.category || '-',
+          subcategory: appData.subcategory || '-',
+          status: assign.status || '-',
+          lastUpdated: assign.updatedAt ? new Date(assign.updatedAt.seconds * 1000).toLocaleString() : '-'
+        });
       }
-    });
+      renderTable(rows);
+    } catch (err) {
+      console.error(err);
+      tableBody.innerHTML = '<tr><td colspan="7">Error loading assignments.</td></tr>';
+    }
+  });
+});
   </script>
 </body>
 </html>

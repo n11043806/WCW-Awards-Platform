@@ -59,6 +59,7 @@
   </header>
 
   <main>
+    <button onclick="window.location.href='judgedashboard.html'" style="margin-bottom:18px;background:#d7336f;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-weight:bold;cursor:pointer;">&larr; Back to Dashboard</button>
     <div class="top-actions">
       <div style="color:#6e1742;font-size:14px;">Viewing application: <strong id="appIdLabel">-</strong></div>
     </div>
@@ -115,199 +116,129 @@
   <script src="/__/firebase/init.js?useEmulator=true"></script>
 
   <script>
-    function logout(){
-      firebase.auth().signOut().then(()=> location.href='signin.html').catch(e=> alert('Error signing out: '+e.message));
-    }
+  function logout(){
+    firebase.auth().signOut().then(()=> location.href='signin.html').catch(e=> alert('Error signing out: '+e.message));
+  }
 
-    function qs(name){ const p = new URLSearchParams(location.search); return p.get(name); }
-    const APP_ID = qs('id');
-    document.getElementById('appIdLabel').textContent = APP_ID || '-';
+  function qs(name){ const p = new URLSearchParams(location.search); return p.get(name); }
+  const APP_ID = qs('id');
+  document.getElementById('appIdLabel').textContent = APP_ID || '-';
 
-    // build a question row with inline judge controls
-    function addCriteriaBlock(key, title, answer){
-      const container = document.getElementById('applicationSections');
-      const row = document.createElement('div');
-      row.className = 'criteria-row';
+  // build a question row with inline judge controls
+  function addCriteriaBlock(key, title, answer, scoreVal, commentVal){
+    const container = document.getElementById('applicationSections');
+    const row = document.createElement('div');
+    row.className = 'criteria-row';
 
-      const left = document.createElement('div');
-      left.className = 'crit-left';
-      left.innerHTML = `<div class="card"><h2 style="font-size:16px;margin-bottom:8px">${title}</h2><div class="field">${answer || '-'}</div></div>`;
+    const left = document.createElement('div');
+    left.className = 'crit-left';
+    left.innerHTML = `<div class="card"><h2 style="font-size:16px;margin-bottom:8px">${title}</h2><div class="field">${answer || '-'}</div></div>`;
 
-      const right = document.createElement('div');
-      right.className = 'crit-judge';
-      right.innerHTML = `
-        <div class="criterion" data-crit="${key}">
-          <div class="score-box">
-            <div style="font-size:13px;">Judging</div>
-            <input type="number" min="1" max="10" step="1" id="score_${key}" placeholder=" " />
-            <div style="font-size:12px;color:#fff;opacity:0.9">/ 10</div>
-          </div>
-          <div class="comment-area">
-            <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
-            <textarea id="comment_${key}" placeholder="Enter comments..."></textarea>
-          </div>
+    const right = document.createElement('div');
+    right.className = 'crit-judge';
+    right.innerHTML = `
+      <div class="criterion" data-crit="${key}">
+        <div class="score-box">
+          <div style="font-size:13px;">Judging</div>
+          <input type="number" min="1" max="10" step="1" id="score_${key}" placeholder=" " ${scoreVal !== undefined ? `value="${scoreVal}"` : ''} />
+          <div style="font-size:12px;color:#fff;opacity:0.9">/ 10</div>
         </div>
-      `;
+        <div class="comment-area">
+          <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
+          <textarea id="comment_${key}" placeholder="Enter comments...">${commentVal ? commentVal : ''}</textarea>
+        </div>
+      </div>
+    `;
 
-      row.appendChild(left);
-      row.appendChild(right);
-      container.appendChild(row);
+    row.appendChild(left);
+    row.appendChild(right);
+    container.appendChild(row);
+  }
+
+  // Map of criteria definitions with EXACT field names in your data
+  const CRITERIA_DEFS = [
+    { key: 'tell_us_about_yourself', title: 'Tell us about yourself' },
+    { key: 'tell_us_about_your_work', title: 'Tell us about your work' },
+    { key: 'what_inspired_you', title: 'What inspired you to do this work?' },
+    { key: 'what_makes_you_unique', title: 'What makes what you do special or unique?' },
+    { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
+    { key: 'top_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+    { key: 'achievements_significance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+    { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
+    { key: 'recognition_reason', title: 'Why should you be recognised in this category' }
+  ];
+
+  // Bottom buttons should do nothing per request
+  document.getElementById('bottomSaveBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    // intentionally no-op
+  });
+  document.getElementById('bottomSubmitBtn').addEventListener('click', function(e){
+    e.preventDefault();
+    // intentionally no-op
+  });
+
+  // load application and populate fields + inline criteria
+  firebase.auth().onAuthStateChanged(async user => {
+    if(!user) { location.href = 'signin.html'; return; }
+    const uid = user.uid;
+    try {
+      const udoc = await firebase.firestore().collection('users').doc(uid).get();
+      const name = (udoc.exists && udoc.data().fullName) || user.displayName || 'Judge';
+      document.getElementById('judgeName').textContent = name;
+    } catch(e){
+      console.warn('user fetch failed', e);
     }
 
-    // Map of criteria definitions with EXACT field names in your data
-    const CRITERIA_DEFS = [
-      { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
-      { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
-      { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
-      { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
-      { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
-      { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-      { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-      { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
-      { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
-    ];
+    if(!APP_ID){
+      document.getElementById('applicationSections').innerHTML = '<div style="color:#d7336f;">No application id provided in URL.</div>';
+      return;
+    }
 
-    // Bottom buttons should do nothing per request
-    document.getElementById('bottomSaveBtn').addEventListener('click', async function(e){
-      e.preventDefault();
-
-      // Get current user
-      const user = firebase.auth().currentUser;
-      if (!user) {
-        alert('Not signed in');
+    try {
+      const appDoc = await firebase.firestore().collection('applications').doc(APP_ID).get();
+      if(!appDoc.exists){
+        document.getElementById('applicationSections').innerHTML = '<div style="color:#d7336f;">Application not found.</div>';
         return;
       }
-      const uid = user.uid;
+      const d = appDoc.data();
 
-      // Collect scores/comments for each criterion
-      const scores = {};
+      // Entrant fields (all uneditable)
+      document.getElementById('entrantCategory').textContent = d.category || '-';
+      document.getElementById('entrantSubcategory').textContent = d.subcategory || '-';
+      document.getElementById('entrantAward').textContent = d.awards_choice || '-';
+      document.getElementById('entrantFullName').textContent = d.name || '-';
+      document.getElementById('entrantWebsite').textContent = d.website || '-';
+      document.getElementById('entrantEmail').textContent = d.email || '-';
+      document.getElementById('entrantMobile').textContent = d.mobile_number || d.mobile || '-';
+      document.getElementById('entrantAddress').textContent = d.address || '-';
+      document.getElementById('entrantInstagram').textContent = d.instagram_url || d.instagram || '-';
+      document.getElementById('entrantLinkedIn').textContent = d.linkedin_url || d.linkedin || '-';
+
+      // Render criteria questions with values from application
+      document.getElementById('applicationSections').innerHTML = '';
+      // Load any saved judge responses (optional)
+      let judgeScores = {};
+      try {
+        const respDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).get();
+        if(respDoc.exists && respDoc.data().scores){
+          judgeScores = respDoc.data().scores;
+        }
+      } catch(err) {
+        console.warn('Failed to load judge responses:', err);
+      }
       CRITERIA_DEFS.forEach(c => {
-        const scoreVal = parseInt(document.getElementById('score_' + c.key)?.value, 10);
-        const commentVal = document.getElementById('comment_' + c.key)?.value || '';
-        scores[c.key] = {
-          score: isNaN(scoreVal) ? null : scoreVal,
-          comment: commentVal
-        };
+        const answer = d[c.key] || '-';
+        const scoreVal = judgeScores[c.key]?.score;
+        const commentVal = judgeScores[c.key]?.comment;
+        addCriteriaBlock(c.key, c.title, answer, scoreVal, commentVal);
       });
 
-      // Calculate average score (ignoring nulls)
-      const scoreValues = Object.values(scores).map(s => s.score).filter(s => typeof s === 'number');
-      const averageScore = scoreValues.length ? (scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length) : null;
-
-      // Prepare judge response document
-      const judgeDoc = {
-        judgeId: uid,
-        applicationId: APP_ID,
-        scores: scores,
-        averageScore: averageScore,
-        status: 'draft',
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      // Save to Firestore (judgeResponses collection, doc id: `${uid}_${APP_ID}`)
-      try {
-        await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set(judgeDoc, { merge: true });
-        alert('Saved as draft!');
-      } catch (err) {
-        alert('Error saving: ' + err.message);
-      }
-    });
-    document.getElementById('bottomSubmitBtn').addEventListener('click', function(e){
-      e.preventDefault();
-      // intentionally no-op
-    });
-
-    // load application and populate fields + inline criteria
-    firebase.auth().onAuthStateChanged(async user => {
-      if(!user) { location.href = 'signin.html'; return; }
-      const uid = user.uid;
-      try {
-        const udoc = await firebase.firestore().collection('users').doc(uid).get();
-        const name = (udoc.exists && udoc.data().fullName) || user.displayName || 'Judge';
-        document.getElementById('judgeName').textContent = name;
-      } catch(e){
-        console.warn('user fetch failed', e);
-      }
-
-      if(!APP_ID){
-        console.warn('No application id provided in URL.');
-        document.getElementById('applicationSections').innerHTML = '';
-        CRITERIA_DEFS.forEach(c => {
-          addCriteriaBlock(c.key, c.title, 'asdf');  // For demo showing values
-        });
-        return;
-      }
-
-      try {
-        const appDoc = await firebase.firestore().collection('applications').doc(APP_ID).get();
-        if(!appDoc.exists){
-          console.warn('Application not found.');
-          return;
-        }
-        
-        const d = appDoc.data();
-        console.log('Application data:', d); // Log for debugging
-
-        // Entrant fields (match applicationhistory)
-        document.getElementById('entrantCategory').textContent = d.category || '-';
-        document.getElementById('entrantSubcategory').textContent = d.subcategory || '-';
-        document.getElementById('entrantAward').textContent = d.award || '-';
-        document.getElementById('entrantFullName').textContent = d.name || '-';
-        document.getElementById('entrantWebsite').textContent = d.website || '-';
-        document.getElementById('entrantEmail').textContent = d.email || '-';
-        document.getElementById('entrantMobile').textContent = d.mobile_number || d.mobile || '-';
-        document.getElementById('entrantAddress').textContent = d.address || '-';
-        document.getElementById('entrantInstagram').textContent = d.instagram_url || d.instagram || '-';
-        document.getElementById('entrantLinkedIn').textContent = d.linkedin_url || d.linkedin || '-';
-
-        // For demo/testing - use hardcoded values to match your screenshot if no data
-        const mockData = {
-          tellUsAboutYourself: 'asdf',
-          tellUsAboutYourWork: 'asdf',
-          whatInspiredYou: 'asdf',
-          whatMakesYouUnique: 'asdf',
-          greatestChallenge: 'asdf',
-          topAchievements: 'asdf',
-          achievementsSignificance: 'asdf',
-          bigPictureVision: 'asdf',
-          recognitionReason: 'asdf'
-        };
-
-        // Render criteria questions with values (use either real data or mock data)
-        document.getElementById('applicationSections').innerHTML = '';
-        CRITERIA_DEFS.forEach(c => {
-          // Try exact field name, or fallback to mock data for demo
-          const answer = d[c.key] || mockData[c.key] || '-';
-          addCriteriaBlock(c.key, c.title, answer);
-        });
-
-        // Load any saved judge responses (optional)
-        try {
-          const respDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).get();
-          if(respDoc.exists){
-            const data = respDoc.data();
-            if(data && data.scores){
-              for(const key in data.scores){
-                const s = data.scores[key];
-                const scoreEl = document.getElementById('score_' + key);
-                const commentEl = document.getElementById('comment_' + key);
-                if(scoreEl && s.score !== undefined) scoreEl.value = s.score;
-                if(commentEl && s.comment) commentEl.value = s.comment;
-              }
-            }
-          }
-        } catch(err) {
-          console.warn('Failed to load judge responses:', err);
-        }
-      } catch(err){
-        console.error('Failed to load application:', err);
-        // Fall back to showing the structure with mock data
-        document.getElementById('applicationSections').innerHTML = '';
-        CRITERIA_DEFS.forEach(c => {
-          addCriteriaBlock(c.key, c.title, 'asdf'); // For demo showing values
-        });
-      }
-    });
+    } catch(err){
+      document.getElementById('applicationSections').innerHTML = '<div style="color:#d7336f;">Error loading application.</div>';
+      console.error('Failed to load application:', err);
+    }
+  });
   </script>
 </body>
 </html>
