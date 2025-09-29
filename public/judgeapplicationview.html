@@ -157,21 +157,42 @@
 
   // Map of criteria definitions with EXACT field names in your data
   const CRITERIA_DEFS = [
-    { key: 'tell_us_about_yourself', title: 'Tell us about yourself' },
-    { key: 'tell_us_about_your_work', title: 'Tell us about your work' },
-    { key: 'what_inspired_you', title: 'What inspired you to do this work?' },
-    { key: 'what_makes_you_unique', title: 'What makes what you do special or unique?' },
-    { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
-    { key: 'top_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-    { key: 'achievements_significance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-    { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
-    { key: 'recognition_reason', title: 'Why should you be recognised in this category' }
+    { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
+    { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
+    { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
+    { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
+    { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
+    { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+    { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+    { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
+    { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
   ];
 
   // Bottom buttons should do nothing per request
-  document.getElementById('bottomSaveBtn').addEventListener('click', function(e){
+  document.getElementById('bottomSaveBtn').addEventListener('click', async function(e){
     e.preventDefault();
-    // intentionally no-op
+    const uid = firebase.auth().currentUser.uid;
+    const scores = {};
+    CRITERIA_DEFS.forEach(c => {
+      const score = parseInt(document.getElementById('score_' + c.key).value, 10);
+      const comment = document.getElementById('comment_' + c.key).value;
+      if (!isNaN(score) || comment) {
+        scores[c.key] = { score: isNaN(score) ? null : score, comment: comment || "" };
+      }
+    });
+
+    try {
+      await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set({
+        judgeId: uid,
+        applicationId: APP_ID,
+        scores: scores,
+        status: "draft",
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      alert('Progress saved!');
+    } catch (err) {
+      alert('Error saving: ' + err.message);
+    }
   });
   document.getElementById('bottomSubmitBtn').addEventListener('click', function(e){
     e.preventDefault();
