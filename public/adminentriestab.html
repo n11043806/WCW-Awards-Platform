@@ -565,6 +565,45 @@
       justify-content:space-between;
     }
     .user-dropdown button:hover { background: #ffe6ee; }
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .container { background: #222; color: #eee; border: 1px solid #444; }
+      th { background: #2c2c2c; color: #eec5d6; }
+      .sort-dropdown { background: #2c2c2c; border: 1px solid #444; }
+      .sort-btn { background: #2c2c2c; color: #eec5d6; border: 1px solid #444; }
+      .sort-btn:hover { background: #572338; color: #eec5d6; border: 1px solid #444; }
+      .sort-list { background: #2c2c2c; border: 1px solid #444; }
+      .sort-list button { background: #2c2c2c; color: #eec5d6; }
+      .sort-list button:hover { background: #572338; color: #eec5d6; }
+      .filter-dropdown .fd-bar { background: #2c2c2c; border: 1px solid #444; color: #eec5d6; }
+      .filter-dropdown .fd-list { background: #2c2c2c; border: 1px solid #444; }
+      .filter-dropdown .fd-item { color: #eec5d6; }
+      .filter-group { background: #2c2c2c; border: 1px solid #444; }
+      .btn-filter { background: #572338; color: #eec5d6; border: 2px solid #eec5d6; }
+      .btn-filter:hover { background: #eec5d6; color: #572338; border: 2px solid #572338; }
+      .filter-dropdown.open .fd-list { background: #2c2c2c; border: 1px solid #444; }
+      .filter-input { background: #2c2c2c; color: #eee; border: 1px solid #444; }
+      .filter-input::placeholder { color: #777; }
+      .filter-dropdown .fd-search { background: #2c2c2c; color: #eee; border-bottom: 1px solid #444; }
+      .filter-dropdown .fd-empty { color: #777; }
+      .modal-header { background: #2c2c2c; color: #eec5d6; border-bottom: 1px solid #444; }
+      .modal-body { background: #121212; color: #e0e0e0; }
+      .section-title { background: #2c2c2c; color: #eec5d6; }
+      .kv .k { color: #ccc; }
+      .chk input { accent-color: #d62d83; }
+      .action-btn .btn-view { background: #1f7a4b; color: #e1faed; border-color: #1f7a4b; }
+      .action-btn .btn-view:hover { background: #e1faed; color: #1f7a4b; border-color: #1f7a4b; }
+      .close-btn { background: #2c2c2c; color: #eec5d6; border: 2px solid #eec5d6; }
+      .close-btn:hover { background: #572338; color: #eec5d6; border: 2px solid #eec5d6; }
+      .modal-start-fields, .modal-criteria-fields { background: #2c2c2c; border: 1px solid #444; }
+      .v { color: #eee; }
+      .v { color: #eee; }
+      .block { background: #121212; border: 1px solid #444; color: #eee; }
+    }
   </style>
 </head>
 <body>
@@ -894,12 +933,15 @@
             if (Object.prototype.hasOwnProperty.call(qd, seasonName)) {
               const orderLabel = String(qd[seasonName] || '');
               const orderNum = Number(String(orderLabel).replace(/[^0-9]/g, '')) || 999;
-              questions.push({ id: qdoc.id, label: qd.Question || qd.label || qdoc.id, order: orderNum });
+              const answerKey = qd.question_ID || qd.questionId || qd['question_ID'] || qdoc.id;
+              questions.push({ id: qdoc.id, answerKey, label: qd.Question || qd.label || qdoc.id, order: orderNum });
             }
           });
           questions.sort((a,b) => a.order - b.order);
           for (const q of questions) {
-            critHtml += block(q.label, d[q.id]);
+            // use configured answerKey first, fallback to doc id
+            const val = (d && (d[q.answerKey] !== undefined ? d[q.answerKey] : (d[q.id] !== undefined ? d[q.id] : '-')));
+            critHtml += block(q.label, val);
           }
         } else {
           // no season information -> no dynamic criteria available
@@ -926,7 +968,9 @@
         const qSnap = await db.collection('applicationInfo').get();
         const questionDocs = qSnap.docs.filter(d => d.id !== 'DatesInfo').map(d => {
           const data = d.data() || {};
-          return { id: d.id, label: data.Question || data.label || d.id, raw: data };
+          // prefer explicit question_ID field (some forms store the answer under this key in applications)
+          const answerKey = data.question_ID || data.questionId || data['question_ID'] || d.id;
+          return { id: d.id, label: data.Question || data.label || d.id, answerKey, raw: data };
         });
 
         // build header row: base fields + dynamic question labels
@@ -958,7 +1002,7 @@
           };
           // dynamic question columns
           questionDocs.forEach(q => {
-            row[`${q.label} (${q.id})`] = data[q.id] || '-';
+            row[`${q.label} (${q.id})`] = (data[q.answerKey] !== undefined ? data[q.answerKey] : (data[q.id] !== undefined ? data[q.id] : '-'));
           });
           return row;
         });
@@ -991,7 +1035,8 @@
 
     async function exportAppPdf(id) {
       try {
-        const doc = await firebase.firestore().collection('applications').doc(id).get();
+        const db = firebase.firestore(); // <--- ensure db is defined for subsequent calls
+        const doc = await db.collection('applications').doc(id).get();
         if (!doc.exists) { alert("Application not found."); return; }
         const d = doc.data();
 
@@ -1030,12 +1075,14 @@
               if (Object.prototype.hasOwnProperty.call(qd, seasonName)) {
                 const orderLabel = String(qd[seasonName] || '');
                 const orderNum = Number(String(orderLabel).replace(/[^0-9]/g, '')) || 999;
-                questions.push({ id: qdoc.id, label: qd.Question || qd.label || qdoc.id, order: orderNum });
+                const answerKey = qd.question_ID || qd.questionId || qd['question_ID'] || qdoc.id;
+                questions.push({ id: qdoc.id, answerKey, label: qd.Question || qd.label || qdoc.id, order: orderNum });
               }
             });
             questions.sort((a,b) => a.order - b.order);
             for (const q of questions) {
-              criteriaHtml += block(q.label, d[q.id]);
+              const val = (d && (d[q.answerKey] !== undefined ? d[q.answerKey] : (d[q.id] !== undefined ? d[q.id] : '-')));
+              criteriaHtml += block(q.label, val);
             }
           } else {
             // no season information -> no dynamic criteria available for PDF
@@ -1057,7 +1104,7 @@
              <title>Application Preview - ${esc(id)}</title>
              <style>
               :root{
-                --pink:#d62d83;        /* darker header */
+                --pink:#d7336f;        /* darker header */
                 --pink-strong:#b8235a; /* section title / main pink */
                 --meta-pink:#8c1f4c;   /* application id color + border */
                 --pink-light:#faf0f4;  /* light wash for rows */

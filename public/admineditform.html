@@ -304,6 +304,36 @@
       justify-content:space-between;
     }
     .user-dropdown button:hover { background: #ffe6ee; }
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .card { background: #1e1e1e; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+      .card:hover { box-shadow: 0 0 10px rgba(245,1,147,0.4); }
+      p { color: #fff !important; }
+      th, td { border-bottom: 1px solid #444 !important; }
+      th { background: #1a1a1a !important; color: #d62d83 !important; }
+      tr { color: #fff; }
+      .container { background: #222; border: 1px solid #444; }
+      input, select, textarea { background: #333; color: #eee; border: 1px solid #555; }
+      input::placeholder, textarea::placeholder { color: #bbb; }
+      .seasons-card { background: #222; border: 1px solid #444; }
+      .seasons-table th { background: #1a1a1a; color: #d62d83; border: 1px solid #444; }
+      .seasons-table td { border: 1px solid #444; }
+      #datesBodyContent { color: #eee; }
+      #datesBodyContent a { color: #ff80bf; }
+      #datesBodyContent h2, #datesBodyContent h3, #datesBodyContent strong { color: #ff80bf; font-weight: bold; }
+      #datesBodyContent p { color: #eee; }
+      #datesBodyContent ul { color: #eee; }
+      .manage-btn { background: #d7336f; color: white; }
+      .manage-btn:hover { background: #b8235a; }
+      .manage-btn.small { background: #d7336f; color: white; }
+      .manage-btn.small:hover { background: #b8235a; }
+      .season-edit-input { background: #333; color: #eee; border: 1px solid #555; }
+      .footer { color: #666; }
+    }
   </style>
 </head>
 <body>
@@ -392,16 +422,6 @@
         </div>
 
         <!-- Manage Questions card -->
-        <div class="seasons-card" style="margin-top:12px;">
-          <div class="left">
-            <div>
-              <strong>Manage Questions</strong>
-            </div>
-          </div>
-          <div class="right">
-            <button class="manage-btn small" id="saveQuestionsBtn" onclick="/* no-op save for now */" disabled>Save</button>
-          </div>
-        </div>
         <div class="seasons-card" id="questionsCard" style="margin-top:12px; flex-direction:column; align-items:stretch;">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
             <div>
@@ -826,7 +846,6 @@
         document.getElementById('saveSeasonsBtn').disabled = !enabled;
         document.getElementById('editDatesBtn').disabled = !enabled;
         document.getElementById('saveDatesBodyBtn').disabled = !enabled;
-        document.getElementById('saveQuestionsBtn').disabled = !enabled;
         updateAddButtonState();
         loadSeasonsList(enabled);
         loadQuestionsList(enabled);
@@ -899,9 +918,6 @@
             await saveDatesInfoBody();
           });
 
-          document.getElementById('saveQuestionsBtn')?.addEventListener('click', async () => {
-            // Implement save questions logic here
-          });
         }
 
         // initial loads 
