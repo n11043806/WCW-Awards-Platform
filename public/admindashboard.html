@@ -107,6 +107,7 @@
       margin-top: 40px;
       font-size: 14px;
     }
+    
     .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
     .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
     .user-circle { background:#8d57a0;color:#fff;border:2px solid #5f386d;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
@@ -114,6 +115,19 @@
     .user-dropdown.open{display:flex;}
     .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
     .user-dropdown button:hover{background:#ffe6ee;}
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .card { background: #1e1e1e; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+      .card:hover { box-shadow: 0 0 10px rgba(245,1,147,0.4); }
+      p { color: #fff !important; }
+      th, td { border-bottom: 1px solid #444 !important; }
+      th { background: #1a1a1a !important; color: #d62d83 !important; }
+      tr { color: #fff; }
+    }
   </style>
 </head>
 <body>
@@ -128,7 +142,7 @@
   <div class="main-content">
     <header>
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-        <h1>Entries Management</h1>
+        <h1>Welcome, <span id="adminName">Trial Account</span></h1>
         <div class="user-menu-container" id="adminUserMenu">
           <span id="userFullName" class="user-fullname"></span>
           <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account">A</button>

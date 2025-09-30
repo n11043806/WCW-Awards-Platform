@@ -392,16 +392,6 @@
         </div>
 
         <!-- Manage Questions card -->
-        <div class="seasons-card" style="margin-top:12px;">
-          <div class="left">
-            <div>
-              <strong>Manage Questions</strong>
-            </div>
-          </div>
-          <div class="right">
-            <button class="manage-btn small" id="saveQuestionsBtn" onclick="/* no-op save for now */" disabled>Save</button>
-          </div>
-        </div>
         <div class="seasons-card" id="questionsCard" style="margin-top:12px; flex-direction:column; align-items:stretch;">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
             <div>
@@ -826,7 +816,6 @@
         document.getElementById('saveSeasonsBtn').disabled = !enabled;
         document.getElementById('editDatesBtn').disabled = !enabled;
         document.getElementById('saveDatesBodyBtn').disabled = !enabled;
-        document.getElementById('saveQuestionsBtn').disabled = !enabled;
         updateAddButtonState();
         loadSeasonsList(enabled);
         loadQuestionsList(enabled);
@@ -899,9 +888,6 @@
             await saveDatesInfoBody();
           });
 
-          document.getElementById('saveQuestionsBtn')?.addEventListener('click', async () => {
-            // Implement save questions logic here
-          });
         }
 
         // initial loads 
