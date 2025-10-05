@@ -148,6 +148,13 @@
     font-size: 14px;
     color: #888;
   }
+
+  .pdf-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
   </style>
 </head>
 
@@ -196,6 +203,7 @@
             <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Subcategory</th>
             <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Status</th>
             <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Last Updated</th>
+            <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">PDF</th>
             <th style="padding:12px 16px;color:#8c1f4c;font-size:15px;font-weight:700;">Actions</th>
           </tr>
         </thead>
@@ -230,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function renderTable(filteredRows) {
     tableBody.innerHTML = '';
     if (!filteredRows.length) {
-      tableBody.innerHTML = '<tr><td colspan="7">No assigned applications found.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="8">No assigned applications found.</td></tr>';
       return;
     }
     for (const row of filteredRows) {
@@ -243,7 +251,12 @@ document.addEventListener('DOMContentLoaded', function() {
           <td>${row.status}</td>
           <td>${row.lastUpdated}</td>
           <td>
-            <button class="logout-btn" onclick="onView('${row.applicationId}')">View</button>
+            <a href="pdfview.html?id=${row.applicationId}" target="_blank" title="Download PDF">
+              <img src="images/32px_PDF_file.png" alt="PDF" style="width:28px;height:28px;vertical-align:middle;border:none;background:none;">
+            </a>
+          </td>
+          <td>
+            <button class="logout-btn" onclick="window.location.href='judgeapplicationview.html?id=${row.applicationId}'">View</button>
           </td>
         </tr>
       `;
@@ -275,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   firebase.auth().onAuthStateChanged(async user => {
     if (!user) {
-      tableBody.innerHTML = '<tr><td colspan="7">Please log in.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="8">Please log in.</td></tr>';
       return;
     }
     const judgeId = user.uid;
@@ -287,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .get();
 
       if (assignmentsSnap.empty) {
-        tableBody.innerHTML = '<tr><td colspan="7">No assigned applications found.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8">No assigned applications found.</td></tr>';
         return;
       }
 
@@ -314,19 +327,31 @@ document.addEventListener('DOMContentLoaded', function() {
           // ignore, fallback to "new"
         }
 
+        // Construct PDF URL
+        let pdfUrl = '';
+        try {
+          const pdfDoc = await db.collection('pdfUploads').doc(appId).get();
+          if (pdfDoc.exists) {
+            pdfUrl = pdfDoc.data().url;
+          }
+        } catch (e) {
+          console.error('Error fetching PDF URL:', e);
+        }
+
         rows.push({
           applicationId: appId || '-',
           name: appData.name || assign.entryName || '-',
           category: appData.category || '-',
           subcategory: appData.subcategory || '-',
           status: judgeStatus,
-          lastUpdated: assign.updatedAt ? new Date(assign.updatedAt.seconds * 1000).toLocaleString() : '-'
+          lastUpdated: assign.updatedAt ? new Date(assign.updatedAt.seconds * 1000).toLocaleString() : '-',
+          pdfUrl: pdfUrl
         });
       }
       renderTable(rows);
     } catch (err) {
       console.error(err);
-      tableBody.innerHTML = '<tr><td colspan="7">Error loading assignments.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="8">Error loading assignments.</td></tr>';
     }
   });
 
