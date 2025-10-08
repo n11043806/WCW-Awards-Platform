@@ -273,6 +273,17 @@
           <li>You can also view/download a PDF for each entry for offline use.</li>
         </ol>
       </div>
+      <!-- Place this above your table in the dashboard -->
+<div style="margin-bottom:18px;">
+  <label for="categoryFilter" style="font-weight:bold;font-size:16px;color:#d7336f;">Browse by category</label>
+  <select id="categoryFilter" style="margin-left:12px;padding:10px 16px;border-radius:6px;border:1px solid #d7336f;font-size:1em;background:#fff;color:#d7336f;min-width:220px;">
+    <option value="">(All Categories)</option>
+    <option value="IMPACT AWARDS">IMPACT AWARDS</option>
+    <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
+    <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
+    <!-- Add more categories as needed -->
+  </select>
+</div>
       <div class="list-header" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:18px;">
         <div style="display:flex;flex-direction:column;align-items:flex-end;width:100%;">
           <label style="font-weight:700;color:#d7336f;font-size:1.1em;margin-bottom:6px;">Sort/Filter By</label>
@@ -336,12 +347,30 @@ document.addEventListener('click', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
   const tableBody = document.getElementById('appsBody');
   const sortDropdown = document.getElementById('sortDropdown');
+  const categoryFilter = document.getElementById('categoryFilter');
   let rows = [];
+
+  function updateCategoryFilterOptions(rows) {
+    const categoryFilter = document.getElementById('categoryFilter');
+    // Get unique categories from current rows
+    const categories = Array.from(new Set(rows.map(r => r.category).filter(c => c && c !== '-')));
+    // Clear existing options
+    categoryFilter.innerHTML = '';
+    // Add "(All Categories)" option
+    categoryFilter.innerHTML += `<option value="">(All Categories)</option>`;
+    // Add dynamic category options
+    categories.forEach(cat => {
+      categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+    });
+    // Restore previous selection if possible
+    if (categoryFilter._lastValue) categoryFilter.value = categoryFilter._lastValue;
+  }
 
   function renderTable(filteredRows) {
     tableBody.innerHTML = '';
     if (!filteredRows.length) {
       tableBody.innerHTML = '<tr><td colspan="8">No assigned applications found.</td></tr>';
+      updateCategoryFilterOptions(rows); // Always use full rows for filter options
       return;
     }
     for (const row of filteredRows) {
@@ -365,12 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     }
 
-    // Always set the filtered list, even if no filter is applied
     localStorage.setItem('judgeFilteredAppIds', JSON.stringify(filteredRows.map(r => r.applicationId)));
-
-    // After rendering the table:
     const orderedAppIds = filteredRows.map(row => row.applicationId);
     localStorage.setItem('judgeOrderedAppIds', JSON.stringify(orderedAppIds));
+
+    // Always update category filter options using all rows
+    updateCategoryFilterOptions(rows);
   }
 
   sortDropdown.addEventListener('change', function() {
@@ -391,6 +420,17 @@ document.addEventListener('DOMContentLoaded', function() {
       localStorage.removeItem('judgeCurrentIndex');
     }
     renderTable(filtered);
+  });
+
+  document.getElementById('categoryFilter').addEventListener('change', function() {
+    const selectedCategory = this.value;
+    this._lastValue = selectedCategory; // Save selection for dynamic updates
+    let filteredRows = rows;
+    if (selectedCategory) {
+      filteredRows = rows.filter(row => row.category === selectedCategory);
+    }
+    renderTable(filteredRows);
+    localStorage.setItem('judgeOrderedAppIds', JSON.stringify(filteredRows.map(r => r.applicationId)));
   });
 
   firebase.auth().onAuthStateChanged(async user => {
