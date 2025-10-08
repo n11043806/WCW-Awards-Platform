@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td>${row.status}</td>
           <td>${row.lastUpdated}</td>
           <td>
-            <a href="pdfview.html?id=${row.applicationId}" target="_blank" title="Download PDF">
+            <a href="judgepdfview.html?id=${row.applicationId}" target="_blank" title="Download PDF">
               <img src="images/32px_PDF_file.png" alt="PDF" style="width:28px;height:28px;vertical-align:middle;border:none;background:none;">
             </a>
           </td>
@@ -367,6 +367,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Always set the filtered list, even if no filter is applied
     localStorage.setItem('judgeFilteredAppIds', JSON.stringify(filteredRows.map(r => r.applicationId)));
+
+    // After rendering the table:
+    const orderedAppIds = filteredRows.map(row => row.applicationId);
+    localStorage.setItem('judgeOrderedAppIds', JSON.stringify(orderedAppIds));
   }
 
   sortDropdown.addEventListener('change', function() {
@@ -459,8 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   window.onView = function(applicationId) {
-    const filteredAppIds = JSON.parse(localStorage.getItem('judgeFilteredAppIds') || '[]');
-    const currentIndex = filteredAppIds.indexOf(applicationId);
+    const orderedAppIds = JSON.parse(localStorage.getItem('judgeOrderedAppIds') || '[]');
+    const currentIndex = orderedAppIds.indexOf(applicationId);
     localStorage.setItem('judgeCurrentIndex', currentIndex);
     window.location.href = `judgeapplicationview.html?id=${applicationId}`;
   }

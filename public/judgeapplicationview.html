@@ -156,7 +156,7 @@
 
   function qs(name){ const p = new URLSearchParams(location.search); return p.get(name); }
   const APP_ID = qs('id');
-  document.getElementById('appIdLabel').textContent = APP_ID || '-';
+  document.getElementById('appIdLabel').textContent = APP_ID || '-' ;
 
   // build a question row with inline judge controls
   function addCriteriaBlock(key, title, answer, scoreVal, commentVal){
@@ -166,7 +166,7 @@
 
     const left = document.createElement('div');
     left.className = 'crit-left';
-    left.innerHTML = `<div class="card"><h2 style="font-size:16px;margin-bottom:8px">${title}</h2><div class="field">${answer || '-'}</div></div>`;
+    left.innerHTML = `<div class="card"><h2 style="font-size:16px;margin-bottom:8px">${title}</h2><div class="field">${answer || '-'}</div></div>` ;
 
     const right = document.createElement('div');
     right.className = 'crit-judge';
@@ -182,7 +182,7 @@
           <textarea id="comment_${key}" placeholder="Enter comments...">${commentVal ? commentVal : ''}</textarea>
         </div>
       </div>
-    `;
+    ` ;
 
     row.appendChild(left);
     row.appendChild(right);
@@ -254,6 +254,39 @@
     }
   });
 
+  document.addEventListener('DOMContentLoaded', function() {
+    const judgeActionsDiv = document.querySelector('.judge-actions');
+    const nextBtn = document.createElement('button');
+    nextBtn.id = "nextBtn";
+    nextBtn.className = "btn action-btn";
+    nextBtn.textContent = "Next";
+    judgeActionsDiv.appendChild(nextBtn);
+
+    const orderedAppIds = JSON.parse(localStorage.getItem('judgeOrderedAppIds') || '[]');
+    const APP_ID = new URLSearchParams(window.location.search).get('id');
+    let currentIndex = orderedAppIds.indexOf(APP_ID);
+
+    // Always show the Next button unless at the last entry
+    if (currentIndex !== -1 && currentIndex < orderedAppIds.length - 1) {
+      nextBtn.disabled = false;
+      nextBtn.style.background = "#fff";
+      nextBtn.style.color = "#d7336f";
+      nextBtn.style.borderColor = "#d7336f";
+      nextBtn.style.cursor = "pointer";
+      nextBtn.onclick = function() {
+        window.location.href = `judgeapplicationview.html?id=${orderedAppIds[currentIndex + 1]}`;
+      };
+    } else {
+      // At the last entry, show but grey out
+      nextBtn.disabled = true;
+      nextBtn.style.background = "#eee";
+      nextBtn.style.color = "#aaa";
+      nextBtn.style.borderColor = "#ccc";
+      nextBtn.style.cursor = "not-allowed";
+      nextBtn.onclick = null;
+    }
+  });
+
   // load application and populate fields + inline criteria
   firebase.auth().onAuthStateChanged(async user => {
     if(!user) { location.href = 'signin.html'; return; }
@@ -289,10 +322,10 @@
       document.getElementById('entrantMobile').textContent = d.mobile_number || d.mobile || '-';
       document.getElementById('entrantAddress').textContent = d.address || '-';
       document.getElementById('entrantInstagram').textContent = d.instagram_url || d.instagram || '-';
-      document.getElementById('entrantLinkedIn').textContent = d.linkedin_url || d.linkedin || '-';
+      document.getElementById('entrantLinkedIn').textContent = d.linkedin_url || d.linkedin || '-' ;
 
       // Render criteria questions with values from application
-      document.getElementById('applicationSections').innerHTML = '';
+      document.getElementById('applicationSections').innerHTML = '' ;
       // Load any saved judge responses (optional)
       let judgeScores = {};
       try {

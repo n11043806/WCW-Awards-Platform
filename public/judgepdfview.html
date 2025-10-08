@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Application Print View</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+    .pdf-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      color: #111;
+      padding: 40px 48px;
+    }
+    h1, h2, h3 {
+      color: #111;
+      margin-bottom: 18px;
+      font-weight: bold;
+    }
+    .section-title {
+      font-size: 1.2em;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #222;
+      padding-bottom: 4px;
+      color: #111;
+      font-weight: bold;
+    }
+    .field-label {
+      font-weight: bold;
+      margin-top: 18px;
+      margin-bottom: 4px;
+      color: #222;
+    }
+    .field-value {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 0;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      color: #111;
+      font-size: 15px;
+    }
+    .criteria-block {
+      margin-bottom: 24px;
+    }
+    @media print {
+      body, .pdf-container {
+        background: #fff !important;
+        color: #111 !important;
+        box-shadow: none !important;
+      }
+      .field-value {
+        background: #fff !important;
+        color: #111 !important;
+        border: 1px solid #000 !important;
+      }
+      .section-title {
+        color: #000 !important;
+        border-bottom: 1px solid #000 !important;
+      }
+      #printBtn { display: none !important; }
+    }
+    #printBtn {
+      margin-bottom: 24px;
+      background: #fff;
+      color: #111;
+      border: 2px solid #111;
+      border-radius: 6px;
+      padding: 8px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #printBtn:hover {
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="pdf-container" id="pdfContent">
+    <button id="printBtn" onclick="window.print()">Print / Save PDF</button>
+    <h1>Application Details</h1>
+    <div id="appDetails">Loading...</div>
+  </div>
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script>
+    function getAppId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id');
+    }
+
+    function escapeHTML(str) {
+      return (str || '').replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[m];
+      });
+    }
+
+    function renderAppDetails(data) {
+      // Mirror judgeapplicationview logic for fields
+      const startHereFields = [
+        { label: "Entrant Name", value: data.name },
+        { label: "Email", value: data.email },
+        { label: "Mobile Number", value: data.mobile_number },
+        { label: "Address", value: data.address },
+        { label: "Website", value: data.website },
+        { label: "LinkedIn URL", value: data.linkedin_url },
+        { label: "Instagram URL", value: data.instagram_url }
+      ];
+
+      const entryFields = [
+        { label: "Category", value: data.category },
+        { label: "Subcategory", value: data.subcategory },
+        { label: "Awards Choice", value: data.awards_choice },
+        { label: "Eligibility", value: data.eligibility ? "Yes" : "No" },
+        { label: "Season", value: data.season },
+        { label: "Stage", value: data.stage }
+      ];
+
+      const criteriaFields = [
+        { label: "Tell us about yourself", value: data.tell_us_about_yourself },
+        { label: "Tell us about your work", value: data.tell_us_about_your_work },
+        { label: "What inspired you?", value: data.what_inspired_you },
+        { label: "What makes you unique?", value: data.what_makes_you_unique },
+        { label: "Top achievements", value: data.top_achievements },
+        { label: "Achievements significance", value: data.achievements_significance },
+        { label: "Greatest challenge", value: data.greatest_challenge },
+        { label: "Big picture vision", value: data.big_picture_vision },
+        { label: "Recognition reason", value: data.recognition_reason }
+      ];
+
+      let html = '';
+      html += `<div class="section-title">Entrant Details</div>`;
+      startHereFields.forEach(f => {
+        if (f.value) {
+          html += `<div class="field-label">${escapeHTML(f.label)}</div>`;
+          html += `<div class="field-value">${escapeHTML(f.value)}</div>`;
+        }
+      });
+      entryFields.forEach(f => {
+        if (f.value) {
+          html += `<div class="field-label">${escapeHTML(f.label)}</div>`;
+          html += `<div class="field-value">${escapeHTML(f.value)}</div>`;
+        }
+      });
+
+      html += `<div class="section-title">Criteria</div>`;
+      criteriaFields.forEach(f => {
+        if (f.value) {
+          html += `<div class="criteria-block"><div class="field-label">${escapeHTML(f.label)}</div><div class="field-value">${escapeHTML(f.value)}</div></div>`;
+        }
+      });
+
+      return html;
+    }
+
+    async function loadApplication() {
+      const appId = getAppId();
+      const appDetailsDiv = document.getElementById('appDetails');
+      if (!appId) {
+        appDetailsDiv.innerHTML = "No application ID provided.";
+        return;
+      }
+      try {
+        const db = firebase.firestore();
+        const appDoc = await db.collection('applications').doc(appId).get();
+        if (!appDoc.exists) {
+          appDetailsDiv.innerHTML = "Application not found.";
+          return;
+        }
+        const data = appDoc.data();
+        appDetailsDiv.innerHTML = renderAppDetails(data);
+      } catch (err) {
+        appDetailsDiv.innerHTML = "Error loading application.";
+        console.error(err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadApplication);
+  </script>
+</body>
+</html>
