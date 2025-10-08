@@ -138,7 +138,6 @@
       <div class="judge-actions">
         <button id="bottomSaveBtn" class="btn action-btn">Save</button>
         <button id="bottomSubmitBtn" class="btn action-btn">Submit</button>
-        <button id="nextBtn" class="btn action-btn" style="display:none;">Next</button>
       </div>
     </div>
   </main>
@@ -316,20 +315,6 @@
       console.error('Failed to load application:', err);
     }
   });
-
-  const filteredAppIds = JSON.parse(localStorage.getItem('judgeFilteredAppIds') || '[]');
-  let currentIndex = parseInt(localStorage.getItem('judgeCurrentIndex'), 10) || 0;
-
-  const nextBtn = document.getElementById('nextBtn');
-  if (filteredAppIds.length > 1 && currentIndex < filteredAppIds.length - 1) {
-    nextBtn.style.display = '';
-    nextBtn.onclick = function() {
-      localStorage.setItem('judgeCurrentIndex', currentIndex + 1);
-      window.location.href = `judgeapplicationview.html?id=${filteredAppIds[currentIndex + 1]}`;
-    };
-  } else {
-    nextBtn.style.display = 'none';
-  }
   </script>
 </body>
 </html>
