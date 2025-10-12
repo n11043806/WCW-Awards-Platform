@@ -305,6 +305,22 @@
     }
     .user-dropdown button:hover { background: #ffe6ee; }
 
+    .seasons-table-container {
+      max-height: 280px; /* ~5 rows + header */
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    .seasons-table {
+      margin: 0;
+      border-radius: 0;
+    }
+    .seasons-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+    }
     /* dark mode */
     @media (prefers-color-scheme: dark) {
       body { background-color: #121212; color: #e0e0e0; }
@@ -333,6 +349,9 @@
       .manage-btn.small:hover { background: #b8235a; }
       .season-edit-input { background: #333; color: #eee; border: 1px solid #555; }
       .footer { color: #666; }
+      .seasons-table-container {
+        border: 1px solid #444;
+      } 
     }
   </style>
 </head>
@@ -388,12 +407,12 @@
               </div>
             </div>
             <div style="display:flex; align-items:center;">
-              <button class="manage-btn small" id="saveSeasonsBtn" disabled>Add</button>
+              <button class="manage-btn small" id="saveSeasonsBtn" disabled>Add New Season</button>
             </div>
           </div>
 
           <!-- Seasons table -->
-          <div style="margin-top:12px; width:100%;">
+          <div style="margin-top:12px; width:100%;" class="seasons-table-container">
             <table class="seasons-table" id="seasonsTable">
               <thead>
                 <tr><th>Season Name</th><th>Status</th><th style="text-align:right">Actions</th></tr>
@@ -436,7 +455,7 @@
             <button class="manage-btn small" id="addQuestionBtn" disabled>Add</button>
           </div>
           <!-- Questions table -->
-          <div style="margin-top:12px; width:100%; overflow:auto;">
+          <div style="margin-top:12px; width:100%;" class="seasons-table-container">
             <table class="seasons-table" id="questionsTable">
               <thead>
                 <tr>
@@ -468,7 +487,7 @@
           </div>
 
           <!-- mapping table -->
-          <div style="margin-top:12px; width:100%; overflow:auto;">
+          <div style="margin-top:12px; width:100%;" class="seasons-table-container">
             <table class="seasons-table" id="linksTable">
               <thead>
                 <tr>
@@ -482,7 +501,78 @@
           </div>
         </div>
 
-      <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
+        <!-- Manage Awards card -->
+        <div class="seasons-card" id="awardsCard" style="margin-top:14px; flex-direction:column; align-items:stretch;">
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div>
+              <strong>Manage Awards</strong>
+            </div>
+          </div>
+
+          <!-- Add award input -->
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <label style="min-width:120px; font-weight:500;">Award name:</label>
+            <input id="newAwardName" placeholder="Award name" style="padding:8px; min-width:300px; border-radius:4px; border:1px solid #ddd;" />
+            <button class="manage-btn small" id="addAwardBtn" disabled>Add</button>
+          </div>
+
+          <!-- Awards table -->
+          <div style="margin-top:12px; width:100%;" class="seasons-table-container">
+            <table class="seasons-table" id="awardsTable">
+              <thead>
+                <tr>
+                  <th style="width:70%">Award</th>
+                  <th style="text-align:right; width:30%">Actions</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="2" class="muted">Loading awards…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Manage Categories card -->
+        <div class="seasons-card" id="categoriesCard" style="margin-top:14px; flex-direction:column; align-items:stretch;">
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div><strong>Manage Categories</strong></div>
+          </div>
+
+          <!-- Add new Category (document) -->
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input id="newCategoryName" placeholder="Add new Category" style="padding:8px; min-width:380px; border-radius:4px; border:1px solid #ddd;" />
+            <button class="manage-btn small" id="addCategoryBtn" disabled>Add</button>
+          </div>
+
+          <!-- Select category doc -->
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="categories_select" style="padding:8px; min-width:380px;">
+              <option>Loading…</option>
+            </select>
+          </div>
+
+          <!-- Category rename + add subcategory row -->
+          <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input id="categoryNameInput" placeholder="Selected category name" style="padding:8px; min-width:260px; border-radius:4px; border:1px solid #ddd;" />
+            <input id="newSubcategoryValue" placeholder="New subcategory" style="padding:8px; min-width:240px; border-radius:4px; border:1px solid #ddd;" />
+            <button class="manage-btn small" id="addSubcategoryBtn" disabled>Add</button>
+            <button class="manage-btn small" id="deleteCategoryBtn" disabled style="background:#f8d7da;color:#8c1f1f;">Delete Category</button>
+          </div>
+
+          <!-- Subcategories table -->
+          <div style="margin-top:12px; width:100%;" class="seasons-table-container">
+            <table class="seasons-table" id="subcategoriesTable">
+              <thead>
+                <tr>
+                  <th style="width:35%">Subcategory field name</th>
+                  <th style="width:50%">Subcategory value name</th>
+                  <th style="text-align:right; width:15%">Actions</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="3" class="muted">Select a category to view subcategories</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
       </div>
     </main>
     <footer>
@@ -622,6 +712,8 @@
         alert('Failed to delete season: ' + (err.message || err));
       }
     }
+    
+    // ---------------- Manage Dates Body logic ----------------
 
     function formatTimestamp(ts) {
       if (!ts) return '';
@@ -840,17 +932,30 @@
     document.addEventListener('DOMContentLoaded', () => {
       // Admin flag used by input validation
       let __adminEnabled = false;
+
+      // enable Save/Add New Season button only when user is admin AND season name input is not blank
+      function updateSaveSeasonsButtonState() {
+        const btn = document.getElementById('saveSeasonsBtn');
+        const nameEl = document.getElementById('newSeasonName');
+        if (!btn) return;
+        const hasName = nameEl && nameEl.value.trim();
+        btn.disabled = !(hasName && __adminEnabled);
+      }
+      // wire input to update state
+      document.getElementById('newSeasonName')?.addEventListener('input', updateSaveSeasonsButtonState);
+
       // Initial load: leave most buttons disabled until auth is checked
       function setAdminEnabled(enabled) {
         __adminEnabled = !!enabled;
-        document.getElementById('saveSeasonsBtn').disabled = !enabled;
+        // Save/Add Season uses its own logic that requires both admin and non-empty season name
+        updateSaveSeasonsButtonState();
         document.getElementById('editDatesBtn').disabled = !enabled;
         document.getElementById('saveDatesBodyBtn').disabled = !enabled;
         updateAddButtonState();
         loadSeasonsList(enabled);
         loadQuestionsList(enabled);
       }
-
+      
       // wire add-question input validation so Add becomes enabled only when required fields are filled
       function updateAddButtonState() {
         const addBtn = document.getElementById('addQuestionBtn');
@@ -872,6 +977,9 @@
         await loadQuestionsList(isAdmin);
       });
 
+      // ensure save seasons button initial state (incase admin already set later)
+      updateSaveSeasonsButtonState();
+      
        // Listen for auth state and check admin role
        firebase.auth().onAuthStateChanged(async (user) => {
          if (!user) {
@@ -892,6 +1000,7 @@
             try {
               await saveSeason(name, status);
               nameEl.value = '';
+              statusEl.value = ''; 
               await loadSeasonsList(true);
             } catch (err) {
               console.error(err);
@@ -1187,12 +1296,464 @@
         });
       }
     })();
+    // ----------- MANAGE AWARDS -----------
+    function updateAwardsButtons() {
+      const addBtn = document.getElementById('addAwardBtn');
+      const nameEl = document.getElementById('newAwardName');
+      if (!addBtn) return;
+      addBtn.disabled = !(nameEl && nameEl.value.trim());
+    }
+
+    async function loadAwardsList() {
+      const tbody = document.querySelector('#awardsTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="2" class="muted">Loading awards…</td></tr>';
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('Award').get();
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="2" class="muted">No awards found</td></tr>';
+          return;
+        }
+        const rows = [];
+        snap.forEach(doc => {
+          const id = doc.id;
+          rows.push(`
+            <tr data-award="${escapeHtml(id)}">
+              <td>
+                <input type="text" value="${escapeHtml(id)}" data-edit-awardname="${escapeHtml(id)}" class="season-edit-input" style="width:100%;" readonly />
+              </td>
+              <td style="text-align:right">
+                <div style="display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+                  <button class="manage-btn small" data-edit-award="${escapeHtml(id)}">Edit</button>
+                  <button class="manage-btn small" style="background:#f8d7da;color:#8c1f1f;" data-delete-award="${escapeHtml(id)}">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `);
+        });
+        tbody.innerHTML = rows.join('');
+        wireAwardActions();
+      } catch (err) {
+        console.error('loadAwardsList error', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="2" class="muted">Failed to load awards: ${escapeHtml(err.message || String(err))}</td></tr>`;
+      }
+    }
+
+    function wireAwardActions() {
+      // Edit -> make input editable and show Save/Cancel
+      document.querySelectorAll('[data-edit-award]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const awardId = btn.getAttribute('data-edit-award');
+          const row = btn.closest('tr');
+          if (!row) return;
+          const input = row.querySelector(`[data-edit-awardname="${CSS.escape(awardId)}"]`);
+          const actionsTd = row.querySelector('td:last-child');
+          if (!input || !actionsTd) return;
+
+          if (input.readOnly) {
+            input.readOnly = false;
+            input.style.background = '#fff';
+            input.focus();
+
+            actionsTd.innerHTML = `
+              <div style="display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+                <button class="manage-btn small" data-save-award="${escapeHtml(awardId)}">Save</button>
+                <button class="manage-btn small" data-cancel-award style="background:#eee;color:#d7336f;">Cancel</button>
+              </div>
+            `;
+
+            actionsTd.querySelector('[data-save-award]')?.addEventListener('click', async () => {
+              const newName = input.value.trim();
+              if (!newName) { alert('Award name is required'); return; }
+              await saveAward(awardId, newName);
+              await loadAwardsList();
+            });
+
+            actionsTd.querySelector('[data-cancel-award]')?.addEventListener('click', async () => {
+              await loadAwardsList();
+            });
+          }
+        });
+      });
+
+      // Delete award
+      document.querySelectorAll('[data-delete-award]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const awardId = btn.getAttribute('data-delete-award');
+          if (!awardId) return;
+          if (!confirm(`Delete award "${awardId}"? This cannot be undone.`)) return;
+          try {
+            const inUse = await checkAwardInUse(awardId);
+            if (inUse) { alert('Cannot delete award: it is in use by applications'); return; }
+            const ok = await isCurrentUserAdmin();
+            if (!ok) { alert('Not authorised'); return; }
+            const db = firebase.firestore();
+            await db.collection('Award').doc(awardId).delete();
+            alert('Award deleted');
+            await loadAwardsList();
+          } catch (err) {
+            console.error('delete award error', err);
+            alert('Failed to delete award: ' + (err.message || err));
+          }
+        });
+      });
+    }
+
+    async function saveAward(oldId, newId) {
+      try {
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('Not authorised'); return; }
+        const db = firebase.firestore();
+        if (oldId === newId) {
+          alert('No changes to save');
+          return;
+        }
+        // Prevent overwriting existing award
+        const exists = await db.collection('Award').doc(newId).get();
+        if (exists.exists) { alert('An award with that name already exists'); return; }
+
+        // copy data from old doc (if any) then delete old doc
+        const oldDoc = await db.collection('Award').doc(oldId).get();
+        const data = oldDoc.exists ? (oldDoc.data() || {}) : {};
+        data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection('Award').doc(newId).set(data, { merge: true });
+        await db.collection('Award').doc(oldId).delete();
+        alert('Award renamed successfully');
+      } catch (err) {
+        console.error('saveAward error', err);
+        alert('Failed to save award: ' + (err.message || err));
+      }
+    }
+
+    async function checkAwardInUse(awardId) {
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('applications').where('award', '==', awardId).limit(1).get();
+        return !snap.empty;
+      } catch (err) {
+        console.warn('checkAwardInUse error', err);
+        return true;
+      }
+    }
+
+    async function addNewAward() {
+      const nameEl = document.getElementById('newAwardName');
+      const name = nameEl?.value?.trim();
+      if (!name) { alert('Enter award name'); return; }
+      try {
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('Not authorised'); return; }
+        const db = firebase.firestore();
+        const docRef = db.collection('Award').doc(name);
+        const exists = await docRef.get();
+        if (exists.exists) { alert('An award with that name already exists'); return; }
+        await docRef.set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        nameEl.value = '';
+        updateAwardsButtons();
+        alert('Award added');
+        await loadAwardsList();
+      } catch (err) {
+        console.error('addNewAward error', err);
+        alert('Failed to add award: ' + (err.message || err));
+      }
+    }
+
+    // wire award inputs/buttons
+    document.getElementById('newAwardName')?.addEventListener('input', updateAwardsButtons);
+    document.getElementById('addAwardBtn')?.addEventListener('click', async () => {
+      await addNewAward();
+    });
+
+    // ----------- MANAGE CATEGORIES -----------
+    function updateAddCategoryButtonState() {
+      const addBtn = document.getElementById('addCategoryBtn');
+      const nameEl = document.getElementById('newCategoryName');
+      if (!addBtn) return;
+      addBtn.disabled = !(nameEl && nameEl.value.trim());
+    }
+
+    function updateAddSubcategoryButtonState() {
+      const addBtn = document.getElementById('addSubcategoryBtn');
+      const catName = document.getElementById('categoryNameInput');
+      if (!addBtn) return;
+      // enabled only when category name input is not empty 
+      addBtn.disabled = !(catName && catName.value.trim() && categories_select && categories_select.value !== "");
+    }
+
+    async function addNewCategory() {
+      const nameEl = document.getElementById('newCategoryName');
+      const name = nameEl?.value?.trim();
+      if (!name) { alert('Enter category name'); return; }
+      try {
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('Not authorised'); return; }
+        const db = firebase.firestore();
+        const docRef = db.collection('Categories').doc(name);
+        const exists = await docRef.get();
+        if (exists.exists) { alert('A category with that name already exists'); return; }
+        await docRef.set({ createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        nameEl.value = '';
+        updateAddCategoryButtonState();
+        await populateCategoriesDropdown(name); // select newly created
+        alert('Category added');
+      } catch (err) {
+        console.error('addNewCategory error', err);
+        alert('Failed to add category: ' + (err.message || err));
+      }
+    }
+
+    async function populateCategoriesDropdown(selectAfterId) {
+      const sel = document.getElementById('categories_select');
+      if (!sel) return;
+      sel.innerHTML = '<option>Loading…</option>';
+      try {
+        const db = firebase.firestore();
+        const snap = await db.collection('Categories').get();
+        const opts = [];
+        snap.forEach(doc => opts.push(`<option value="${escapeHtml(doc.id)}">${escapeHtml(doc.id)}</option>`));
+        sel.innerHTML = opts.length ? ['<option value="">(select category)</option>', ...opts].join('') : '<option disabled>No categories</option>';
+        if (selectAfterId) {
+          sel.value = selectAfterId;
+          // trigger change handler
+          sel.dispatchEvent(new Event('change'));
+        }
+      } catch (err) {
+        console.error('populateCategoriesDropdown error', err);
+        sel.innerHTML = '<option disabled>Failed to load</option>';
+      }
+      updateAddSubcategoryButtonState();
+    }
+
+    async function onCategorySelected() {
+      const sel = document.getElementById('categories_select');
+      const catInput = document.getElementById('categoryNameInput');
+      if (!sel || !catInput) return;
+      const docId = sel.value || '';
+      catInput.value = docId;
+      updateAddSubcategoryButtonState();
+      if (docId) await loadCategoryFields(docId);
+      else {
+        const tbody = document.querySelector('#subcategoriesTable tbody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="3" class="muted">Select a category to view subcategories</td></tr>';
+      }
+    }
+
+    async function loadCategoryFields(docId) {
+      const tbody = document.querySelector('#subcategoriesTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="3" class="muted">Loading…</td></tr>';
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('Categories').doc(docId).get();
+        if (!doc.exists) {
+          tbody.innerHTML = '<tr><td colspan="3" class="muted">Category not found</td></tr>';
+          return;
+        }
+        const data = doc.data() || {};
+        // exclude meta keys (createdAt)
+        const keys = Object.keys(data).filter(k => !['createdAt', 'updatedAt'].includes(k));
+        if (!keys.length) {
+          tbody.innerHTML = '<tr><td colspan="3" class="muted">No subcategories</td></tr>';
+          return;
+        }
+        const rows = keys.map(key => {
+          const val = data[key];
+          return `
+            <tr data-field="${escapeHtml(key)}">
+              <td>${escapeHtml(key)}</td>
+              <td class="sub-val">${escapeHtml(String(val))}</td>
+              <td style="text-align:right">
+                <div style="display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+                  <button class="manage-btn small" data-edit-sub="${escapeHtml(key)}">Edit</button>
+                  <button class="manage-btn small" style="background:#f8d7da;color:#8c1f1f;" data-delete-sub="${escapeHtml(key)}">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows.join('');
+        wireSubcategoryActions(docId);
+      } catch (err) {
+        console.error('loadCategoryFields error', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="muted">Failed to load: ${escapeHtml(err.message || String(err))}</td></tr>`;
+      }
+    }
+
+    function wireSubcategoryActions(docId) {
+      // Edit
+      document.querySelectorAll('[data-edit-sub]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const field = btn.getAttribute('data-edit-sub');
+          const row = btn.closest('tr');
+          if (!row) return;
+          const valCell = row.querySelector('.sub-val');
+          const current = valCell ? valCell.innerText : '';
+          valCell.innerHTML = `<input data-edit-sub-input type="text" value="${escapeHtml(current)}" class="season-edit-input" style="width:100%;" />`;
+          const actionsTd = row.querySelector('td:last-child');
+          actionsTd.innerHTML = `
+            <div style="display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+              <button class="manage-btn small" data-save-sub="${escapeHtml(field)}">Save</button>
+              <button class="manage-btn small" data-cancel-sub style="background:#eee;color:#d7336f;">Cancel</button>
+            </div>
+          `;
+          actionsTd.querySelector('[data-cancel-sub]')?.addEventListener('click', async () => {
+            await loadCategoryFields(document.getElementById('categories_select').value);
+          });
+          actionsTd.querySelector('[data-save-sub]')?.addEventListener('click', async () => {
+            try {
+              const input = row.querySelector('[data-edit-sub-input]');
+              const newVal = input ? input.value.trim() : '';
+              const ok = await isCurrentUserAdmin();
+              if (!ok) { alert('Not authorised'); return; }
+              const db = firebase.firestore();
+              const patch = {};
+              patch[field] = newVal;
+              await db.collection('Categories').doc(docId).set(patch, { merge: true });
+              await loadCategoryFields(docId);
+            } catch (err) {
+              console.error('save subcategory error', err);
+              alert('Failed to save: ' + (err.message || err));
+            }
+          });
+        });
+      });
+
+      // Delete
+      document.querySelectorAll('[data-delete-sub]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const field = btn.getAttribute('data-delete-sub');
+          const docIdLocal = docId;
+          if (!confirm(`Delete subcategory "${field}" from category "${docIdLocal}"?`)) return;
+          try {
+            const ok = await isCurrentUserAdmin();
+            if (!ok) { alert('Not authorised'); return; }
+            const db = firebase.firestore();
+            const patch = {};
+            patch[field] = firebase.firestore.FieldValue.delete();
+            await db.collection('Categories').doc(docIdLocal).update(patch);
+            await loadCategoryFields(docIdLocal);
+          } catch (err) {
+            console.error('delete subcategory error', err);
+            alert('Failed to delete: ' + (err.message || err));
+          }
+        });
+      });
+    }
+
+    function getNextCSKey(data) {
+      const keys = Object.keys(data || {});
+      let max = 0;
+      keys.forEach(k => {
+        const m = k.match(/^CS(\d+)$/i);
+        if (m) {
+          const n = Number(m[1]);
+          if (n > max) max = n;
+        }
+      });
+      return 'CS' + (max + 1);
+    }
+
+    async function renameCategoryDoc(oldId, newId) {
+      if (!oldId || !newId) return;
+      if (oldId === newId) return;
+      const db = firebase.firestore();
+      const exists = await db.collection('Categories').doc(newId).get();
+      if (exists.exists) throw new Error('A category with the new name already exists');
+      const oldDoc = await db.collection('Categories').doc(oldId).get();
+      const data = oldDoc.exists ? (oldDoc.data() || {}) : {};
+      data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('Categories').doc(newId).set(data, { merge: true });
+      await db.collection('Categories').doc(oldId).delete();
+      // refresh dropdown and select newId
+      await populateCategoriesDropdown(newId);
+    }
+
+    async function addSubcategoryToCategory() {
+      const sel = document.getElementById('categories_select');
+      const selected = sel ? sel.value : '';
+      const catNameInput = document.getElementById('categoryNameInput');
+      const newSubValEl = document.getElementById('newSubcategoryValue');
+      if (!catNameInput) return;
+      const newCatName = catNameInput.value.trim();
+      if (!newCatName) { alert('Category name cannot be blank'); return; }
+      try {
+        const ok = await isCurrentUserAdmin();
+        if (!ok) { alert('Not authorised'); return; }
+        // if selected changed (rename)
+        let targetDocId = selected;
+        if (selected !== newCatName) {
+          // rename document
+          await renameCategoryDoc(selected, newCatName);
+          targetDocId = newCatName;
+        }
+        // if no new subcategory value provided, we're done (rename only)
+        const newSubVal = newSubValEl ? newSubValEl.value.trim() : '';
+        if (!newSubVal) {
+          await loadCategoryFields(targetDocId);
+          alert('Category name updated');
+          return;
+        }
+        // load doc to inspect fields and check duplicate values
+        const db = firebase.firestore();
+        const docSnap = await db.collection('Categories').doc(targetDocId).get();
+        const data = docSnap.exists ? (docSnap.data() || {}) : {};
+        // check if any field value equals newSubVal
+        const values = Object.keys(data).filter(k => !['createdAt','updatedAt'].includes(k)).map(k => String(data[k]));
+        if (values.includes(newSubVal)) {
+          return alert('Cannot add subcategory: this value already exists');
+        }
+        // compute next CS key
+        const nextKey = getNextCSKey(data);
+        const patch = {};
+        patch[nextKey] = newSubVal;
+        await db.collection('Categories').doc(targetDocId).set(patch, { merge: true });
+        newSubValEl.value = '';
+        updateAddSubcategoryButtonState();
+        await loadCategoryFields(targetDocId);
+        alert('Subcategory added');
+      } catch (err) {
+        console.error('addSubcategoryToCategory error', err);
+        alert('Failed to add/update category/subcategory: ' + (err.message || err));
+      }
+    }
+
+    // wire inputs/buttons for categories
+    document.getElementById('newCategoryName')?.addEventListener('input', updateAddCategoryButtonState);
+    document.getElementById('addCategoryBtn')?.addEventListener('click', async () => { await addNewCategory(); });
+    document.getElementById('categories_select')?.addEventListener('change', function() {
+        const selected = this.value;
+        document.getElementById('deleteCategoryBtn').disabled = !selected || selected === 'select category';
+    });
+    // Delete category document on Delete Category button click
+    document.getElementById('deleteCategoryBtn')?.addEventListener('click', async function() {
+        const sel = document.getElementById('categories_select');
+        const docId = sel ? sel.value : null;
+        if (!docId || docId === 'select category') return;
+        if (!confirm(`Delete category "${docId}"? This cannot be undone.`)) return;
+        try {
+            const db = firebase.firestore();
+            await db.collection('Categories').doc(docId).delete();
+            alert(`Category "${docId}" deleted.`);
+            document.getElementById('categoryNameInput').value = '';
+            document.getElementById('newSubcategoryValue').value = '';
+            await populateCategoriesDropdown();
+        } catch (err) {
+            alert('Failed to delete category: ' + err.message);
+        }
+    });
+
+    document.getElementById('categories_select')?.addEventListener('change', onCategorySelected);
+    document.getElementById('categoryNameInput')?.addEventListener('input', updateAddSubcategoryButtonState);
+    document.getElementById('addSubcategoryBtn')?.addEventListener('click', async () => { await addSubcategoryToCategory(); });
 
     // ensure the link UI is populated as part of initial loads (after auth check)
     // add these calls to the block that performs initial loads below (inside onAuthStateChanged)
     setTimeout(() => {
       populateLinkForm();
       loadQuestionSeasonLinks();
+      loadAwardsList();
+      populateCategoriesDropdown();
     }, 300);
     // filepath marker end
   </script>
