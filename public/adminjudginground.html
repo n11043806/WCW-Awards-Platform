@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Judging Round Details - WCW Admin</title>
+  <title>WCW Admin – Round Details</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -61,33 +61,32 @@
       border-radius: 4px;
       font-size: 14px;
     }
-
-    .radio-group, .judging-view {
-      margin-top: 10px;
+    .radio-group {
+      margin-top: -10px;
       display: flex;
       gap: 40px;
     }
-
-    .radio-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    
+    .radio-group label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      font-weight: normal;
+      font-size: 14px;
     }
 
-    .radio-option input {
-    margin-bottom: 12px;
-    transform: scale(1.2);
+
+    .radio-group input[type="radio"] {
+      transform: scale(1.2);
     }
 
-    .radio-option label {
-    font-weight: normal;
-    margin-top: 0;
-    font-size: 14px;
-    }
 
     .buttons {
       margin-top: 30px;
     }
+
+
     button {
       background-color: #d7336f;
       color: white;
@@ -108,6 +107,7 @@
       max-width: 700px;
     }
 
+
     /* Dark mode support */
     @media (prefers-color-scheme: dark) {
       body { background-color: #121212; color: #e0e0e0; }
@@ -123,52 +123,42 @@
     <a href="adminentriestab.html">Entries</a>
     <a href="adminusertab.html">Users</a>
     <a href="adminjudgetab.html">Judging</a>
-    <a href="#">Logout</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>
 
   <div class="main-content">
     <h1>Rounds → <span id="roundNameDisplay">Judging open period</span></h1>
 
-    <form id="judgingRoundForm">
+    <form id="roundForm">
       <label for="season">Season</label>
-      <input type="number" id="season" required value="2025" />
+      <select id="season" required>
+        <option>Loading seasons...</option>
+      </select>
 
-      <label for="name">Name</label>
-      <input type="text" id="name" required value="Judging open period" />
+      <label for="roundName">Name</label>
+      <input type="text" id="roundName" required placeholder="e.g. WCW25" />
 
       <label>Round type</label>
       <div class="radio-group">
-        <div class="radio-option">
-          <input type="radio" name="roundType" value="entry" />
-          <label>Entry round</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" name="roundType" value="judging" checked />
-          <label>Judging round</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" name="roundType" value="feedback" />
-          <label>Feedback round</label>
-        </div>
+        <label><input type="radio" name="roundType" value="entry" checked /> Entry round</label>
+        <label><input type="radio" name="roundType" value="judging" /> Judging round</label>
+        <label><input type="radio" name="roundType" value="feedback" /> Feedback round</label>
       </div>
 
       <label>Judging view</label>
-      <div class="judging-view">
-        <div class="radio-option">
-          <input type="radio" name="judgingView" value="scoring" checked />
-          <label>Scoring</label>
-        </div>
-        <div class="radio-option">
-          <input type="radio" name="judgingView" value="viewOnly" />
-          <label>Viewing only</label>
-        </div>
+      <div class="radio-group">
+        <label><input type="radio" name="judgingView" value="scoring" checked /> Scoring</label>
+        <label><input type="radio" name="judgingView" value="viewOnly" /> Viewing only</label>
       </div>
+      
+      <label for="startDate">Starts</label>
+      <input type="datetime-local" id="startDate" required />
 
-      <label for="start">Starts</label>
-      <input type="datetime-local" id="start" required />
+      <label for="endDate">Ends</label>
+      <input type="datetime-local" id="endDate" required />
 
-      <label for="end">Ends</label>
-      <input type="datetime-local" id="end" required />
+      <label for="resubmissionDate">Review / resubmission ends</label>
+      <input type="datetime-local" id="resubmissionDate" required />
 
       <div class="buttons">
         <button type="submit">Save</button>
@@ -185,6 +175,79 @@
   <script>
     const db = firebase.firestore();
 
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+
+    async function populateSeasonDropdown() {
+      const seasonSelect = document.getElementById('season');
+      if (!seasonSelect) return;
+
+      try {
+        const snap = await db.collection('season').get();
+        if (snap.empty) {
+          seasonSelect.innerHTML = '<option disabled>No seasons found</option>';
+          return;
+        }
+
+        const options = ['<option value="">Select a season</option>'];
+        snap.forEach(doc => {
+          options.push(`<option value="${doc.id}">${doc.id}</option>`);
+        });
+        seasonSelect.innerHTML = options.join('');
+      } catch (err) {
+        console.error('Failed to load seasons:', err);
+        seasonSelect.innerHTML = '<option disabled>Failed to load seasons</option>';
+      }
+    }
+
+    document.getElementById('season')?.addEventListener('change', async (e) => {
+      const selectedSeason = e.target.value;
+      if (!selectedSeason) {
+        // Clear form fields if no season selected
+        document.getElementById('roundName').value = '';
+        document.querySelector("input[name='roundType'][value='entry']").checked = true;
+        document.querySelector("input[name='judgingView'][value='scoring']").checked = true;
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('resubmissionDate').value = '';
+        return;
+      }
+      try {
+        const doc = await db.collection('season').doc(selectedSeason).get();
+        if (!doc.exists) {
+          alert('Selected season document does not exist.');
+          return;
+        }
+        const data = doc.data() || {};
+
+        // Populate form fields if present, else clear
+        document.getElementById('roundName').value = data.Name || '';
+        if (data.Round_Type) {
+          const radio = document.querySelector(`input[name='roundType'][value='${data.Round_Type}']`);
+          if (radio) radio.checked = true;
+        } else {
+          // Default to entry round if no value
+          document.querySelector("input[name='roundType'][value='entry']").checked = true;
+        }
+        if (data.Judging_View) {
+          const radio = document.querySelector(`input[name='judgingView'][value='${data.Judging_View}']`);
+          if (radio) radio.checked = true;
+        } else {
+          // Default to scoring if no value
+          document.querySelector("input[name='judgingView'][value='scoring']").checked = true;
+        }
+        document.getElementById('startDate').value = data.Start ? new Date(data.Start.seconds * 1000).toISOString().slice(0,16) : '';
+        document.getElementById('endDate').value = data.End ? new Date(data.End.seconds * 1000).toISOString().slice(0,16) : '';
+        document.getElementById('resubmissionDate').value = data['Review/Resubmission_End'] ? new Date(data['Review/Resubmission_End'].seconds * 1000).toISOString().slice(0,16) : '';
+      } catch (err) {
+        console.error('Error loading season data:', err);
+      }
+    });
+
+
     firebase.auth().onAuthStateChanged(user => {
       if (!user) {
         window.location.href = "signin.html";
@@ -193,31 +256,41 @@
         const roundName = params.get("round");
         if (roundName) {
           document.getElementById("roundNameDisplay").textContent = roundName;
-          document.getElementById("name").value = roundName;
+          document.getElementById("roundName").value = roundName;
         }
+        populateSeasonDropdown();
       }
     });
 
-    document.getElementById("judgingRoundForm").addEventListener("submit", async (e) => {
+    document.getElementById("roundForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const data = {
-        season: document.getElementById("season").value,
-        name: document.getElementById("name").value,
-        roundType: document.querySelector("input[name='roundType']:checked").value,
-        judgingView: document.querySelector("input[name='judgingView']:checked").value,
-        start: new Date(document.getElementById("start").value),
-        end: new Date(document.getElementById("end").value),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      const seasonSelect = document.getElementById("season");
+      const selectedSeason = seasonSelect ? seasonSelect.value : '';
+
+      if (!selectedSeason) {
+        alert('Please select a season.');
+        return;
+      }
+
+      const roundData = {
+        Name: document.getElementById("roundName").value,
+        Round_Type: document.querySelector("input[name='roundType']:checked").value,
+        Judging_View: document.querySelector("input[name='judgingView']:checked").value,
+        Start: new Date(document.getElementById("startDate").value),
+        End: new Date(document.getElementById("endDate").value),
+        "Review/Resubmission_End": new Date(document.getElementById("resubmissionDate").value),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
       try {
-        await db.collection("rounds").add(data);
-        alert("Judging round saved successfully!");
-        document.getElementById("judgingRoundForm").reset();
-      } catch (error) {
-        console.error("Error saving round:", error);
-        alert("Failed to save round.");
+        await db.collection("season").doc(selectedSeason).set(roundData, { merge: true });
+        alert("Season updated successfully!");
+        document.getElementById("roundForm").reset();
+        await populateSeasonDropdown();
+      } catch (err) {
+        console.error("Error updating season:", err);
+        alert("Failed to update season.");
       }
     });
   </script>

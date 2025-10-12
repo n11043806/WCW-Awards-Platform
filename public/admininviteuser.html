@@ -15,12 +15,15 @@
 
     .sidebar {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 220px;
       height: 100vh;
       background-color: #d7336f;
       padding: 20px;
       color: white;
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar h2 {
@@ -33,7 +36,7 @@
       display: block;
       color: white;
       text-decoration: none;
-      padding: 10px;
+      padding: 10px 15px;
       border-radius: 4px;
       margin-bottom: 10px;
     }
@@ -49,7 +52,7 @@
 
     h1 {
       color: #d7336f;
-      font-size: 26px;
+      font-size: 28px;
     }
 
     label {
@@ -128,5 +131,12 @@
 
     <button class="send-btn">Send Invite</button>
   </div>
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+  </script>
 </body>
 </html>
