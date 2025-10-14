@@ -6,12 +6,8 @@
   <title>WCW Admin – Judge Assignments</title>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-      color: #333;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; color: #333; }
+
     /* Sidebar — match Admin Dashboard */
     .sidebar {
       position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
@@ -25,13 +21,13 @@
     .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
 
     .main-content { margin-left: 220px; padding: 30px; }
+
     header.topbar {
       background-color: #d62d83; color: #fff; padding: 20px; border-radius: 8px;
       display: flex; justify-content: space-between; align-items: center;
     }
     .topbar-actions { display: flex; gap: 10px; align-items: center; }
-    .logout-btn,
-    .back-btn {
+    .logout-btn, .back-btn {
       background: #fff; color: #d62d83; border: none; padding: 8px 16px;
       border-radius: 4px; font-weight: bold; cursor: pointer;
     }
@@ -63,11 +59,47 @@
     th, td { padding: 12px 14px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: top; }
     th { background: #fafafa; color: #d62d83; font-weight: 700; }
     tr:hover { background: #f9f9f9; }
+    tr.selected-row { background: #fff6fa; }
 
     .status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #eee; color: #444; }
     .status-pending { background: #fff3cd; color: #856404; }
     .status-completed { background: #d4edda; color: #155724; }
     .status-inprogress, .status-in-progress { background: #d1ecf1; color: #0c5460; }
+
+    /* Details panel (below table) */
+    .details-wrap {
+      margin-top: 18px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 16px;
+      border: 1px solid #eee;
+    }
+    .details-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .details-title { font-weight: 700; color: #d62d83; }
+    .details-subtle { color: #666; font-size: 13px; }
+    .badge {
+      display:inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background:#f1f1f1; color:#444;
+    }
+    .grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background:#fff; border:1px solid #eee; border-radius:8px; padding:12px;
+    }
+    .card h4 { margin:0 0 8px; color:#333; }
+    .field { background:#fff; border:1px solid #f0f0f0; border-radius:6px; padding:8px; white-space:pre-wrap; }
+
+    .crit-table { width:100%; border-collapse: collapse; }
+    .crit-table th, .crit-table td { padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
+    .crit-table th { background:#fafafa; color:#d62d83; font-weight:700; }
+
+    .empty { padding: 10px; color: #777; }
   </style>
 </head>
 <body>
@@ -128,6 +160,21 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Details panel -->
+    <section class="details-wrap" id="detailsWrap" aria-live="polite">
+      <div class="details-header">
+        <div>
+          <div class="details-title" id="detailsTitle">Select an assignment row to view judge submission</div>
+          <div class="details-subtle" id="detailsSub">—</div>
+        </div>
+        <div id="detailsBadges"></div>
+      </div>
+
+      <div id="detailsBody">
+        <div class="empty">Nothing selected.</div>
+      </div>
+    </section>
   </div>
 
   <!-- Firebase -->
@@ -166,7 +213,21 @@
       return d ? d.toLocaleString() : '-';
     }
 
+    // Criteria used in judge view (read-only display here)
+    const CRITERIA_DEFS = [
+      { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
+      { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
+      { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
+      { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
+      { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
+      { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+      { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+      { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
+      { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
+    ];
+
     let ALL = [];
+    let selectedRowEl = null;
 
     function render(items) {
       if (!items.length) {
@@ -176,6 +237,10 @@
       const frag = document.createDocumentFragment();
       items.forEach(a => {
         const tr = document.createElement('tr');
+        tr.dataset.judgeId = a.judgeId || '';
+        tr.dataset.applicationId = a.applicationId || '';
+        tr.dataset.judgeName = a.judgeName || '';
+        tr.dataset.judgeEmail = a.judgeEmail || '';
         tr.innerHTML = `
           <td>${esc(a.judgeName || '(Unnamed)')}</td>
           <td>${esc(a.judgeEmail || '')}</td>
@@ -232,10 +297,166 @@
       render(sortItems(filtered, sortMode));
     }
 
+    // --- Details Panel Helpers ---
+    const detailsTitle = document.getElementById('detailsTitle');
+    const detailsSub   = document.getElementById('detailsSub');
+    const detailsBadges= document.getElementById('detailsBadges');
+    const detailsBody  = document.getElementById('detailsBody');
+
+    function clearSelectionHighlight() {
+      if (selectedRowEl) selectedRowEl.classList.remove('selected-row');
+      selectedRowEl = null;
+    }
+
+    function setSelectionHighlight(tr) {
+      clearSelectionHighlight();
+      selectedRowEl = tr;
+      tr.classList.add('selected-row');
+    }
+
+    function showDetailsLoading(judgeName, judgeEmail, appId) {
+      detailsTitle.textContent = `Loading submission…`;
+      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+      detailsBadges.innerHTML = '';
+      detailsBody.innerHTML = `<div class="empty">Loading…</div>`;
+    }
+
+    function showDetailsEmpty(judgeName, judgeEmail, appId) {
+      detailsTitle.textContent = `No submission found`;
+      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+      detailsBadges.innerHTML = `<span class="badge">status: none</span>`;
+      detailsBody.innerHTML = `<div class="empty">This judge hasn’t saved or submitted any responses for this application yet.</div>`;
+    }
+
+    function renderDetails(appData, respData, judgeName, judgeEmail, appId) {
+      const entryName = appData?.entryName || appData?.name || '';
+      detailsTitle.textContent = entryName ? `Entry: ${entryName}` : `Entry details`;
+      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+
+      const stat = (respData?.status || '').toLowerCase();
+      const last = respData?.lastUpdated ? tsText(respData.lastUpdated) : '-';
+      detailsBadges.innerHTML = `
+        <span class="badge">response: ${esc(stat || 'none')}</span>
+        <span class="badge">last updated: ${esc(last)}</span>
+      `;
+
+      // Entrant summary + Responses grid
+      const entrantHtml = `
+        <div class="card">
+          <h4>Entrant Details</h4>
+          <div class="grid-2">
+            <div>
+              <div class="details-subtle">Category</div>
+              <div class="field">${esc(appData?.category || '-')}</div>
+            </div>
+            <div>
+              <div class="details-subtle">Subcategory</div>
+              <div class="field">${esc(appData?.subcategory || '-')}</div>
+            </div>
+            <div>
+              <div class="details-subtle">Award</div>
+              <div class="field">${esc(appData?.awards_choice || '-')}</div>
+            </div>
+            <div>
+              <div class="details-subtle">Entrant</div>
+              <div class="field">${esc(appData?.name || '-')}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Build criteria table
+      const scores = respData?.scores || {};
+      let rows = '';
+      CRITERIA_DEFS.forEach(c => {
+        const ans = appData?.[c.key] ?? '-';
+        const sc = scores?.[c.key]?.score;
+        const cm = scores?.[c.key]?.comment || '';
+        rows += `
+          <tr>
+            <td style="width:28%;"><strong>${esc(c.title)}</strong></td>
+            <td style="width:10%;">${sc == null || sc === '' ? '-' : esc(String(sc))}/10</td>
+            <td style="width:62%;">${cm ? esc(cm) : '<span class="muted">No comment</span>'}</td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="details-subtle" style="margin:6px 0 4px;">Entrant Answer</div>
+              <div class="field">${esc(ans)}</div>
+            </td>
+          </tr>
+        `;
+      });
+
+      const respHtml = `
+        <div class="card">
+          <h4>Scores & Comments</h4>
+          <table class="crit-table">
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th>Score</th>
+                <th>Judge Comment</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+
+      detailsBody.innerHTML = entrantHtml + respHtml;
+    }
+
+    async function loadDetailsForRow(tr) {
+      const judgeId = tr.dataset.judgeId;
+      const appId   = tr.dataset.applicationId;
+      const judgeName = tr.dataset.judgeName;
+      const judgeEmail = tr.dataset.judgeEmail;
+
+      if (!judgeId || !appId) return;
+
+      setSelectionHighlight(tr);
+      showDetailsLoading(judgeName, judgeEmail, appId);
+
+      try {
+        const appRef = db.collection('applications').doc(appId);
+        const respRef = db.collection('judgeResponses').doc(`${judgeId}_${appId}`);
+
+        const [appDoc, respDoc] = await Promise.all([appRef.get(), respRef.get()]);
+        if (!appDoc.exists) {
+          detailsTitle.textContent = 'Application not found';
+          detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
+          detailsBadges.innerHTML = '';
+          detailsBody.innerHTML = `<div class="empty">The application document does not exist.</div>`;
+          return;
+        }
+
+        if (!respDoc.exists) {
+          showDetailsEmpty(judgeName, judgeEmail, appId);
+          return;
+        }
+
+        renderDetails(appDoc.data(), respDoc.data(), judgeName, judgeEmail, appId);
+      } catch (e) {
+        detailsTitle.textContent = 'Error loading submission';
+        detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
+        detailsBadges.innerHTML = '';
+        detailsBody.innerHTML = `<div class="empty">Failed to load details: ${esc(e.message || e)}</div>`;
+      }
+    }
+
+    // Row click → load details
+    tbody.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr');
+      if (!tr || !tr.dataset) return;
+      loadDetailsForRow(tr);
+    });
+
+    // Filters
     searchBox.addEventListener('input', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
     sortBy.addEventListener('change', applyFilters);
 
+    // Auth + live data
     firebase.auth().onAuthStateChanged(async user => {
       if (!user) return (window.location.href = 'signin.html');
 
@@ -270,6 +491,22 @@
               };
             });
             applyFilters();
+            // Keep selection highlight if currently selected item still exists
+            if (selectedRowEl) {
+              const { judgeId, applicationId } = selectedRowEl.dataset;
+              const stillThere = Array.from(tbody.querySelectorAll('tr'))
+                .find(r => r.dataset.judgeId === judgeId && r.dataset.applicationId === applicationId);
+              if (!stillThere) {
+                clearSelectionHighlight();
+                detailsTitle.textContent = 'Select an assignment row to view judge submission';
+                detailsSub.textContent = '—';
+                detailsBadges.innerHTML = '';
+                detailsBody.innerHTML = `<div class="empty">Nothing selected.</div>`;
+              } else if (stillThere !== selectedRowEl) {
+                // Re-bind selection class to the new DOM row
+                setSelectionHighlight(stillThere);
+              }
+            }
           },
           error: (err) => {
             console.error('onSnapshot error:', err);
