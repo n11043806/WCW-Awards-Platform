@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard - WCW Awards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; }
     body {
@@ -18,7 +19,7 @@
       left: 0;
       width: 220px;
       height: 100vh;
-      background-color: #d62d83;
+      background-color: #d7336f;
       padding: 20px;
       color: white;
       display: flex;
@@ -44,7 +45,7 @@
       padding: 30px;
     }
     header {
-      background-color: #d62d83;
+      background-color: #d7336f;
       color: white;
       padding: 20px;
       border-radius: 8px;
@@ -83,23 +84,29 @@
       color: #d62d83;
       margin-bottom: 10px;
     }
-    .chart-canvas { width: 100%; height: 200px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; }
-    th { background-color: #fafafa; color: #d62d83; }
-    footer { text-align: center; color: #888; margin-top: 40px; font-size: 14px; }
-
-    /* Completion pie (compact) */
-    .completion-wrap {
-      display: flex; align-items: center; justify-content: center; flex-direction: column;
-      height: 260px; position: relative;
+    .chart-canvas {
+      width: 100%;
+      height: 200px;
     }
-    .completion-pie { width: 180px; height: 180px; }
-    .completion-stats {
-      margin-top: 10px; display: flex; gap: 24px; align-items: center; justify-content: center;
+    table {
+      width: 100%;
+      border-collapse: collapse;
     }
-    .completion-stats strong { color: #d62d83; font-size: 18px; display: block; text-align: center; }
-    .completion-stats span { color: #666; font-size: 13px; display: block; text-align: center; }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #fafafa;
+      color: #d62d83;
+    }
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -114,8 +121,18 @@
 
   <div class="main-content">
     <header>
-      <h1>Welcome, <span id="adminName">Trial Account</span></h1>
-      <button class="logout-btn" onclick="logout()">Log Out</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>Welcome, <span id="adminName">Trial Account</span></h1>
+        <div class="user-menu-container" id="adminUserMenu">
+          <span id="userFullName" class="user-fullname"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account">A</button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <button onclick="window.location.href='adminprofile.html'">Profile <span class="material-symbols-outlined" style="font-size:18px;">person</span></button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">Get help <span class="material-symbols-outlined" style="font-size:18px;">help</span></button>
+            <button onclick="logout()">Log out <span class="material-symbols-outlined" style="font-size:18px;">logout</span></button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <div class="cards-row">
@@ -247,117 +264,6 @@
           plugins: { legend: { display: false } }
         }
       });
-    }
-
-    /** ========= Entries by Category (Main Awards only) =========
-     * - Read main awards (document IDs) from 'Categories'
-     * - Build a subcategory -> mainAward map using each doc's string fields
-     * - For each application, map to a main award:
-     *      category == mainAward ? use it
-     *      else if awards_choice/subcategory matches a known subcategory -> parent mainAward
-     *      else -> "Uncategorized" (optional)
-     */
-    async function loadMainAwardCounts() {
-      const db = firebase.firestore();
-      const tbody = document.getElementById("categoriesBody");
-      tbody.innerHTML = '<tr><td colspan="3">Loading…</td></tr>';
-
-      const mainAwards = new Set();          // e.g., "BUSINESS AWARDS", "IMPACT AWARDS"
-      const parentBySub = new Map();         // "BUSINESS OF THE YEAR" -> "BUSINESS AWARDS"
-
-      // 1) Build main awards and subcategory->parent map
-      try {
-        const catsSnap = await db.collection("Categories").get();
-        catsSnap.forEach(doc => {
-          const parent = (doc.id || "").trim();
-          if (!parent) return;
-          mainAwards.add(parent);
-
-          const data = doc.data() || {};
-          Object.values(data).forEach(v => {
-            if (typeof v === "string" && v.trim()) {
-              parentBySub.set(v.trim(), parent);
-            }
-          });
-        });
-      } catch (e) {
-        console.warn("Failed to read Categories:", e?.message || e);
-      }
-
-      // Seed counts with 0 for each main award
-      const counts = new Map(); // mainAward -> { inProgress, submitted }
-      Array.from(mainAwards).forEach(ma => counts.set(ma, { inProgress: 0, submitted: 0 }));
-
-      // Optional: Include a bucket for apps that don't map cleanly
-      const includeUncategorized = true;
-      if (includeUncategorized) counts.set("Uncategorized", { inProgress: 0, submitted: 0 });
-
-      // 2) Tally applications into main awards
-      try {
-        const appsSnap = await db.collection("applications").get();
-        appsSnap.forEach(doc => {
-          const x = doc.data() || {};
-
-          const rawCategory = (x.category && String(x.category).trim()) || "";
-          const rawChoice   = (x.awards_choice && String(x.awards_choice).trim()) || "";
-          const rawSubcat   = (x.subcategory && String(x.subcategory).trim()) || "";
-
-          let parent = "";
-
-          // Prefer direct main award match first
-          if (rawCategory && mainAwards.has(rawCategory)) {
-            parent = rawCategory;
-          } else {
-            // Try mapping awards_choice or subcategory to a parent doc via subcategory map
-            if (rawChoice && parentBySub.has(rawChoice)) parent = parentBySub.get(rawChoice);
-            else if (rawSubcat && parentBySub.has(rawSubcat)) parent = parentBySub.get(rawSubcat);
-          }
-
-          if (!parent) {
-            if (!includeUncategorized) return;
-            parent = "Uncategorized";
-          }
-
-          if (!counts.has(parent)) counts.set(parent, { inProgress: 0, submitted: 0 });
-
-          const status = (x.status || "").toLowerCase();
-          const c = counts.get(parent);
-          if (status === "submitted") c.submitted++;
-          else c.inProgress++;
-        });
-      } catch (e) {
-        console.warn("Failed to read applications:", e?.message || e);
-      }
-
-      // 3) Render only main awards (+ optional Uncategorized) in alphabetical order
-      const rows = Array.from(counts.entries())
-        .filter(([name]) => name === "Uncategorized" || mainAwards.has(name))
-        .sort((a, b) => a[0].localeCompare(b[0]));
-
-      if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="3">No categories found.</td></tr>';
-        return;
-      }
-
-      const frag = document.createDocumentFragment();
-      rows.forEach(([name, c]) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(name)}</td>
-          <td>${c.inProgress}</td>
-          <td>${c.submitted}</td>
-        `;
-        frag.appendChild(tr);
-      });
-
-      tbody.innerHTML = "";
-      tbody.appendChild(frag);
-    }
-
-    function escapeHtml(s) {
-      return String(s ?? "").replace(/[&<>"']/g, m => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-      })[m]);
     }
   </script>
 </body>

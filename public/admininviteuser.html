@@ -15,12 +15,15 @@
 
     .sidebar {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 220px;
       height: 100vh;
-      background-color: #d62d83;
+      background-color: #d7336f;
       padding: 20px;
       color: white;
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar h2 {
@@ -33,7 +36,7 @@
       display: block;
       color: white;
       text-decoration: none;
-      padding: 10px;
+      padding: 10px 15px;
       border-radius: 4px;
       margin-bottom: 10px;
     }
@@ -48,8 +51,8 @@
     }
 
     h1 {
-      color: #d62d83;
-      font-size: 26px;
+      color: #d7336f;
+      font-size: 28px;
     }
 
     label {
@@ -81,7 +84,7 @@
 
     .send-btn {
       margin-top: 20px;
-      background-color: #d62d83;
+      background-color: #d7336f;
       color: white;
       padding: 10px 20px;
       border: none;
@@ -92,6 +95,11 @@
 
     .send-btn:hover {
       background-color: #b8235a;
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
     }
   </style>
 </head>
@@ -123,5 +131,12 @@
 
     <button class="send-btn">Send Invite</button>
   </div>
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Entries - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      color: #333;
+    }
+    .container {
+      max-width: none;
+      width: 100%;
+      margin: 30px 0;
+      padding: 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #d7336f;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 22px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
+    .main-content {
+      margin-left: 220px;
+      padding: 30px;
+    }
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logout-btn {
+      background-color: white;
+      color: #d62d83;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background-color: #ffe6ee;
+    }
+    h2.section-title {
+      margin-top: 30px;
+      color: #d62d83;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .controls input {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 70%;
+    }
+    .controls select, .controls button {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+    .controls button {
+      background-color: #d62d83;
+      color: white;
+      font-weight: bold;
+    }
+    .controls button:hover {
+      background-color: #b8235a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #fafafa;
+      color: #d62d83;
+    }
+    .action-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #d62d83;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .action-btn:hover {
+      background-color: #b8235a;
+    }
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 300px;
+      text-align: center;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    main {
+      padding: 40px 30px;
+    }
+    #datesSection, #tabSection {
+      max-width: none;
+      margin: 0;
+    }
+    #datesSection h2,
+    #datesSection h3,
+    #datesSection h4 {
+      color: #d7336f;
+    }
+    #datesSection ul { font-size: 16px; line-height: 1.5; }
+    #datesSection a { color: #1a0dab; }
+    .users-row { margin: 12px 0 18px; }
+    .users-row label { color: #d7336f; font-weight:700; margin-right:8px; display:inline-block; }
+    .users-row select { padding:8px; border-radius:6px; border:1px solid #ddd; min-width:260px; }
+    .tab-list {
+      max-width: 800px;
+      margin: 30px auto 0;
+      display: flex;
+      gap: 2px;
+    }
+    .tab {
+      flex: 1;
+      padding: 16px 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background: #888;
+      color: #fff;
+      border-radius: 6px 6px 0 0;
+      margin-right: 2px;
+    }
+    .tab.active { background: #b8235a; color: #fff; }
+    .tab-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display:block; margin-bottom:6px; font-weight:500; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-actions { margin-top: 12px; display:flex; gap:10px; flex-wrap:wrap; }
+    .form-actions .action-btn { padding:8px 14px; border-radius:6px; }
+    .start-entry-btn { padding: 12px 20px; background-color: #d7336f; color: #fff; border-radius:5px; border:none; cursor:pointer; }
+    .start-entry-btn:hover { background-color: #b8235a; }
+    .word-count { font-size: 13px; color: #888; float: right; }
+    .eligibility-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+    .preview-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.4); z-index: 1000; padding: 24px; }
+    .preview-modal.open { display: flex; }
+    .preview-dialog { background: #fff; border-radius: 10px; max-width: 980px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden; }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #faf0f4; color: #8c1f4c; }
+    .preview-body { padding: 18px; max-height: 75vh; overflow: auto; }
+    .preview-title { margin: 18px 0 10px; color: #8c1f4c; background: #faf0f4; padding: 8px 12px; border-radius: 6px; }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+    @media (max-width: 800px) { .preview-grid { grid-template-columns: 1fr; } }
+    .preview-actions { display: flex; gap: 10px; }
+    .preview-close { background: #fff; color: #8c1f4c; border: 2px solid #8c1f4c; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+    .preview-close:hover { background: #ffe6ee; }
+    .preview-submit { background: #d7336f; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+    .preview-submit:disabled { background: #ccc; cursor: not-allowed; }
+    .upload-card { border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fcfcfc; }
+    .file-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .preview-image { 
+      display:none; 
+      max-width: 100%;
+      max-height: 400px;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid #eee;
+      border-radius: 6px;
+    }
+    .save-like {
+      background: #e1faed;
+      color: #1f7a4b;
+      border: 1px solid #c9f2da;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .save-like:hover { background:#c9f2da; }
+    .manage-title { color: #8c1f4c; }
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .user-circle:hover { background: #5f386d; }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 48px;
+      right: 0;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 180px;
+      z-index: 100;
+      flex-direction: column;
+    }
+    .user-dropdown.open { display:flex; }
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .user-dropdown button:hover { background: #ffe6ee; }
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .container { background: #222; color: #eee; border: 1px solid #444; }
+      .controls input, .controls select, .controls button {
+        background: #333; color: #eee; border: 1px solid #555;
+      }
+      
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html" class="active">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+  <div class="main-content">
+    <header>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>Entries Management</h1>
+        <div class="user-menu-container" id="adminUserMenu" style="display:flex;align-items:center;gap:10px;position:relative;">
+          <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <button onclick="window.location.href='adminprofile.html'">
+              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+            </button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+            </button>
+            <button onclick="logout()">
+              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main>
+      <div class="container">
+        <h2 class="manage-title">Application Form</h2>
+        <div style="position:relative;">
+          <div id="datesSection" style="margin-top:40px; background:#fff; padding:28px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+            <div id="datesBody">Loading dates…</div>
+            <div style="margin-top:20px; display:flex; gap:12px; align-items:center;">
+               <label for="select_user" style="color:#d7336f;font-weight:700;margin:0 8px 0 0;">Users:</label>
+               <select id="select_user" aria-label="Select user for this application" style="padding:8px;border-radius:6px;border:1px solid #ddd;min-width:320px;">
+                 <option value="">Loading users…</option>
+               </select>
+               <div style="flex:1"></div>
+               <button class="start-entry-btn" id="startEntryBtn" disabled>Start Entry</button>
+               <button class="save-like" onclick="window.location.href='adminentriestab.html'">Back</button>
+             </div>
+            </div>
+         </div>
+      <div id="tabSection" style="display:none; max-width:980px; margin: 20px 0 0 0;">
+        <div class="tab-list" style="max-width:100%; display:flex; gap:2px;">
+          <button class="tab active" id="tabStart">Start here</button>
+          <button class="tab" id="tabCriteria" disabled>Criteria</button>
+          <button class="tab" id="tabAttachments" disabled>Attachments</button>
+        </div>
+        <div id="tabContent" class="tab-content" style="padding:24px;"></div>
+      </div>
+      <div id="previewModal" class="preview-modal" aria-hidden="true"></div>
+      </div>
+      <footer>
+        &copy; 2025 WCW Awards Platform. All rights reserved.
+      </footer>
+    </main>
+  </div>
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+  // ---- Admin New Form Logic ----
+  let applicationId = null;
+  let currentUser = null;
+  let criteriaQuestions = [];
+  const db = () => firebase.firestore();
+
+  firebase.auth().onAuthStateChanged(u => { currentUser = u || null; });
+
+  async function loadDatesFromFirestore() {
+    try {
+      const doc = await db().collection('applicationInfo').doc('DatesInfo').get();
+      if (doc.exists) {
+        const data = doc.data() || {};
+        if (data.Body) {
+          let html = String(data.Body)
+            .replace(/\\n/g, '')
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+          document.getElementById('datesBody').innerHTML = html.trim();
+        }
+      }
+    } catch (e) {}
+  }
+  loadDatesFromFirestore();
+
+  // Categories/Awards logic
+  let CATEGORIES_MAP = {};
+  let AWARDS_LIST = [];
+  async function loadCategoriesFromFirestore() {
+    const namesToTry = ['Categories', 'Category'];
+    CATEGORIES_MAP = {};
+    for (const col of namesToTry) {
+      try {
+        const snap = await db().collection(col).get();
+        if (!snap.empty) {
+          snap.forEach(doc => {
+            const data = doc.data() || {};
+            const subcats = Object.values(data).filter(Boolean).map(v => String(v));
+            CATEGORIES_MAP[doc.id] = subcats;
+          });
+          break;
+        }
+      } catch (e) {}
+    }
+    populateCategorySelects();
+  }
+  function populateCategorySelects(selectedCategory = '') {
+    ['category', 'pv_category'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '';
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select category';
+      sel.appendChild(def);
+      Object.keys(CATEGORIES_MAP).forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        sel.appendChild(opt);
+      });
+      if (selectedCategory) sel.value = selectedCategory;
+    });
+  }
+  function fillSubcategorySelect(selectEl, category, selectedValue = '') {
+    if (!selectEl) return;
+    const list = CATEGORIES_MAP[category] || [];
+    selectEl.innerHTML = '';
+    const def = document.createElement('option');
+    def.value = '';
+    def.textContent = 'Select subcategory';
+    selectEl.appendChild(def);
+    list.forEach(sc => {
+      const opt = document.createElement('option');
+      opt.value = sc;
+      opt.textContent = sc;
+      selectEl.appendChild(opt);
+    });
+    selectEl.disabled = list.length === 0;
+    if (selectedValue) selectEl.value = selectedValue;
+  }
+  async function loadAwardsFromFirestore() {
+    const namesToTry = ['Award', 'Awards'];
+    AWARDS_LIST = [];
+    for (const col of namesToTry) {
+      try {
+        const snap = await db().collection(col).get();
+        if (!snap.empty) {
+          snap.forEach(doc => {
+            AWARDS_LIST.push(String(doc.id));
+          });
+          break;
+        }
+      } catch (e) {}
+    }
+    populateAwardSelects();
+  }
+  function populateAwardSelects(selected = '') {
+    ['award', 'pv_award'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '';
+      const def = document.createElement('option');
+      def.value = '';
+      def.textContent = 'Select award';
+      sel.appendChild(def);
+      AWARDS_LIST.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      });
+      if (selected) sel.value = selected;
+    });
+  }
+  loadAwardsFromFirestore();
+  loadCategoriesFromFirestore();
+
+  // Get current season
+  async function getCurrentSeasonName() {
+    const snap = await db().collection('season').get();
+    let currentSeason = null;
+    snap.forEach(doc => {
+      if (doc.data().status === 'current') currentSeason = doc.id;
+    });
+    if (!currentSeason) throw new Error('No current season found');
+    return currentSeason;
+  }
+  async function getSeasonQuestions(seasonName) {
+    const snap = await db().collection('applicationInfo').get();
+    let questions = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (data[seasonName]) {
+        questions.push({
+          id: doc.id,
+          question_ID: data.question_ID,
+          question: data.Question,
+          order: data[seasonName],
+          wordLimit: data.wordLimit
+        });
+      }
+    });
+    questions.sort((a, b) => {
+      const nA = Number(a.order.replace(/[^0-9]/g, ''));
+      const nB = Number(b.order.replace(/[^0-9]/g, ''));
+      return nA - nB;
+    });
+    return questions;
+  }
+
+  // Ensure application doc exists
+  async function ensureApplicationDoc() {
+    if (applicationId) return;
+    const userId = document.getElementById('select_user').value;
+    if (!userId) throw new Error('No user selected');
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    // resolve current season (best-effort). If none found, season will be null.
+    let seasonName = null;
+    try { seasonName = await getCurrentSeasonName(); } catch(_) { seasonName = null; }
+    const ref = await db().collection('applications').add({
+      user_id: userId,
+      applicant_id: userId,
+      season: seasonName,
+      stage: 'draft',
+      createdAt: now,
+      updatedAt: now
+    });
+    applicationId = ref.id;
+  }
+
+  async function getApplicationData() {
+    if (!applicationId) return null;
+    try {
+      const snap = await db().collection('applications').doc(applicationId).get();
+      return snap.exists ? snap.data() : null;
+    } catch (e) { return null; }
+  }
+  function setVal(form, id, value) {
+    const el = form.querySelector('#' + id);
+    if (el) el.value = value ?? '';
+  }
+
+  /* Replace Admin's start/criteria/attachments + preview logic with the applicationform versions */
+
+  // Static start here tab (copied from applicationform.html)
+  const startHereContent = `
+    <form id="startHereForm">
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+          <option value="">Select category</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="subcategory">Subcategory</label>
+        <select id="subcategory" name="subcategory" disabled>
+          <option value="">Select subcategory</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="award">Which Awards would you want to enter?</label>
+        <select id="award" name="award" required>
+          <option value="">Select award</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+      <div class="form-group">
+        <label for="website">Website (optional)</label>
+        <input type="text" id="website" name="website" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <div class="form-group">
+        <label for="mobile">Mobile Number</label>
+        <input type="tel" id="mobile" name="mobile" required />
+      </div>
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" required autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label for="instagram">Instagram profile page URL (if applicable)</label>
+        <input type="text" id="instagram" name="instagram" />
+      </div>
+      <div class="form-group">
+        <label for="linkedin">LinkedIn profile page URL (if applicable)</label>
+        <input type="text" id="linkedin" name="linkedin" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="action-btn btn-view" id="saveStartHereBtn">Save</button>
+        <button type="button" class="action-btn btn-view" id="saveNextBtn">Save & Next</button>
+      </div>
+    </form>
+  `;
+
+  // Attachments tab (copied from applicationform.html)
+  const attachmentsContent = `
+    <section>
+      <h2 style="margin-top:0; color:#8c1f4c; background:#faf0f4; padding:10px 12px; border-radius:6px;">
+        Attach your photo
+      </h2>
+      <div>
+        <p style="margin:0 0 10px 0;">Materials to be supplied</p>
+        <p style="margin:0 0 8px 0; font-weight:600;">HIGH RESOLUTION PHOTO TO BE ATTACHED TO YOUR ENTRY FORM</p>
+        <ul style="padding-left:20px; margin-top:6px;">
+          <li>The photo file should be named with your name and business name (e.g., Katy Garner, AusMumpreneur).</li>
+          <li>This photo should be just yourself without other people in it unless you are entering as a partnership or team.</li>
+          <li>Please no text, logos or montages.</li>
+          <li>If you are a finalist this photo will be used for the digital screen at the awards night so please use a good quality image you would be proud to share.</li>
+          <li>Your photo is part of your application and must be included to be eligible. Maximum file size is 5MB per piece.</li>
+        </ul>
+      </div>
+      <div class="upload-card" style="margin-top:14px;">
+        <div class="file-row">
+          <input type="file" id="att_photo" accept="image/*" />
+        </div>
+        <div style="margin-top:10px">
+          <img id="att_preview" class="preview-image" alt="Selected photo preview" />
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:14px;">
+        <button type="button" class="action-btn btn-view" id="att_save_btn">Save</button>
+        <button type="button" class="action-btn btn-view" id="attachmentsPreviewBtn">Preview</button>
+      </div>
+    </section>
+  `;
+
+  // Dynamic criteria builder (copied from applicationform.html)
+  async function buildCriteriaContent() {
+    if (!criteriaQuestions.length) {
+      const seasonName = await getCurrentSeasonName();
+      criteriaQuestions = await getSeasonQuestions(seasonName);
+    }
+    let html = `<form id="criteriaForm">`;
+    for (const q of criteriaQuestions) {
+      html += `
+        <div class="form-group">
+          <label for="${q.question_ID}">${q.question}</label>
+          <textarea id="${q.question_ID}" name="${q.question_ID}" maxlength="${q.wordLimit * 8}" rows="4"></textarea>
+          <span class="word-count" id="count_${q.question_ID}">0/${q.wordLimit}</span>
+        </div>
+      `;
+    }
+    html += `
+      <div class="eligibility-check">
+        <input type="checkbox" id="confirm-eligibility" />
+        <label for="confirm-eligibility" style="font-size: 0.98rem; font-weight: 400;">
+          I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="action-btn btn-view" id="saveCriteriaBtn">Save</button>
+        <button type="button" class="action-btn btn-view" id="saveCriteriaNextBtn">Save & Next</button>
+      </div>
+    </form>
+    `;
+    return html;
+  }
+
+  // hydrate criteria form (copied)
+  async function hydrateCriteriaForm() {
+    const form = document.getElementById('criteriaForm');
+    if (!form) return;
+    const data = await getApplicationData();
+    if (!data) return;
+    for (const q of criteriaQuestions) {
+      setVal(form, q.question_ID, data[q.question_ID]);
+    }
+    const cb = form.querySelector('#confirm-eligibility');
+    if (cb) cb.checked = !!data.eligibility;
+  }
+
+  // collect criteria (copied)
+  function collectCriteria(form) {
+    const val = id => (form.querySelector('#' + id)?.value || '');
+    let out = {};
+    for (const q of criteriaQuestions) { out[q.question_ID] = val(q.question_ID); }
+    out.eligibility = form.querySelector('#confirm-eligibility')?.checked ? true : false;
+    return out;
+  }
+
+  // wordcount (copied)
+  function setUpWordCount(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    function countWords(s) { return s.trim().split(/\s+/).filter(Boolean).length; }
+    for (const q of criteriaQuestions) {
+      const ta = form.querySelector('#' + q.question_ID);
+      const span = document.getElementById('count_' + q.question_ID);
+      if (!ta || !span) continue;
+      const max = Number(q.wordLimit);
+      ta.addEventListener('input', () => {
+        let words = countWords(ta.value);
+        if (words > max) {
+          ta.value = ta.value.split(/\s+/).slice(0, max).join(' ');
+          words = max;
+        }
+        span.textContent = `${words}/${max}`;
+      });
+      ta.dispatchEvent(new Event('input'));
+    }
+  }
+
+  // hydrate start here form (copied)
+  async function hydrateStartHereForm() {
+    const form = document.getElementById('startHereForm');
+    if (!form) return;
+    const data = await getApplicationData();
+    if (!data) return;
+    setVal(form, 'category', data.category);
+    fillSubcategorySelect(form.querySelector('#subcategory'), data.category, data.subcategory);
+    setVal(form, 'name', data.name);
+    setVal(form, 'website', data.website);
+    setVal(form, 'award', data.awards_choice);
+    setVal(form, 'email', data.email);
+    setVal(form, 'mobile', data.mobile_number);
+    setVal(form, 'address', data.address);
+    setVal(form, 'instagram', data.instagram_url);
+    setVal(form, 'linkedin', data.linkedin_url);
+  }
+
+  // collect start here (copied)
+  function collectStartHere(form) {
+    const val = id => (form.querySelector('#' + id)?.value || '');
+    return {
+      category: val('category'),
+      subcategory: val('subcategory'),
+      name: val('name'),
+      website: val('website'),
+      awards_choice: val('award'),
+      email: val('email'),
+      mobile_number: val('mobile'),
+      address: val('address'),
+      instagram_url: val('instagram'),
+      linkedin_url: val('linkedin')
+    };
+  }
+
+  // setUpStartHereTab (copied)
+  function setUpStartHereTab() {
+    const form = document.getElementById('startHereForm');
+    if (!form) return;
+    form.reset();
+    populateCategorySelects();
+    populateAwardSelects();
+    const cat = form.querySelector('#category');
+    const sub = form.querySelector('#subcategory');
+    cat.addEventListener('change', () => {
+      fillSubcategorySelect(sub, cat.value, '');
+    });
+    hydrateStartHereForm();
+    const saveBtn = document.getElementById('saveStartHereBtn');
+    const nextBtn = document.getElementById('saveNextBtn');
+    async function saveStartHereToFirestore() {
+      await ensureApplicationDoc();
+      const payload = {
+        ...collectStartHere(form),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        stage: 'draft'
+      };
+      await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+    }
+    if (saveBtn) {
+      saveBtn.onclick = async () => {
+        try { await saveStartHereToFirestore(); alert('Saved.'); }
+        catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = async () => {
+        try {
+          await saveStartHereToFirestore();
+          const critTab = document.getElementById('tabCriteria');
+          const attTab = document.getElementById('tabAttachments');
+          if (critTab) critTab.disabled = false;
+          if (attTab) attTab.disabled = false;
+          critTab?.click();
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+  }
+
+  // setUpCriteriaTab (copied)
+  function setUpCriteriaTab() {
+    const form = document.getElementById('criteriaForm');
+    if (!form) return;
+    const saveBtn = document.getElementById('saveCriteriaBtn');
+    const nextBtn = document.getElementById('saveCriteriaNextBtn');
+    if (saveBtn) {
+      saveBtn.onclick = async () => {
+        try {
+          await ensureApplicationDoc();
+          const payload = {
+            ...collectCriteria(form),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            stage: 'draft'
+          };
+          await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+          alert('Saved.');
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = async () => {
+        try {
+          await ensureApplicationDoc();
+          const payload = {
+            ...collectCriteria(form),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            stage: 'draft'
+          };
+          await db().collection('applications').doc(applicationId).set(payload, { merge: true });
+          const attTab = document.getElementById('tabAttachments');
+          if (attTab) attTab.disabled = false;
+          attTab?.click();
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      };
+    }
+  }
+
+  // setUpAttachmentsTab (copied)
+  function setUpAttachmentsTab() {
+    const fileInput = document.getElementById('att_photo');
+    const img = document.getElementById('att_preview');
+    const saveBtn = document.getElementById('att_save_btn');
+    const previewBtn = document.getElementById('attachmentsPreviewBtn');
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (f) {
+        const url = URL.createObjectURL(f);
+        img.src = url;
+        img.style.display = 'inline-block';
+      } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+      }
+    });
+    saveBtn?.addEventListener('click', () => {
+      alert('The image saving function is not implemented.');
+    });
+    previewBtn?.addEventListener('click', async () => {
+      try { await openPreviewModal(); }
+      catch (e) { alert('Failed to open preview: ' + e.message); }
+    });
+  }
+
+  // Preview modal + wiring (copied)
+  async function buildPreviewModal() {
+    let html = `
+      <div class="preview-dialog">
+        <div class="preview-header">
+          <strong>Preview your application</strong>
+          <div class="preview-actions">
+            <button id="previewClose" class="preview-close">Close</button>
+            <button id="previewSubmit" class="preview-submit" disabled>Submit Application</button>
+          </div>
+        </div>
+        <div class="preview-body">
+          <h3 class="preview-title">Start here</h3>
+          <div class="preview-grid">
+            <div>
+              <label>Category</label>
+              <select id="pv_category"><option value="">Select category</option></select>
+            </div>
+            <div>
+              <label>Subcategory</label>
+              <select id="pv_subcategory"><option value="">Select subcategory</option></select>
+            </div>
+            <div>
+              <label>Award</label>
+              <select id="pv_award"><option value="">Select award</option></select>
+            </div>
+            <div><label>Name</label><input id="pv_name" type="text"></div>
+            <div><label>Website</label><input id="pv_website" type="text"></div>
+            <div><label>Email</label><input id="pv_email" type="email"></div>
+            <div><label>Mobile Number</label><input id="pv_mobile" type="tel"></div>
+            <div><label>Address</label><input id="pv_address" type="text"></div>
+            <div><label>Instagram URL</label><input id="pv_instagram" type="text"></div>
+            <div><label>LinkedIn URL</label><input id="pv_linkedin" type="text"></div>
+          </div>
+          <h3 class="preview-title">Criteria</h3>
+          <div id="pv_criteria_questions"></div>
+          <div class="eligibility-check">
+            <input type="checkbox" id="pv_confirm_eligibility" />
+            <label for="pv_confirm_eligibility" style="font-size: 0.98rem; font-weight: 400;">
+              I confirm that I do not have a criminal record and that I meet the minimum requirements and am eligible to enter the Women Changing The World Awards.
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+    return html;
+  }
+
+  async function openPreviewModal() {
+    if (!criteriaQuestions.length) {
+      const seasonName = await getCurrentSeasonName();
+      criteriaQuestions = await getSeasonQuestions(seasonName);
+    }
+    const modal = document.getElementById('previewModal');
+    if (!modal) return;
+    modal.innerHTML = await buildPreviewModal();
+    const data = await getApplicationData();
+    populateAwardSelects(data?.awards_choice);
+    populateCategorySelects(data?.category);
+    document.getElementById('pv_category').value = data?.category || '';
+    fillSubcategorySelect(document.getElementById('pv_subcategory'), data?.category, data?.subcategory);
+    document.getElementById('pv_award').value = data?.awards_choice || '';
+    document.getElementById('pv_name').value = data?.name || '';
+    document.getElementById('pv_website').value = data?.website || '';
+    document.getElementById('pv_email').value = data?.email || '';
+    document.getElementById('pv_mobile').value = data?.mobile_number || '';
+    document.getElementById('pv_address').value = data?.address || '';
+    document.getElementById('pv_instagram').value = data?.instagram_url || '';
+    document.getElementById('pv_linkedin').value = data?.linkedin_url || '';
+    document.getElementById('pv_category').onchange = (e) => {
+      fillSubcategorySelect(document.getElementById('pv_subcategory'), e.target.value, '');
+    };
+    let qHtml = "";
+    for (const q of criteriaQuestions) {
+      qHtml += `
+        <div class="form-group">
+          <label for="pv_${q.question_ID}">${q.question}</label>
+          <textarea id="pv_${q.question_ID}" name="pv_${q.question_ID}" maxlength="${q.wordLimit * 8}" rows="4"></textarea>
+          <span class="word-count" id="pv_count_${q.question_ID}">0/${q.wordLimit}</span>
+        </div>
+      `;
+    }
+    document.getElementById('pv_criteria_questions').innerHTML = qHtml;
+    for (const q of criteriaQuestions) {
+      document.getElementById('pv_' + q.question_ID).value = data?.[q.question_ID] || '';
+    }
+    document.getElementById('pv_confirm_eligibility').checked = !!data?.eligibility;
+    // hook up preview word count & validation
+    setUpPreviewWordCount();
+    bindPreviewValidation();
+    updatePreviewSubmitState();
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('previewClose')?.addEventListener('click', closePreviewModal);
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closePreviewModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal?.classList.contains('open')) closePreviewModal(); });
+    document.getElementById('previewSubmit').onclick = async function() {
+      if (!previewRequiredOk()) return alert('Please complete all required fields and confirm eligibility.');
+      if (!confirm('Are you sure you want to submit your application? This cannot be undone?')) return;
+      try {
+        const payload = collectPreviewData();
+        await db().collection('applications').doc(applicationId).set({
+          ...payload,
+          submitted: true,
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        alert('Application submitted successfully!');
+        closePreviewModal();
+      } catch (err) {
+        alert('Failed to submit application: ' + err.message);
+      }
+    };
+  }
+
+  function closePreviewModal() {
+    const modal = document.getElementById('previewModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  // setUpPreviewWordCount (copied)
+  function setUpPreviewWordCount() {
+    function countWords(s) { return s.trim().split(/\s+/).filter(Boolean).length; }
+    for (const q of criteriaQuestions) {
+      const ta = document.getElementById('pv_' + q.question_ID);
+      const span = document.getElementById('pv_count_' + q.question_ID);
+      if (!ta || !span) continue;
+      const max = Number(q.wordLimit);
+      ta.addEventListener('input', () => {
+        let words = countWords(ta.value);
+        if (words > max) {
+          ta.value = ta.value.split(/\s+/).slice(0, max).join(' ');
+          words = max;
+        }
+        span.textContent = `${words}/${max}`;
+      });
+      ta.dispatchEvent(new Event('input'));
+    }
+  }
+
+  // previewRequiredOk, getPreviewVal, updatePreviewSubmitState, bindPreviewValidation, collectPreviewData (copied)
+  function previewRequiredOk() {
+    let allFilled = [
+      'pv_award','pv_name','pv_email','pv_mobile'
+    ].every(id => getPreviewVal(id).length > 0);
+    allFilled = allFilled && criteriaQuestions.every(q =>
+      getPreviewVal('pv_' + q.question_ID).length > 0
+    );
+    const eligible = !!document.getElementById('pv_confirm_eligibility')?.checked;
+    return allFilled && eligible;
+  }
+  function getPreviewVal(id) {
+    const el = document.getElementById(id);
+    return (el && typeof el.value === 'string') ? el.value.trim() : '';
+  }
+  function updatePreviewSubmitState() {
+    const btn = document.getElementById('previewSubmit');
+    if (btn) btn.disabled = !previewRequiredOk();
+  }
+  function bindPreviewValidation() {
+    const wire = (id, evt = 'input') => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound === '1') return;
+      el.addEventListener(evt, updatePreviewSubmitState);
+      el.dataset.bound = '1';
+    };
+    ['pv_award','pv_name','pv_email','pv_mobile'].forEach(id => wire(id));
+    criteriaQuestions.forEach(q => wire('pv_' + q.question_ID));
+    wire('pv_confirm_eligibility', 'change');
+    ['pv_category','pv_subcategory','pv_website','pv_address','pv_instagram','pv_linkedin'].forEach(id => wire(id, 'change'));
+  }
+  function collectPreviewData() {
+    let out = {};
+    out.category = getPreviewVal('pv_category');
+    out.subcategory = getPreviewVal('pv_subcategory');
+    out.awards_choice = getPreviewVal('pv_award');
+    out.name = getPreviewVal('pv_name');
+    out.website = getPreviewVal('pv_website');
+    out.email = getPreviewVal('pv_email');
+    out.mobile_number = getPreviewVal('pv_mobile');
+    out.address = getPreviewVal('pv_address');
+    out.instagram_url = getPreviewVal('pv_instagram');
+    out.linkedin_url = getPreviewVal('pv_linkedin');
+    for (const q of criteriaQuestions) {
+      out[q.question_ID] = getPreviewVal('pv_' + q.question_ID);
+    }
+    out.eligibility = !!document.getElementById('pv_confirm_eligibility')?.checked;
+    return out;
+  }
+
+  // User selection wiring and entry
+  async function loadUsersDropdown() {
+    const sel = document.getElementById('select_user');
+    const startBtn = document.getElementById('startEntryBtn');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Loading users…</option>';
+    try {
+      const snapshot = await firebase.firestore().collection('users').get();
+      sel.innerHTML = '';
+      if (snapshot.empty) {
+        sel.innerHTML = '<option value="">No users found</option>';
+        if (startBtn) startBtn.disabled = true;
+        return;
+      }
+      snapshot.docs.forEach(doc => {
+        const d = doc.data() || {};
+        const fullname = d['full name'] || d.name || d.displayName || d.email || 'No name';
+        const opt = document.createElement('option');
+        opt.value = doc.id;
+        opt.textContent = `${fullname} | ${doc.id}`;
+        sel.appendChild(opt);
+      });
+      const me = firebase.auth().currentUser?.uid;
+      if (me && [...sel.options].some(o => o.value === me)) {
+        sel.value = me;
+      }
+      const updateStartState = () => { if (startBtn) startBtn.disabled = !sel.value; };
+      sel.addEventListener('change', updateStartState);
+      updateStartState();
+    } catch (err) {
+      sel.innerHTML = '<option value="">Failed to load users</option>';
+      if (startBtn) startBtn.disabled = true;
+    }
+  }
+  firebase.auth().onAuthStateChanged(user => {
+    currentUser = user || null;
+    loadUsersDropdown().catch(()=>{});
+  });
+
+  // Start entry button logic (same behaviour as applicationform: check season then open tabs)
+  document.getElementById('startEntryBtn').onclick = async function() {
+    try {
+      let currentSeason = null;
+      const snap = await db().collection('season').get();
+      snap.forEach(doc => {
+        if (doc.data().status === 'current') currentSeason = doc.id;
+      });
+      if (!currentSeason) {
+        alert('No current season found. Application round is closed / not started.');
+        return;
+      }
+      // hide dates and show tabs
+      document.getElementById('datesSection').style.display = 'none';
+      document.getElementById('tabSection').style.display = 'block';
+      // show start tab content and initialise
+      document.getElementById('tabContent').innerHTML = startHereContent;
+      // ensure correct tab highlight
+      document.getElementById('tabStart').classList.add('active');
+      document.getElementById('tabCriteria').classList.remove('active');
+      document.getElementById('tabAttachments').classList.remove('active');
+      setUpStartHereTab();
+    } catch (e) {
+      alert('Error starting entry: ' + (e.message || e));
+    }
+  };
+
+  function wireTabButtons() {
+  const tabStart = document.getElementById('tabStart');
+  const tabCriteria = document.getElementById('tabCriteria');
+  const tabAttachments = document.getElementById('tabAttachments');
+  const tabContent = document.getElementById('tabContent');
+
+  if (tabStart) {
+    tabStart.addEventListener('click', () => {
+      tabStart.classList.add('active');
+      tabCriteria?.classList.remove('active');
+      tabAttachments?.classList.remove('active');
+      tabContent.innerHTML = startHereContent;
+      setUpStartHereTab();
+    });
+  }
+
+  if (tabCriteria) {
+    tabCriteria.addEventListener('click', async () => {
+      if (tabCriteria.disabled) return;
+      tabStart?.classList.remove('active');
+      tabCriteria.classList.add('active');
+      tabAttachments?.classList.remove('active');
+      tabContent.innerHTML = await buildCriteriaContent();
+      setUpWordCount('criteriaForm');
+      hydrateCriteriaForm();
+      setUpCriteriaTab();
+    });
+  }
+
+  if (tabAttachments) {
+    tabAttachments.addEventListener('click', () => {
+      if (tabAttachments.disabled) return;
+      tabStart?.classList.remove('active');
+      tabCriteria?.classList.remove('active');
+      tabAttachments.classList.add('active');
+      tabContent.innerHTML = attachmentsContent;
+      setUpAttachmentsTab();
+    });
+  }
+}
+
+wireTabButtons();
+
+    // user menu wiring 
+    const userCircle = document.getElementById('userCircle');
+    const userDropdown = document.getElementById('userDropdown');
+    const userFullNameEl = document.getElementById('userFullName');
+
+    if (userCircle && userDropdown) {
+      userCircle.addEventListener('click', (e) => {
+        const open = userDropdown.classList.toggle('open');
+        userCircle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      // close when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!document.getElementById('adminUserMenu')?.contains(e.target)) {
+          userDropdown.classList.remove('open');
+          userCircle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return;
+      const name = user.displayName || user.email || "Admin";
+      if (userFullNameEl) userFullNameEl.textContent = name;
+      if (userCircle) {
+        let initials = "A";
+        if (user.displayName) {
+          initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+        } else if (user.email) {
+          initials = user.email[0].toUpperCase();
+        }
+        userCircle.textContent = initials;
+      }
+    });
+  </script>
+</body>
+</html>

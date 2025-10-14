@@ -8,7 +8,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background-color: #fafafa;
       color: #333;
     }
@@ -16,8 +16,10 @@
     /* Sidebar (matched to other admin pages) */
     .sidebar {
       position: fixed;
-      top: 0; left: 0;
-      width: 220px; height: 100vh;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
       background-color: #d62d83;
       padding: 20px;
       color: white;
@@ -32,13 +34,9 @@
     .sidebar a {
       color: white;
       text-decoration: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      transition: background-color 0.2s;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background-color: #b8235a;
+      margin-bottom: 15px;
+      display: block;
+      font-weight: 500;
     }
 
     /* Main content wrapper */
@@ -48,23 +46,14 @@
     }
     h1 {
       color: #d62d83;
-      font-size: 28px;
-      margin: 0 0 20px;
-    }
-
-    /* Form card, consistent with other pages */
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      max-width: 700px;
+      font-size: 24px;
+      margin-bottom: 30px;
     }
 
     label {
       display: block;
-      margin-top: 16px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
     input, select {
       width: 100%;
@@ -96,8 +85,11 @@
       font-weight: bold;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #b8235a;
+
+    .btn-save {
+      background-color: #d62d83;
+      color: white;
+      margin-right: 10px;
     }
     .btn-secondary {
       background-color: #444;
@@ -110,19 +102,16 @@
       margin-top: 12px;
       font-size: 14px;
     }
-    .status.error { color: #c00; }
-    .status.ok    { color: #0a7a3d; }
   </style>
 </head>
 <body>
-
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="admindashboard.html">Dashboard</a>
-    <a href="adminentriestab.html">Entries</a>
-    <a href="adminusertab.html" class="active">Users</a>
-    <a href="adminjudgetab.html">Judging</a>
-    <a href="#" id="logoutLink">Logout</a>
+    <a href="#">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="#">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>
 
   <div class="main-content">
