@@ -8,97 +8,110 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
       background-color: #fafafa;
       color: #333;
     }
 
+    /* Sidebar (matched to other admin pages) */
     .sidebar {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 220px;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 220px; height: 100vh;
       background-color: #d62d83;
       padding: 20px;
       color: white;
       display: flex;
       flex-direction: column;
     }
-
     .sidebar h2 {
       text-align: center;
-      font-size: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
+      font-size: 22px;
     }
-
     .sidebar a {
       color: white;
       text-decoration: none;
-      margin-bottom: 15px;
-      display: block;
-      font-weight: 500;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      transition: background-color 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
     }
 
+    /* Main content wrapper */
     .main-content {
       margin-left: 220px;
       padding: 40px;
     }
-
     h1 {
       color: #d62d83;
-      font-size: 24px;
-      margin-bottom: 30px;
+      font-size: 28px;
+      margin: 0 0 20px;
+    }
+
+    /* Form card, consistent with other pages */
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      max-width: 700px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    .role-options {
-      margin-bottom: 20px;
-    }
-
-    .role-options label {
-      display: block;
-      font-weight: 400;
-    }
-
-    .button-group {
-      margin-top: 20px;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      font-size: 14px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      margin-top: 16px;
       font-weight: bold;
     }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      background: #fff;
+    }
 
-    .btn-save {
+    .note {
+      font-size: 12px;
+      color: #777;
+      margin-top: 6px;
+    }
+
+    .buttons {
+      margin-top: 24px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
       background-color: #d62d83;
       color: white;
-      margin-right: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #b8235a;
+    }
+    .btn-secondary {
+      background-color: #444;
+    }
+    .btn-secondary:hover {
+      background-color: #333;
     }
 
-    .btn-cancel {
-      background-color: #444;
-      color: white;
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
     }
+    .status.error { color: #c00; }
+    .status.ok    { color: #0a7a3d; }
   </style>
 </head>
 <body>
@@ -106,103 +119,152 @@
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="admindashboard.html">Dashboard</a>
-    <a href="#">Entries</a>
-    <a href="adminusertab.html">Users</a>
-    <a href="#">Judging</a>
-    <a href="#" onclick="logout()">Logout</a>
+    <a href="adminentriestab.html">Entries</a>
+    <a href="adminusertab.html" class="active">Users</a>
+    <a href="adminjudgetab.html">Judging</a>
+    <a href="#" id="logoutLink">Logout</a>
   </div>
 
   <div class="main-content">
     <h1>Users → New user</h1>
 
-    <form id="newUserForm">
-      <label for="fullName">Full Name</label>
-      <input type="text" id="fullName" placeholder="Enter full name" required />
+    <div class="card">
+      <form id="newUserForm">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" placeholder="Enter full name" required />
 
-      <label for="email">Email Address</label>
-      <input type="email" id="email" placeholder="Enter email address" required />
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter email address" required />
 
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter password" required />
+        <label for="password">Temporary Password</label>
+        <input type="password" id="password" placeholder="Enter password" required />
+        <div class="note">At least 8 characters, include a number and a capital letter.</div>
 
-      <label for="confirmPassword">Password Confirmation</label>
-      <input type="password" id="confirmPassword" placeholder="Confirm password" required />
+        <label for="confirmPassword">Password Confirmation</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm password" required />
 
-      <div class="role-options">
-        <label><input type="checkbox" value="Entrant" /> Entrant</label>
-        <label><input type="checkbox" value="Judge" /> Judge</label>
-        <label><input type="checkbox" value="Lead judge" /> Lead judge</label>
-        <label><input type="checkbox" value="Program manager" /> Program manager</label>
-      </div>
+        <label for="role">Role</label>
+        <select id="role" required>
+          <option value="">Select role</option>
+          <option value="applicant">Applicant</option>
+          <option value="judge">Judge</option>
+          <option value="admin">Admin</option>
+          <!-- Add more if you support them elsewhere: lead_judge, program_manager, etc. -->
+        </select>
 
-      <div class="button-group">
-        <button type="submit" class="btn btn-save">Save</button>
-        <button type="button" class="btn btn-cancel" onclick="window.location.href='adminusertab.html'">Cancel</button>
-      </div>
-    </form>
+        <div id="status" class="status" role="alert"></div>
+
+        <div class="buttons">
+          <button type="submit">Save</button>
+          <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js"></script>
+  <!-- Firebase SDKs (Hosting auto init, compat build to match other pages) -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
 
   <script>
-    // Firebase config (REPLACE with your actual config)
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
+    const app = firebase.app();
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    function logout() {
-      auth.signOut().then(() => window.location.href = "signin.html");
+    // Gate this page to admins only (matches your other admin pages)
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        location.href = "signin.html";
+        return;
+      }
+      try {
+        const doc = await db.collection("users").doc(user.uid).get();
+        if (!doc.exists || doc.data().role !== "admin") {
+          location.href = "unauthorized.html";
+        }
+      } catch (e) {
+        console.error(e);
+        location.href = "unauthorized.html";
+      }
+    });
+
+    // Keep admin session intact: create the new user via a temporary secondary app
+    async function createUserOnSecondary(email, password) {
+      let secondary;
+      try {
+        secondary = firebase.app("SecondaryApp");
+      } catch {
+        secondary = firebase.initializeApp(app.options, "SecondaryApp");
+      }
+      try {
+        const cred = await secondary.auth().createUserWithEmailAndPassword(email, password);
+        return cred.user;
+      } finally {
+        try { await secondary.auth().signOut(); } catch {}
+        try { await secondary.delete(); } catch {}
+      }
     }
 
-    document.getElementById("newUserForm").addEventListener("submit", async function (e) {
+    function setStatus(message, type = "error") {
+      const el = document.getElementById("status");
+      el.textContent = message || "";
+      el.className = `status ${type}`;
+    }
+
+    function validPassword(pw) {
+      return pw.length >= 8 && /[A-Z]/.test(pw) && /[0-9]/.test(pw);
+    }
+
+    document.getElementById("logoutLink").addEventListener("click", (e) => {
       e.preventDefault();
+      auth.signOut().then(() => location.href = "signin.html");
+    });
+
+    document.getElementById("cancelBtn").addEventListener("click", () => {
+      location.href = "adminusertab.html";
+    });
+
+    document.getElementById("newUserForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setStatus("");
 
       const fullName = document.getElementById("fullName").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
+      const role = document.getElementById("role").value;
 
+      if (!fullName || !email || !password || !confirmPassword || !role) {
+        return setStatus("Please fill in all fields.");
+      }
       if (password !== confirmPassword) {
-        alert("Passwords do not match.");
-        return;
+        return setStatus("Passwords do not match.");
+      }
+      if (!validPassword(password)) {
+        return setStatus("Password must be at least 8 characters and include a number and a capital letter.");
       }
 
-      const roles = Array.from(document.querySelectorAll('.role-options input:checked')).map(cb => cb.value);
-
       try {
-        // Create user
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const uid = userCredential.user.uid;
+        setStatus("Creating user…", "ok");
+        const newUser = await createUserOnSecondary(email, password);
 
-        // Save user profile
-        await db.collection("users").doc(uid).set({
+        // Save the user profile with a single-string role
+        await db.collection("users").doc(newUser.uid).set({
           fullName,
           email,
-          roles,
+          role,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }, { merge: true });
 
-        alert("User created successfully!");
-        window.location.href = "adminusertab.html";
-
+        setStatus("User created successfully. Redirecting…", "ok");
+        setTimeout(() => location.href = "adminusertab.html", 650);
       } catch (err) {
-        console.error("Error creating user:", err);
-        alert("Error: " + err.message);
+        console.error(err);
+        setStatus(err?.message || "Failed to create user.");
       }
     });
   </script>
-
 </body>
 </html>

@@ -37,9 +37,8 @@
       margin-bottom: 10px;
       transition: background-color 0.2s;
     }
-    .sidebar a:hover, .sidebar a.active {
-      background-color: #b8235a;
-    }
+    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
+
     .main-content {
       margin-left: 220px;
       padding: 30px;
@@ -63,84 +62,93 @@
       cursor: pointer;
     }
     .logout-btn:hover { background-color: #ffe6ee; }
+
     .cards-row, .tab-row {
       display: flex;
       gap: 20px;
       margin: 30px 0;
+      flex-wrap: wrap;
     }
     .card {
       background-color: white;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 20px;
       flex: 1;
+      min-width: 260px;
     }
-    .card:hover {
-      box-shadow: 0 0 10px rgba(245, 1, 147, 0.2);
-    }
+    .card:hover { box-shadow: 0 0 10px rgba(245,1,147,0.2); }
     .card-title {
       font-weight: bold;
       color: #d62d83;
       margin-bottom: 10px;
     }
-    .chart-canvas {
-      width: 100%;
-      height: 200px;
+    .chart-canvas { width: 100%; height: 200px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; }
+    th { background-color: #fafafa; color: #d62d83; }
+    footer { text-align: center; color: #888; margin-top: 40px; font-size: 14px; }
+
+    /* Completion pie (compact) */
+    .completion-wrap {
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      height: 260px; position: relative;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .completion-pie { width: 180px; height: 180px; }
+    .completion-stats {
+      margin-top: 10px; display: flex; gap: 24px; align-items: center; justify-content: center;
     }
-    th, td {
-      text-align: left;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #fafafa;
-      color: #d62d83;
-    }
-    footer {
-      text-align: center;
-      color: #888;
-      margin-top: 40px;
-      font-size: 14px;
-    }
+    .completion-stats strong { color: #d62d83; font-size: 18px; display: block; text-align: center; }
+    .completion-stats span { color: #666; font-size: 13px; display: block; text-align: center; }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="#" class="active">Dashboard</a>
-    <a href="adminentriestab.html">Entries</a> 
+    <a href="adminentriestab.html">Entries</a>
     <a href="adminusertab.html">Users</a>
     <a href="adminjudgetab.html">Judging</a>
-    <a href="#">Logout</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>
+
   <div class="main-content">
     <header>
       <h1>Welcome, <span id="adminName">Trial Account</span></h1>
       <button class="logout-btn" onclick="logout()">Log Out</button>
     </header>
+
     <div class="cards-row">
       <div class="card" onclick="window.location.href='adminrounddetails.html'" style="cursor:pointer">
-        <div class="card-title">WCW25</div>
-        <p>Open</p>
+        <div class="card-title">WCW25</div><p>Open</p>
       </div>
       <div class="card" onclick="window.location.href='adminjudginground.html'" style="cursor:pointer">
-        <div class="card-title">Judging open period</div>
-        <p>Open</p>
+        <div class="card-title">Judging open period</div><p>Open</p>
       </div>
       <div class="card"><div class="card-title">Finalist Videos</div><p>Open</p></div>
       <div class="card"><div class="card-title">Award Status</div><p>Open</p></div>
     </div>
+
     <div class="cards-row">
+      <!-- Completion -->
       <div class="card">
         <div class="card-title">Completion</div>
-        <canvas id="completionChart" class="chart-canvas"></canvas>
-        <p><strong style="color:#d62d83" id="submittedCount">0</strong> Submitted &nbsp;
-           <strong id="inProgressCount">0</strong> In progress</p>
+        <div class="completion-wrap">
+          <canvas id="completionChart" class="completion-pie"></canvas>
+          <div class="completion-stats">
+            <div>
+              <strong id="submittedCount">0</strong>
+              <span>Submitted</span>
+            </div>
+            <div>
+              <strong id="completedCount">0</strong>
+              <span>Completed</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Daily Volume (placeholder) -->
       <div class="card">
         <div class="card-title">Daily Volume</div>
         <canvas id="dailyChart" class="chart-canvas"></canvas>
@@ -148,30 +156,35 @@
                <span style="color:#e57373">●</span> Created</small>
       </div>
     </div>
+
     <div class="card">
       <div class="card-title">Entries by Category</div>
       <table>
-        <tr><th>Category</th><th>In Progress</th><th>Submitted</th></tr>
-        <tr><td>Changemaker</td><td>3</td><td>23</td></tr>
-        <tr><td>Leader of the Year</td><td>7</td><td>22</td></tr>
-        <tr><td>Global Impact</td><td>7</td><td>17</td></tr>
-        <tr><td>Entrepreneur of the Year</td><td>0</td><td>16</td></tr>
-        <tr><td>Rural and Regional Impact</td><td>5</td><td>15</td></tr>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>In Progress</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="categoriesBody">
+          <tr><td colspan="3">Loading…</td></tr>
+        </tbody>
       </table>
     </div>
+
     <footer>
       &copy; 2025 WCW Awards Platform. All rights reserved.
     </footer>
   </div>
 
-  <!-- Firebase + Charts -->
+  <!-- Firebase + Chart.js -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Dashboard JS -->
   <script>
     function logout() {
       firebase.auth().signOut().then(() => {
@@ -179,82 +192,172 @@
       });
     }
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) return window.location.href = "signin.html";
-      const uid = user.uid;
-      firebase.firestore().collection("users").doc(uid).get().then(doc => {
-        const name = doc.exists && doc.data().fullName ? doc.data().fullName : "Trial Account";
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return (window.location.href = "signin.html");
+      try {
+        const me = await firebase.firestore().collection("users").doc(user.uid).get();
+        const name = me.exists && me.data().fullName ? me.data().fullName : "Trial Account";
         document.getElementById("adminName").textContent = name;
-      });
-      loadDashboardCharts();
+      } catch {}
+      loadCompletionPie();
+      loadMainAwardCounts();
     });
 
-    function loadDashboardCharts() {
+    /** ========= Completion Pie ========= */
+    async function loadCompletionPie() {
       const db = firebase.firestore();
-      const entriesRef = db.collection("entries");
-      let submitted = 0, inProgress = 0;
-      const createdCounts = {}, submittedCounts = {};
+      let submitted = 0;
+      let completed = 0;
 
-      entriesRef.get().then(snapshot => {
-        snapshot.forEach(doc => {
-          const data = doc.data(), status = data.status;
-          const createdAt = data.createdAt?.toDate?.(), submittedAt = data.submittedAt?.toDate?.();
-          if (status === "submitted") {
-            submitted++;
-            if (submittedAt) {
-              const date = submittedAt.toISOString().split("T")[0];
-              submittedCounts[date] = (submittedCounts[date] || 0) + 1;
-            }
-          } else {
-            inProgress++;
-          }
-          if (createdAt) {
-            const date = createdAt.toISOString().split("T")[0];
-            createdCounts[date] = (createdCounts[date] || 0) + 1;
-          }
+      try {
+        const appsSnap = await db.collection("applications").get();
+        appsSnap.forEach(doc => {
+          const s = (doc.data().status || "").toLowerCase();
+          if (s === "submitted") submitted++;
         });
 
-        document.getElementById("submittedCount").textContent = submitted;
-        document.getElementById("inProgressCount").textContent = inProgress;
+        const jaSnap = await db.collection("judgeAssignments").get();
+        jaSnap.forEach(doc => {
+          const s = (doc.data().status || "").toLowerCase();
+          if (s === "completed") completed++;
+        });
+      } catch (e) {
+        console.warn("Failed to load completion counts:", e?.message || e);
+      }
 
-        drawPieChart(submitted, inProgress);
-        drawLineChart(createdCounts, submittedCounts);
-      });
-    }
+      document.getElementById("submittedCount").textContent = submitted;
+      document.getElementById("completedCount").textContent = completed;
 
-    function drawPieChart(submitted, inProgress) {
-      new Chart(document.getElementById("completionChart"), {
+      const canvas = document.getElementById("completionChart");
+      canvas.width = 180; canvas.height = 180;
+
+      new Chart(canvas, {
         type: "pie",
         data: {
-          labels: ["Submitted", "In Progress"],
-          datasets: [{ data: [submitted, inProgress], backgroundColor: ["#d62d83", "#e0e0e0"] }]
+          labels: ["Submitted", "Completed"],
+          datasets: [{
+            data: [submitted, completed],
+            backgroundColor: ["#d62d83", "#4caf50"],
+            borderWidth: 0
+          }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
       });
     }
 
-    function drawLineChart(createdCounts, submittedCounts) {
-      const allDates = new Set([...Object.keys(createdCounts), ...Object.keys(submittedCounts)]);
-      const sortedDates = [...allDates].sort();
-      const createdData = sortedDates.map(date => createdCounts[date] || 0);
-      const submittedData = sortedDates.map(date => submittedCounts[date] || 0);
+    /** ========= Entries by Category (Main Awards only) =========
+     * - Read main awards (document IDs) from 'Categories'
+     * - Build a subcategory -> mainAward map using each doc's string fields
+     * - For each application, map to a main award:
+     *      category == mainAward ? use it
+     *      else if awards_choice/subcategory matches a known subcategory -> parent mainAward
+     *      else -> "Uncategorized" (optional)
+     */
+    async function loadMainAwardCounts() {
+      const db = firebase.firestore();
+      const tbody = document.getElementById("categoriesBody");
+      tbody.innerHTML = '<tr><td colspan="3">Loading…</td></tr>';
 
-      new Chart(document.getElementById("dailyChart"), {
-        type: "line",
-        data: {
-          labels: sortedDates,
-          datasets: [
-            { label: "Created", data: createdData, borderColor: "#e57373", fill: false },
-            { label: "Submitted", data: submittedData, borderColor: "#d62d83", fill: false }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
+      const mainAwards = new Set();          // e.g., "BUSINESS AWARDS", "IMPACT AWARDS"
+      const parentBySub = new Map();         // "BUSINESS OF THE YEAR" -> "BUSINESS AWARDS"
+
+      // 1) Build main awards and subcategory->parent map
+      try {
+        const catsSnap = await db.collection("Categories").get();
+        catsSnap.forEach(doc => {
+          const parent = (doc.id || "").trim();
+          if (!parent) return;
+          mainAwards.add(parent);
+
+          const data = doc.data() || {};
+          Object.values(data).forEach(v => {
+            if (typeof v === "string" && v.trim()) {
+              parentBySub.set(v.trim(), parent);
+            }
+          });
+        });
+      } catch (e) {
+        console.warn("Failed to read Categories:", e?.message || e);
+      }
+
+      // Seed counts with 0 for each main award
+      const counts = new Map(); // mainAward -> { inProgress, submitted }
+      Array.from(mainAwards).forEach(ma => counts.set(ma, { inProgress: 0, submitted: 0 }));
+
+      // Optional: Include a bucket for apps that don't map cleanly
+      const includeUncategorized = true;
+      if (includeUncategorized) counts.set("Uncategorized", { inProgress: 0, submitted: 0 });
+
+      // 2) Tally applications into main awards
+      try {
+        const appsSnap = await db.collection("applications").get();
+        appsSnap.forEach(doc => {
+          const x = doc.data() || {};
+
+          const rawCategory = (x.category && String(x.category).trim()) || "";
+          const rawChoice   = (x.awards_choice && String(x.awards_choice).trim()) || "";
+          const rawSubcat   = (x.subcategory && String(x.subcategory).trim()) || "";
+
+          let parent = "";
+
+          // Prefer direct main award match first
+          if (rawCategory && mainAwards.has(rawCategory)) {
+            parent = rawCategory;
+          } else {
+            // Try mapping awards_choice or subcategory to a parent doc via subcategory map
+            if (rawChoice && parentBySub.has(rawChoice)) parent = parentBySub.get(rawChoice);
+            else if (rawSubcat && parentBySub.has(rawSubcat)) parent = parentBySub.get(rawSubcat);
+          }
+
+          if (!parent) {
+            if (!includeUncategorized) return;
+            parent = "Uncategorized";
+          }
+
+          if (!counts.has(parent)) counts.set(parent, { inProgress: 0, submitted: 0 });
+
+          const status = (x.status || "").toLowerCase();
+          const c = counts.get(parent);
+          if (status === "submitted") c.submitted++;
+          else c.inProgress++;
+        });
+      } catch (e) {
+        console.warn("Failed to read applications:", e?.message || e);
+      }
+
+      // 3) Render only main awards (+ optional Uncategorized) in alphabetical order
+      const rows = Array.from(counts.entries())
+        .filter(([name]) => name === "Uncategorized" || mainAwards.has(name))
+        .sort((a, b) => a[0].localeCompare(b[0]));
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="3">No categories found.</td></tr>';
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      rows.forEach(([name, c]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(name)}</td>
+          <td>${c.inProgress}</td>
+          <td>${c.submitted}</td>
+        `;
+        frag.appendChild(tr);
       });
+
+      tbody.innerHTML = "";
+      tbody.appendChild(frag);
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[m]);
     }
   </script>
 </body>

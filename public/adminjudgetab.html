@@ -3,145 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WCW Admin – Judge Assignments</title>
+  <title>WCW Admin – Judge Progress</title>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-      color: #333;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; color: #333; }
 
+    /* Sidebar to match your other admin pages */
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 220px;
-      height: 100vh;
-      background-color: #d62d83;
-      padding: 20px;
-      color: white;
-      display: flex;
-      flex-direction: column;
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background-color: #d62d83; padding: 20px; color: #fff;
+      display: flex; flex-direction: column;
     }
-
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 22px;
-    }
-
+    .sidebar h2 { text-align: center; margin-bottom: 40px; font-size: 22px; }
     .sidebar a {
-      color: white;
-      text-decoration: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      transition: background-color 0.2s;
+      color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px;
+      margin-bottom: 10px; transition: background-color 0.2s;
     }
+    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
 
-    .sidebar a:hover, .sidebar a.active {
-      background-color: #b8235a;
-    }
+    .main-content { margin-left: 220px; padding: 40px; }
+    h1 { color: #d62d83; font-size: 28px; margin-bottom: 30px; }
 
-    .main-content {
-      margin-left: 220px;
-      padding: 40px;
-    }
-
-    h1 {
-      color: #d62d83;
-      font-size: 28px;
-      margin-bottom: 30px;
-    }
-
-    .top-buttons {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
+    .top-buttons { display: flex; gap: 20px; margin-bottom: 30px; }
     .top-buttons button {
-      background-color: #d62d83;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
+      background-color: #d62d83; color: #fff; padding: 10px 20px; border: none;
+      border-radius: 4px; font-weight: bold; cursor: pointer;
     }
-
-    .top-buttons button:hover {
-      background-color: #b8235a;
-    }
+    .top-buttons button:hover { background-color: #b8235a; }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      overflow: hidden;
+      width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;
     }
+    th, td { padding: 14px 16px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; }
+    th { background: #f2f2f2; font-weight: bold; }
+    tr:hover { background-color: #f9f9f9; }
 
-    th, td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background-color: #f2f2f2;
-      font-weight: bold;
-    }
-
-    tr:hover {
-      background-color: #f9f9f9;
-    }
+    .abstentions a { color: #d62d83; text-decoration: none; }
   </style>
 </head>
 <body>
-
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="admindashboard.html">Dashboard</a>
-    <a href="#">Entries</a>
+    <a href="adminentriestab.html">Entries</a>
     <a href="adminusertab.html">Users</a>
-    <a href="#" class="active">Judging</a>
-    <a href="#">Logout</a>
+    <a href="adminjudgetab.html" class="active">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>
 
   <div class="main-content">
-    <h1>Judge Assignments</h1>
+    <h1>Judging Progress</h1>
 
     <div class="top-buttons">
-      <button onclick="window.location.href='assign-manual.html'">Assign Judges Manually</button>
-      <button onclick="window.location.href='assign-random.html'">Assign Judges Randomly</button>
+      <button onclick="window.location.href='adminmanagejudge.html'">Manage Assignments</button>
     </div>
 
-    <table id="assignmentsTable">
+    <table id="progressTable">
       <thead>
         <tr>
           <th>Judge</th>
-          <th>Application ID</th>
-          <th>Entry</th>
-          <th>Score Set</th>
-          <th>Round</th>
-          <th>Status</th>
-          <th>Method</th>
-          <th>Panels</th>
-          <th>Updated</th>
+          <th>Email</th>
+          <th>Completed</th>
+          <th>In Progress</th>
+          <th>Abstentions (entry IDs)</th>
+          <th>Total Assignments</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Rows will be inserted dynamically -->
+        <tr><td colspan="6">Loading…</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Firebase -->
+  <!-- Firebase SDK -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
@@ -150,33 +85,123 @@
   <script>
     const db = firebase.firestore();
 
-    firebase.auth().onAuthStateChanged(async user => {
-      if (!user) return window.location.href = "signin.html";
+    function logout() {
+      firebase.auth().signOut().then(() => (window.location.href = "signin.html"));
+    }
 
-      const tableBody = document.querySelector("#assignmentsTable tbody");
-      try {
-        const snapshot = await db.collection("judgeAssignments").orderBy("updatedAt", "desc").get();
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${d.judgeName || '-'}</td>
-            <td>${d.applicationId || '-'}</td>
-            <td>${d.entryName || '-'}</td>
-            <td>${d.scoreSet || '-'}</td>
-            <td>${d.round || '-'}</td>
-            <td>${d.status || '-'}</td>
-            <td>${d.method || '-'}</td>
-            <td>${d.panels || '-'}</td>
-            <td>${d.updatedAt?.toDate().toLocaleDateString() || '-'}</td>
-          `;
-          tableBody.appendChild(row);
-        });
-      } catch (err) {
-        console.error("Error loading assignments:", err);
-      }
+    const tbody = document.querySelector("#progressTable tbody");
+
+    // Local caches
+    const JUDGES = new Map();        // judgeId -> { fullName, email }
+    const ABSTENTIONS = new Map();   // judgeId -> [ids]
+    let ASSIGN_AGG = new Map();      // judgeId -> { total, completed, inProgress }
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return (window.location.href = "signin.html");
+      await ensureAdmin(user.uid);
+      await loadJudges();        // fills JUDGES
+      await loadAbstentions();   // fills ABSTENTIONS
+      listenAssignments();       // live updates for counts
     });
-  </script>
 
+    async function ensureAdmin(uid) {
+      try {
+        const me = await db.collection("users").doc(uid).get();
+        if (!me.exists || me.data().role !== "admin") {
+          window.location.href = "signin.html";
+        }
+      } catch (e) {
+        console.warn("Admin check failed", e);
+      }
+    }
+
+    async function loadJudges() {
+      JUDGES.clear();
+      const judgesSnap = await db.collection("users").where("role", "==", "judge").get();
+      judgesSnap.forEach(doc => {
+        const u = doc.data() || {};
+        JUDGES.set(doc.id, {
+          fullName: u.fullName || "",
+          email: u.email || ""
+        });
+      });
+    }
+
+    async function loadAbstentions() {
+      ABSTENTIONS.clear();
+      // Load all judgeProgress docs once; if you need this live, convert to onSnapshot similarly.
+      const progressSnap = await db.collection("judgeProgress").get();
+      progressSnap.forEach(doc => {
+        const d = doc.data() || {};
+        const arr = Array.isArray(d.abstentions) ? d.abstentions : [];
+        ABSTENTIONS.set(doc.id, arr);
+      });
+    }
+
+    // Live listener: aggregate counts per judge
+    function listenAssignments() {
+      db.collection("judgeAssignments").onSnapshot({
+        next: (snap) => {
+          const agg = new Map(); // temp aggregate each tick
+          snap.forEach(doc => {
+            const a = doc.data() || {};
+            const jId = a.judgeId;
+            if (!jId) return;
+
+            const status = String(a.status || "").toLowerCase();
+            const entry = agg.get(jId) || { total: 0, completed: 0, inProgress: 0 };
+            entry.total += 1;
+            if (status === "completed") entry.completed += 1;
+            if (status === "in-progress" || status === "inprogress") entry.inProgress += 1;
+            agg.set(jId, entry);
+          });
+
+          ASSIGN_AGG = agg;
+          renderTable();
+        },
+        error: (err) => {
+          console.error("judgeAssignments onSnapshot error:", err);
+          tbody.innerHTML = `<tr><td colspan="6">Error loading data.</td></tr>`;
+        }
+      });
+    }
+
+    function renderTable() {
+      // Build a row for each judge in JUDGES (even if they have 0 assignments)
+      if (JUDGES.size === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">No judges found.</td></tr>`;
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+
+      JUDGES.forEach((user, judgeId) => {
+        const counts = ASSIGN_AGG.get(judgeId) || { total: 0, completed: 0, inProgress: 0 };
+        const abst = ABSTENTIONS.get(judgeId) || [];
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${esc(user.fullName || "-")}</td>
+          <td>${esc(user.email || "-")}</td>
+          <td>${counts.completed}</td>
+          <td>${counts.inProgress}</td>
+          <td class="abstentions">
+            ${abst.length ? abst.map(id => `<a href="#">${esc(String(id))}</a>`).join(", ") : "-"}
+          </td>
+          <td>${counts.total}</td>
+        `;
+        frag.appendChild(tr);
+      });
+
+      tbody.innerHTML = "";
+      tbody.appendChild(frag);
+    }
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[m]);
+    }
+  </script>
 </body>
 </html>

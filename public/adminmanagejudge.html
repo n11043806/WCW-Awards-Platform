@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WCW Admin – Judge Assignments</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      color: #333;
+    }
+    /* Sidebar — match Admin Dashboard */
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background-color: #d62d83; padding: 20px; color: #fff; display: flex; flex-direction: column;
+    }
+    .sidebar h2 { text-align: center; margin-bottom: 40px; font-size: 22px; }
+    .sidebar a {
+      color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px;
+      margin-bottom: 10px; transition: background-color 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
+
+    .main-content { margin-left: 220px; padding: 30px; }
+    header.topbar {
+      background-color: #d62d83; color: #fff; padding: 20px; border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .logout-btn,
+    .back-btn {
+      background: #fff; color: #d62d83; border: none; padding: 8px 16px;
+      border-radius: 4px; font-weight: bold; cursor: pointer;
+    }
+    .logout-btn:hover, .back-btn:hover { background: #ffe6ee; }
+
+    h1, h3 { margin: 20px 0; color: #d62d83; }
+
+    .actions-row {
+      display: flex; gap: 12px; margin: 18px 0; align-items: center; flex-wrap: wrap;
+    }
+    .primary-btn {
+      background-color: #d62d83; color: #fff; border: none;
+      padding: 10px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;
+    }
+    .primary-btn:hover { background-color: #b8235a; }
+    .muted { color: #777; font-size: 14px; }
+
+    .searchbar {
+      margin-left: auto; display: flex; gap: 10px; align-items: center;
+      background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 8px 10px;
+    }
+    .searchbar input, .searchbar select {
+      padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: #fff;
+    }
+    .searchbar input { min-width: 260px; }
+
+    .table-wrap { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: top; }
+    th { background: #fafafa; color: #d62d83; font-weight: 700; }
+    tr:hover { background: #f9f9f9; }
+
+    .status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #eee; color: #444; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-inprogress, .status-in-progress { background: #d1ecf1; color: #0c5460; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="adminjudgetab.html" class="active">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <header class="topbar">
+      <h3 style="margin:0;">Judge Assignments</h3>
+      <div class="topbar-actions">
+        <button class="back-btn" onclick="location.href='adminjudgetab.html'">← Back</button>
+        <button class="logout-btn" onclick="logout()">Log Out</button>
+      </div>
+    </header>
+
+    <div class="actions-row">
+      <button class="primary-btn" onclick="location.href='adminmanuallyassign.html'">Assign Judges</button>
+      <div class="searchbar">
+        <input id="searchBox" type="search" placeholder="Search judge, email, app id, entry, round, score set…" />
+        <select id="statusFilter" title="Filter by status">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select id="sortBy" title="Sort results">
+          <option value="updated_desc">Recently updated → Oldest</option>
+          <option value="updated_asc">Oldest updated → Newest</option>
+          <option value="assigned_desc">Recently assigned → Oldest</option>
+          <option value="assigned_asc">Oldest assigned → Newest</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="assignmentsTable">
+        <thead>
+          <tr>
+            <th>Judge</th>
+            <th>Email</th>
+            <th>Application ID</th>
+            <th>Entry</th>
+            <th>Score Set</th>
+            <th>Round</th>
+            <th>Status</th>
+            <th>Assigned</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody id="assignmentsBody">
+          <tr><td colspan="9" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <script>
+    const db = firebase.firestore();
+    const tbody = document.getElementById('assignmentsBody');
+    const searchBox = document.getElementById('searchBox');
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+
+    function logout() {
+      firebase.auth().signOut().then(() => { window.location.href = 'signin.html'; });
+    }
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function statusClass(s) {
+      const v = String(s || '').toLowerCase();
+      if (v === 'pending')   return 'status-pill status-pending';
+      if (v === 'completed') return 'status-pill status-completed';
+      if (v === 'in-progress' || v === 'inprogress') return 'status-pill status-inprogress';
+      return 'status-pill';
+    }
+    function ts(v) {
+      try { if (!v) return null; if (v.toDate) return v.toDate(); return new Date(v); }
+      catch { return null; }
+    }
+    function tsText(v) {
+      const d = ts(v);
+      return d ? d.toLocaleString() : '-';
+    }
+
+    let ALL = [];
+
+    function render(items) {
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="muted">No assignments found.</td></tr>';
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      items.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${esc(a.judgeName || '(Unnamed)')}</td>
+          <td>${esc(a.judgeEmail || '')}</td>
+          <td>${esc(a.applicationId || '')}</td>
+          <td>${esc(a.entryName || '')}</td>
+          <td>${esc(a.scoreSet || '')}</td>
+          <td>${esc(a.round || '')}</td>
+          <td><span class="${statusClass(a.status)}">${esc(a.status || 'pending')}</span></td>
+          <td>${esc(tsText(a.assignedAt))}</td>
+          <td>${esc(tsText(a.updatedAt))}</td>
+        `;
+        frag.appendChild(tr);
+      });
+      tbody.innerHTML = '';
+      tbody.appendChild(frag);
+    }
+
+    function sortItems(items, mode) {
+      const arr = [...items];
+      const getTime = (v) => {
+        const d = ts(v);
+        return d ? d.getTime() : 0;
+      };
+      switch (mode) {
+        case 'updated_asc':
+          arr.sort((a,b) => getTime(a.updatedAt) - getTime(b.updatedAt)); break;
+        case 'updated_desc':
+          arr.sort((a,b) => getTime(b.updatedAt) - getTime(a.updatedAt)); break;
+        case 'assigned_asc':
+          arr.sort((a,b) => getTime(a.assignedAt) - getTime(b.assignedAt)); break;
+        case 'assigned_desc':
+          arr.sort((a,b) => getTime(b.assignedAt) - getTime(a.assignedAt)); break;
+        default:
+          arr.sort((a,b) => getTime(b.updatedAt) - getTime(a.updatedAt));
+      }
+      return arr;
+    }
+
+    function applyFilters() {
+      const q = (searchBox.value || '').trim().toLowerCase();
+      const st = statusFilter.value.toLowerCase();
+      const sortMode = sortBy.value || 'updated_desc';
+
+      const filtered = ALL.filter(a => {
+        const hay = [
+          a.judgeName, a.judgeEmail, a.applicationId, a.entryName,
+          a.scoreSet, a.round, a.status
+        ].map(x => String(x || '').toLowerCase()).join(' ');
+        const qOk = q ? hay.includes(q) : true;
+        const sOk = st ? String(a.status || '').toLowerCase() === st : true;
+        return qOk && sOk;
+      });
+
+      render(sortItems(filtered, sortMode));
+    }
+
+    searchBox.addEventListener('input', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    sortBy.addEventListener('change', applyFilters);
+
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) return (window.location.href = 'signin.html');
+
+      try {
+        const me = await db.collection('users').doc(user.uid).get();
+        if (!me.exists || me.data().role !== 'admin') {
+          console.warn('Access denied: not admin');
+          return (window.location.href = 'signin.html');
+        }
+      } catch (e) {
+        console.warn('Admin check failed', e);
+      }
+
+      db.collection('judgeAssignments')
+        .orderBy('assignedAt', 'desc')
+        .onSnapshot({
+          next: (snap) => {
+            ALL = snap.docs.map(d => {
+              const x = d.data() || {};
+              return {
+                id: d.id,
+                judgeId: x.judgeId,
+                judgeName: x.judgeName,
+                judgeEmail: x.judgeEmail,
+                applicationId: x.applicationId,
+                entryName: x.entryName,
+                scoreSet: x.scoreSet,
+                round: x.round,
+                status: x.status || 'pending',
+                assignedAt: x.assignedAt,
+                updatedAt: x.updatedAt || x.assignedAt
+              };
+            });
+            applyFilters();
+          },
+          error: (err) => {
+            console.error('onSnapshot error:', err);
+            tbody.innerHTML = `<tr><td colspan="9" class="muted">Error loading data.</td></tr>`;
+          }
+        });
+    });
+  </script>
+</body>
+</html>
