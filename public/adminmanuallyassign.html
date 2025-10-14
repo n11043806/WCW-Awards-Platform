@@ -4,42 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin – Manual Assignment | WCW Awards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
-    /* === Base & Dashboard-matching Sidebar === */
+
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #fafafa;
-      color: #333;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; color: #333; }
+
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 220px;
-      height: 100vh;
-      background-color: #d62d83;
-      padding: 20px;
-      color: white;
-      display: flex;
-      flex-direction: column;
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background-color: #d7336f; padding: 20px; color: #fff; display: flex; flex-direction: column;
     }
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 22px;
-    }
+    .sidebar h2 { text-align: center; margin-bottom: 40px; font-size: 22px; }
     .sidebar a {
-      color: white;
-      text-decoration: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      transition: background-color 0.2s;
+      color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px;
+      margin-bottom: 10px; transition: background-color 0.2s;
     }
-    .sidebar a:hover, .sidebar a.active {
-      background-color: #b8235a;
+    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
+
+    .main-content { margin-left: 220px; padding: 30px; }
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     /* === Page layout matching dashboard spacing === */
@@ -201,6 +191,33 @@
     .btn-primary:hover { background: #b8235a; }
 
     .error { color: #b00020; font-weight: 700; margin: 8px 0 0; }
+
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-circle { background:#8d57a0;color:#fff;border:2px solid #5f386d;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
+    .user-dropdown{display:none;position:absolute;top:48px;right:0;background:#fff0f6;border:1px solid #b8235a;border-radius:8px;min-width:180px;z-index:100;flex-direction:column;}
+    .user-dropdown.open{display:flex;}
+    .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
+    .user-dropdown button:hover{background:#ffe6ee;}
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #121212; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .main-content { background: #121212; }
+      .logout-btn, .back-btn { background: #2c2c2c; color: #ff79c6; border: 1px solid #444; }
+      .toolbar { background: #1e1e1e; border: 1px solid #444; }
+      .toolbar select { background: #2c2c2c; border: 1px solid #444; color: #eee; }
+      .panel { background: #1e1e1e; border: 1px solid #444; }
+      .search input { background: #2c2c2c; border: 1px solid #444; color: #eee; }
+      .list { background: #2c2c2c; border: 1px solid #444; }
+      .item { border-bottom: 1px solid #444; }
+      .item:hover { background: #333; }
+      .pill { background: #2c2c2c; border: 1px solid #444; color: #aaa; }
+      .btn-primary { background-color: #d7336f; color: #fff; border: 1px solid #444; }
+      .tool label { color: #aaa;}
+    }
   </style>
 </head>
 <body>
@@ -216,10 +233,27 @@
 
   <!-- Main content -->
   <div class="main-content">
-    <div class="page-header">
-      <h1>Manual Assignment</h1>
-      <button class="back-btn" onclick="location.href='adminmanagejudge.html'">← Back</button>
-    </div>
+    <header>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>Manual Assignment</h1>
+        <div class="user-menu-container" id="adminUserMenu" style="display:flex;align-items:center;gap:10px;position:relative;">
+          <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <button onclick="window.location.href='adminprofile.html'">
+              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+            </button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+            </button>
+            <button onclick="logout()">
+              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+            </button>
+          </div>
+          <button class="back-btn" onclick="location.href='adminmanagejudge.html'">Back</button>
+        </div>
+      </div>
+    </header>
 
     <!-- Slim inline toolbar under title -->
     <div class="toolbar">
@@ -536,6 +570,29 @@
     $('selectAllJudges').addEventListener('change', e => toggleAll('.ck-judge', e.target.checked));
     $('selectAllEntries').addEventListener('change', e => toggleAll('.ck-entry', e.target.checked));
     $('assignBtn').addEventListener('click', assignSelected);
+
+
+    // wire user menu
+    (function wireAdminUserMenu() {
+      const userCircle = document.getElementById('userCircle');
+      const userDropdown = document.getElementById('userDropdown');
+      const userFullNameEl = document.getElementById('userFullName');
+      if (userCircle && userDropdown) {
+        userCircle.addEventListener('click', ()=> { const open = userDropdown.classList.toggle('open'); userCircle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+        document.addEventListener('click', e => { if (!document.getElementById('adminUserMenu')?.contains(e.target)) { userDropdown.classList.remove('open'); userCircle.setAttribute('aria-expanded', 'false'); }});
+      }
+      if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+          if (!user) return;
+          const name = user.displayName || user.email || 'Admin';
+          if (userFullNameEl) userFullNameEl.textContent = name;
+          if (userCircle) {
+            let initials = user.displayName ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase() : (user.email?user.email[0].toUpperCase():'A');
+            userCircle.textContent = initials;
+          }
+        });
+      }
+    })();
   </script>
 </body>
 </html>
