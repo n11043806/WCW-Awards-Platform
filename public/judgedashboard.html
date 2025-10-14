@@ -455,14 +455,32 @@ document.addEventListener('DOMContentLoaded', function() {
       for (const doc of assignmentsSnap.docs) {
         const assign = doc.data();
         const appId = assign.applicationId;
+        // Try to read full application doc; if forbidden, fall back to assignment summary fields
         let appData = {};
         if (appId) {
-          const appDoc = await db.collection('applications').doc(appId).get();
-          if (appDoc.exists) {
-            appData = appDoc.data();
+          try {
+            const appDoc = await db.collection('applications').doc(appId).get();
+            if (appDoc.exists) {
+              appData = appDoc.data();
+            } else {
+              // app missing — use assignment summary if present
+              appData = {
+                name: assign.entryName || '-',
+                category: assign.category || '-',
+                subcategory: assign.subcategory || '-'
+              };
+            }
+          } catch (readErr) {
+            // permission-denied or other read error: fallback to assignment fields
+            console.warn('Could not read application', appId, readErr);
+            appData = {
+              name: assign.entryName || '-',
+              category: assign.category || assign.cat || '-',
+              subcategory: assign.subcategory || assign.subCat || '-'
+            };
           }
         }
-
+ 
         // Fetch judgeResponses status
         let judgeStatus = "new";
         try {
@@ -473,18 +491,23 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
           // ignore, fallback to "new"
         }
-
+ 
         // Construct PDF URL
         let pdfUrl = '';
         try {
           const pdfDoc = await db.collection('pdfUploads').doc(appId).get();
           if (pdfDoc.exists) {
             pdfUrl = pdfDoc.data().url;
+          } else if (assign.pdfUrl) {
+            // fallback if admin stored pdf link on assignment
+            pdfUrl = assign.pdfUrl;
           }
         } catch (e) {
           console.error('Error fetching PDF URL:', e);
+          // fallback to assignment field if present
+          pdfUrl = assign.pdfUrl || '';
         }
-
+ 
         rows.push({
           applicationId: appId || '-',
           name: appData.name || assign.entryName || '-',
