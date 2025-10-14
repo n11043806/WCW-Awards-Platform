@@ -172,6 +172,53 @@
     background-color: #b8235a;
   }
 
+  /* Dropdown styled to match judgeprofile (pale pink card, maroon accents) */
+.profile-menu { position: relative; display: inline-block; }
+.profile-avatar {
+  background: #b84b7a; /* darker maroon circle */
+  color: #fff;
+  border: 3px solid rgba(255,255,255,0.12);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-weight:700;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06) inset;
+}
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: 52px;
+  right: 0;
+  min-width: 170px;
+  background: #ffeef3; /* pale pink */
+  border: 1px solid #b84b7a; /* maroon border */
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(184,75,122,0.12);
+  padding: 6px 0;
+  z-index: 200;
+}
+.profile-dropdown.open { display: block; }
+.profile-dropdown button {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  padding:10px 14px;
+  background:transparent;
+  border:0;
+  color:#b84b7a;
+  font-weight:600;
+  cursor:pointer;
+  font-size:14px;
+}
+.profile-dropdown button .icon { opacity:0.95; font-size:16px; }
+.profile-dropdown button:hover { background:#ffe0ef; }
+
   .profile-menu {
     position: relative;
     display: inline-block;
@@ -240,19 +287,27 @@
   <header>
     <h1>Welcome, <span id="judgeName">Judge</span></h1>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;position:absolute;top:20px;right:30px;">
-      <span style="font-weight:bold;color:#fff;margin-right:8px;">andrew</span>
-      <div class="profile-menu">
-        <button class="profile-avatar" onclick="toggleProfileMenu()">A</button>
-        <div class="profile-dropdown" id="profileDropdown" style="display:none;">
-          <button onclick="window.location.href='judgeprofile.html'">
-            Profile <span style="float:right;">&#128100;</span>
-          </button>
-          <button onclick="window.location.href='mailto:support@wcw.com'">
-            Get help <span style="float:right;">&#10067;</span>
-          </button>
-        </div>
-      </div>
-      <button class="logout-btn" onclick="firebase.auth().signOut().then(() => { window.location.href = 'signin.html'; });">Log out</button>
+      <!-- user's first name will be placed here (replaces logout button position) -->
+      <span id="headerUserName" style="font-weight:bold;color:#fff;margin-right:8px;"></span>
+      <div class="profile-menu" id="profileMenuRoot">
+  <button id="avatarBtn" class="profile-avatar" aria-haspopup="true" aria-expanded="false">A</button>
+
+  <div id="profileDropdown" class="profile-dropdown" aria-hidden="true">
+    <button type="button" onclick="window.location.href='judgeprofile.html'">
+      <span>Profile</span>
+      <span class="pd-icon" aria-hidden="true">👤</span>
+    </button>
+    <button type="button" onclick="window.location.href='mailto:support@wcw.com'">
+      <span>Get help</span>
+      <span class="pd-icon" aria-hidden="true">❓</span>
+    </button>
+    <button id="headerLogoutBtn" type="button">
+      <span>Log out</span>
+      <span class="pd-icon" aria-hidden="true">⤴</span>
+    </button>
+  </div>
+</div>
+      <!-- logout removed as requested -->
     </div>
   </header>
 
@@ -333,17 +388,6 @@
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
   <script>
-function toggleProfileMenu() {
-  const dropdown = document.getElementById('profileDropdown');
-  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-}
-document.addEventListener('click', function(e) {
-  const dropdown = document.getElementById('profileDropdown');
-  if (!e.target.closest('.profile-menu')) {
-    dropdown.style.display = 'none';
-  }
-});
-
 document.addEventListener('DOMContentLoaded', function() {
   const tableBody = document.getElementById('appsBody');
   const sortDropdown = document.getElementById('sortDropdown');
@@ -438,6 +482,31 @@ document.addEventListener('DOMContentLoaded', function() {
       tableBody.innerHTML = '<tr><td colspan="8">Please log in.</td></tr>';
       return;
     }
+
+    // Populate header with signed-in user's first name (uses users/{uid}.fullName if available)
+    try {
+      const judgeNameEl = document.getElementById('judgeName');
+      const headerUserNameEl = document.getElementById('headerUserName');
+      const avatarBtn = document.querySelector('.profile-avatar');
+
+      let display = user.displayName || user.email || 'Judge';
+      try {
+        const udoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        if (udoc.exists && udoc.data().fullName) display = udoc.data().fullName;
+      } catch (e) {
+        console.warn('users doc read failed', e);
+      }
+
+      const first = (display && display.split(' ')[0]) || 'Judge';
+      const capFirst = first.charAt(0).toUpperCase() + first.slice(1);
+
+      if (judgeNameEl) judgeNameEl.textContent = capFirst;
+      if (headerUserNameEl) headerUserNameEl.textContent = capFirst;
+      if (avatarBtn) avatarBtn.textContent = (capFirst[0] || 'J').toUpperCase();
+    } catch (err) {
+      console.warn('Header population failed', err);
+    }
+
     const judgeId = user.uid;
     const db = firebase.firestore();
 
@@ -532,6 +601,51 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = `judgeapplicationview.html?id=${applicationId}`;
   }
 });
+  </script>
+
+  <script>
+// dropdown toggle (idempotent, matches judgeprofile behaviour)
+(function(){
+  const avatar = document.getElementById('avatarBtn');
+  const dropdown = document.getElementById('profileDropdown');
+
+  function closeAll() {
+    if(dropdown) { dropdown.classList.remove('open'); dropdown.setAttribute('aria-hidden','true'); }
+    if(avatar) avatar.setAttribute('aria-expanded','false');
+  }
+
+  document.addEventListener('click', (e) => {
+    const root = document.getElementById('profileMenuRoot');
+    if (!root) return;
+    if (root.contains(e.target)) {
+      // clicked inside menu root
+      if (e.target.id === 'avatarBtn' || e.target.closest('#avatarBtn')) {
+        const isOpen = dropdown.classList.toggle('open');
+        dropdown.setAttribute('aria-hidden', (!isOpen).toString());
+        if (avatar) avatar.setAttribute('aria-expanded', String(isOpen));
+      }
+      return;
+    }
+    // clicked outside - close it
+    closeAll();
+  });
+
+  // wire logout inside dropdown
+  document.addEventListener('click', (e) => {
+    if (e.target && (e.target.id === 'headerLogoutBtn' || e.target.closest('#headerLogoutBtn'))) {
+      e.preventDefault();
+      firebase.auth().signOut().then(()=> {
+        window.location.href = 'signin.html';
+      }).catch(()=> { window.location.href = 'signin.html'; });
+    }
+  });
+
+  // ensure closed on load
+  document.addEventListener('DOMContentLoaded', () => {
+    if (dropdown) { dropdown.classList.remove('open'); dropdown.setAttribute('aria-hidden','true'); }
+    if (avatar) avatar.setAttribute('aria-expanded','false');
+  });
+})();
   </script>
 </body>
 </html>
