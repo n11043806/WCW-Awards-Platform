@@ -74,6 +74,43 @@
       color: #b8235a;
     }
 
+    /* When printing via autoPrint, hide chrome (header, dropdowns, nav buttons) */
+    body.auto-print-mode header,
+    body.auto-print-mode .profile-menu,
+    body.auto-print-mode .profile-dropdown,
+    body.auto-print-mode .logout-btn,
+    body.auto-print-mode .back-btn,
+    body.auto-print-mode .action-buttons,
+    body.auto-print-mode .no-print,
+    /* Hide judge interaction controls when autoPrint flag is present */
+    body.auto-print-mode .judge-actions,
+    body.auto-print-mode .action-btn,
+    body.auto-print-mode #bottomSaveBtn,
+    body.auto-print-mode #bottomSubmitBtn,
+    body.auto-print-mode #nextBtn {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Make application content use full width when printing */
+    body.auto-print-mode main,
+    body.auto-print-mode .application-container,
+    body.auto-print-mode #applicationSections {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Also ensure print media hides chrome regardless of class */
+    @media print {
+      header, .profile-menu, .profile-dropdown, .logout-btn, .back-btn, .action-buttons, .no-print,
+      /* also hide judge controls for printed output */
+      .judge-actions, .action-btn, #bottomSaveBtn, #bottomSubmitBtn, #nextBtn {
+        display: none !important;
+      }
+      body { background: #fff !important; color: #000 !important; }
+    }
+
     @media(max-width:1000px){
       .criteria-row { flex-direction:column-reverse; }
       .crit-judge { width:100%; min-width:0; }
@@ -81,6 +118,23 @@
       main { padding:16px; }
     }
   </style>
+
+  <script>
+    // if ?autoPrint=1 (or true) is present, mark page to hide UI chrome before the auto-print runs
+    (function(){
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const auto = params.get('autoPrint') === '1' || params.get('autoPrint') === 'true';
+        if (!auto) return;
+        // add class as early as possible
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => document.body.classList.add('auto-print-mode'));
+        } else {
+          document.body.classList.add('auto-print-mode');
+        }
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </head>
 <body>
   <header>
@@ -92,7 +146,7 @@
   </header>
 
   <main>
-    <button onclick="window.location.href='judgedashboard.html'" style="margin-bottom:18px;background:#d7336f;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-weight:bold;cursor:pointer;">&larr; Back to Dashboard</button>
+    <button class="back-btn" onclick="window.location.href='judgedashboard.html'" style="margin-bottom:18px;background:#d7336f;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-weight:bold;cursor:pointer;">&larr; Back to Dashboard</button>
     <div class="top-actions">
       <div style="color:#6e1742;font-size:14px;">Viewing application: <strong id="appIdLabel">-</strong></div>
     </div>
@@ -437,7 +491,27 @@
           setTimeout(() => {
             try { window.print(); } catch (e) { console.warn('auto-print failed', e); }
           }, 300);
-        }
+
+          // After the print dialog closes (print or cancel) go back to the dashboard.
+          // Primary: onafterprint (most browsers). Fallbacks: visibilitychange and focus.
+          const returnToDashboard = () => {
+            try { window.location.href = 'judgedashboard.html'; } catch (e) { /* ignore */ }
+          };
+
+          if ('onafterprint' in window) {
+            window.onafterprint = () => {
+              // small delay to ensure print dialog fully closed
+              setTimeout(returnToDashboard, 200);
+            };
+          } else {
+            // fallback: when page regains focus / becomes visible, assume print dialog closed
+            const onDone = () => { setTimeout(returnToDashboard, 200); };
+            window.addEventListener('focus', onDone, { once: true });
+            document.addEventListener('visibilitychange', function v() {
+              if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', v); onDone(); }
+            });
+          }
+         }
       } catch (e) { /* ignore */ }
 
     } catch (err) {
