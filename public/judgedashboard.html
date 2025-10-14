@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td>${row.status}</td>
           <td>${row.lastUpdated}</td>
           <td>
-            <a href="judgepdfview.html?id=${row.applicationId}" target="_blank" title="Download PDF">
+            <a href="judgeapplicationview.html?id=${row.applicationId}&autoPrint=1" target="_blank" title="Download PDF">
               <img src="images/32px_PDF_file.png" alt="PDF" style="width:28px;height:28px;vertical-align:middle;border:none;background:none;">
             </a>
           </td>
@@ -561,21 +561,26 @@ document.addEventListener('DOMContentLoaded', function() {
           // ignore, fallback to "new"
         }
  
-        // Construct PDF URL
+        // Construct PDF URL (safe, do NOT attempt to read non-existent pdfUploads collection)
+        // Prefer (in order): assignment.pdfUrl, application doc fields (appData.pdfUrl / pdfURL / pdf), otherwise empty.
         let pdfUrl = '';
+        if (assign && assign.pdfUrl) {
+          pdfUrl = assign.pdfUrl;
+        } else if (appData) {
+          pdfUrl = appData.pdfUrl || appData.pdfURL || appData.pdf || '';
+        } else {
+          pdfUrl = '';
+        }
+        // If you later introduce a `pdfUploads` collection and want to read it,
+        // you can attempt a guarded read here (uncomment and ensure rules allow it):
+        /*
         try {
           const pdfDoc = await db.collection('pdfUploads').doc(appId).get();
-          if (pdfDoc.exists) {
-            pdfUrl = pdfDoc.data().url;
-          } else if (assign.pdfUrl) {
-            // fallback if admin stored pdf link on assignment
-            pdfUrl = assign.pdfUrl;
-          }
+          if (pdfDoc.exists && pdfDoc.data().url) pdfUrl = pdfDoc.data().url;
         } catch (e) {
-          console.error('Error fetching PDF URL:', e);
-          // fallback to assignment field if present
-          pdfUrl = assign.pdfUrl || '';
+          console.warn('pdfUploads read skipped or failed:', e);
         }
+        */
  
         rows.push({
           applicationId: appId || '-',

@@ -428,6 +428,18 @@
         addCriteriaBlock(c.key, c.title, answer, scoreVal, commentVal);
       });
 
+      // If caller requested auto-print, give the UI a moment to finish rendering then open the print dialog.
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const autoPrint = params.get('autoPrint');
+        if (autoPrint === '1' || autoPrint === 'true') {
+          // allow layout to settle
+          setTimeout(() => {
+            try { window.print(); } catch (e) { console.warn('auto-print failed', e); }
+          }, 300);
+        }
+      } catch (e) { /* ignore */ }
+
     } catch (err) {
       console.error('Failed to load application:', err);
       document.getElementById('applicationSections').innerHTML = '<div style="color:#d7336f;">Error loading application.</div>';
