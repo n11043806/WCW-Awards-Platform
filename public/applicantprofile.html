@@ -183,47 +183,6 @@
     .toggle-password:focus {
       outline: none;
     }
-    /* Dark mode styles */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-        color: #e0e0e0;
-      }
-      .container {
-        background: #1e1e1e;
-        box-shadow: 0 0 15px rgba(0,0,0,0.3);
-      }
-      .section-title {
-        background: #2c2c2c;
-        color: #e0e0e0;
-      }
-      table {
-        background: #1e1e1e;
-        color: #e0e0e0;
-      }
-      th {
-        background: #2c2c2c;
-        color: #e0e0e0;
-      }
-      .user-dropdown {
-        background: #2c2c2c;
-        border: 1px solid #444;
-      }
-      .tab-content {
-        background: #222 !important;
-        color: #eee !important;
-      }
-      .radio-label {
-        color: #eee !important;
-      }
-      .profile-fields .form-group label {
-        color: #eee !important;
-      }
-      .darkmode-title {
-        color: #eee !important;
-      }
-    }
-
   </style>
 </head>
 <body>
@@ -328,8 +287,8 @@
         <form id="profileForm" class="profile-form">
           <div class="profile-fields">
             <div class="form-group">
-              <label for="full name">Full Name:</label>
-              <input type="text" id="full name" class="form-control" placeholder="Full Name" />
+              <label for="fullName">fullName:</label>
+              <input type="text" id="fullName" class="form-control" placeholder="fullName" />
             </div>
             <div class="form-group">
               <label for="email">Email Address:</label>
@@ -387,7 +346,24 @@
     };
     function renderTab(tabKey) {
       content.innerHTML = tabContents[tabKey];
-      if (tabKey === "profile") {attachSaveHandler(); attachPasswordToggleHandlers();}
+      if (tabKey === "profile") {
+        attachSaveHandler(); 
+        attachPasswordToggleHandlers();
+        // Fetch user data and prefill inputs again on each tab show
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+              if (doc.exists) {
+                const data = doc.data();
+                const fullNameInput = document.getElementById("fullName");
+                const emailInput = document.getElementById("email");
+                if (fullNameInput) fullNameInput.value = data["fullName"] || "";
+                if (emailInput) emailInput.value = data.email || "";
+              }
+            });
+          }
+        });
+      }
       if (tabKey === "preferences") attachDarkModeHandler();
     }
     tabs.forEach(tab => {
@@ -403,7 +379,7 @@
       if (saveBtn) {
         saveBtn.onclick = async function() {
           // Get field values
-          const fullName = document.getElementById("full name").value.trim();
+          const fullName = document.getElementById("fullName").value.trim();
           const email = document.getElementById("email").value.trim();
           const newPassword = document.getElementById("newPassword").value;
           const reenterPassword = document.getElementById("reenterPassword").value;
@@ -422,7 +398,7 @@
           const db = firebase.firestore();
           try {
             await db.collection("users").doc(user.uid).set({
-              "full name": fullName,
+              "fullName": fullName,
               email: email
             }, { merge: true });
 
@@ -521,10 +497,10 @@
       if (user) {
         firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
           if (doc.exists) {
-            // Prefill Full Name
-            const fullNameInput = document.getElementById("full name");
-            if (fullNameInput && doc.data()["full name"]) {
-              fullNameInput.value = doc.data()["full name"];
+            // Prefill fullName
+            const fullNameInput = document.getElementById("fullName");
+            if (fullNameInput && doc.data()["fullName"]) {
+              fullNameInput.value = doc.data()["fullName"];
             }
             // Prefill Email
             const emailInput = document.getElementById("email");

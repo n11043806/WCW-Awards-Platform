@@ -314,18 +314,6 @@
       justify-content:space-between;
     }
     .user-dropdown button:hover { background: #ffe6ee; }
-
-    /* dark mode */
-    @media (prefers-color-scheme: dark) {
-      body { background-color: #121212; color: #e0e0e0; }
-      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
-      .tab-content { background: #222 !important; color: #eee !important; }
-      .container { background: #222; color: #eee; border: 1px solid #444; }
-      .controls input, .controls select, .controls button {
-        background: #333; color: #eee; border: 1px solid #555;
-      }
-      
-    }
   </style>
 </head>
 <body>
@@ -565,7 +553,7 @@
       user_id: userId,
       applicant_id: userId,
       season: seasonName,
-      stage: 'draft',
+      stage: 'Draft',
       createdAt: now,
       updatedAt: now
     });
@@ -805,7 +793,7 @@
       const payload = {
         ...collectStartHere(form),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        stage: 'draft'
+        stage: 'Draft'
       };
       await db().collection('applications').doc(applicationId).set(payload, { merge: true });
     }
@@ -842,7 +830,7 @@
           const payload = {
             ...collectCriteria(form),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            stage: 'draft'
+            stage: 'Draft'
           };
           await db().collection('applications').doc(applicationId).set(payload, { merge: true });
           alert('Saved.');
@@ -856,7 +844,7 @@
           const payload = {
             ...collectCriteria(form),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            stage: 'draft'
+            stage: 'Draft'
           };
           await db().collection('applications').doc(applicationId).set(payload, { merge: true });
           const attTab = document.getElementById('tabAttachments');
@@ -992,17 +980,19 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal?.classList.contains('open')) closePreviewModal(); });
     document.getElementById('previewSubmit').onclick = async function() {
       if (!previewRequiredOk()) return alert('Please complete all required fields and confirm eligibility.');
-      if (!confirm('Are you sure you want to submit your application? This cannot be undone?')) return;
+      if (!confirm('Are you sure you want to submit your application?')) return;
       try {
         const payload = collectPreviewData();
         await db().collection('applications').doc(applicationId).set({
           ...payload,
           submitted: true,
           submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          stage: 'Submitted'  
         }, { merge: true });
         alert('Application submitted successfully!');
         closePreviewModal();
+        window.location.href = 'adminentriestab.html';
       } catch (err) {
         alert('Failed to submit application: ' + err.message);
       }

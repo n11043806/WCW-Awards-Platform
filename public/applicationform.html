@@ -7,44 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; }
-    /* overriding browser mode */
-    body:not(.dark-mode) {
-      background-color: #f4f4f4 !important;
-      color: #333 !important;
-    }
-
-    body:not(.dark-mode) .container,
-    body:not(.dark-mode) .dates-section,
-    body:not(.dark-mode) .section-title,
-    body:not(.dark-mode) .block,
-    body:not(.dark-mode) .modal-dialog,
-    body:not(.dark-mode) .modal-header,
-    body:not(.dark-mode) .modal-body {
-      background: #fff !important;
-      color: #333 !important;
-    }
-
-    body:not(.dark-mode) .section-title {
-      background: #faf0f4 !important;
-      color: #8c1f4c !important;
-    }
-
-    body:not(.dark-mode) .block {
-      background: #fcfcfc !important;
-      color: #333 !important;
-      border: 1px solid #eee !important;
-    }
-
-    body:not(.dark-mode) .dashboard-section {
-      background: white !important;
-      color: #333 !important;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1) !important;
-    }
-
-    body:not(.dark-mode) .user-dropdown {
-      background: #fff0f6 !important;
-      border: 1px solid #b8235a !important;
-    }
     footer {
       text-align: center;
       color: #888;
@@ -233,214 +195,6 @@
       vertical-align: middle;
     }
     
-    /* Dark mode styles */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-        color: #e0e0e0;
-      }
-      .container {
-        background: #1e1e1e;
-        box-shadow: 0 0 15px rgba(0,0,0,0.3);
-      }
-      .section-title {
-        background: #2c2c2c;
-        color: #e0e0e0;
-      }
-      .user-dropdown {
-        background: #2c2c2c;
-        border: 1px solid #444;
-      }
-      .tab-content {
-        background: #222 !important;
-        color: #eee !important;
-      }
-      .dates-section {
-        background: #222 !important;
-        color: #eee !important;
-      }
-      .form-group {
-        background: #222 !important;
-        color: #eee !important;
-      }
-      .textarea {
-        background: #222 !important;
-        color: #eee !important;
-      }
-      .word-count {
-        color: #bbb !important;
-      }
-      .eligibility-check {
-        color: #bbb !important;
-      }
-      .btn-view {
-        background: #0d601f !important;
-        color: #dfebe5 !important;
-        border-color: #267754 !important;
-      }
-      .btn-view:hover {
-        background: #309267 !important;
-      }
-      .submit-btn {
-        background: #b8235a !important;
-        color: #fff !important;
-      }
-      .submit-btn:disabled {
-        background: #555 !important;
-        color: #888 !important;
-        cursor: not-allowed !important;
-      } 
-      .preview-dialog {
-        background: #333 !important;
-        color: #dfebe5 !important;
-        border: 1px solid #555 !important;
-      }
-      .preview-header {
-        background: #444 !important;
-        color: #8c1f4c !important;
-        padding: 12px 16px;
-        border-bottom: 1px solid #555 !important;
-      }
-      .preview-header strong {
-        color: #f986b6 !important;
-        font-size: 1.5em;
-        font-weight: 600;
-      }
-      .preview-actions {
-        background: #444 !important;
-        color: #dfebe5 !important;
-        padding: 12px 16px;
-        border-top: 1px solid #555 !important;
-      }
-      .preview-submit {
-        background: #b8235a !important;
-        color: #fff !important;
-        padding: 12px 16px;
-        border: none !important;
-        cursor: pointer !important;
-      }
-      .preview-submit:disabled {
-        background: #555 !important;
-        color: #888 !important;
-        cursor: not-allowed !important;
-      }
-      .preview-close {
-        background: #b8235a !important;
-        color: #fff !important;
-        padding: 12px 16px;
-        border: none !important;
-        cursor: pointer !important;
-      }
-      .preview-close:hover {
-        background: #d7336f !important;
-      }
-
-      body.dark-mode .tab-content,
-      body.dark-mode .form-group,
-      body.dark-mode .dates-section,
-      body.dark-mode .upload-card {
-        background: #2c2c2c !important;
-        color: #eee !important;
-      }
-
-      body.dark-mode .form-group label,
-      body.dark-mode .preview-title {
-        color: #f986b6 !important;
-        font-weight: 600;
-      }
-
-      body.dark-mode .form-group input,
-      body.dark-mode .form-group select,
-      body.dark-mode .form-group textarea {
-        background: #222 !important;
-        color: #eee !important;
-        border: 1px solid #444 !important;
-      }
-
-      body.dark-mode .word-count {
-        color: #ffb6d5 !important; 
-      }
-
-      body.dark-mode .action-btn,
-      body.dark-mode .submit-btn,
-      body.dark-mode .preview-close,
-      body.dark-mode .preview-submit,
-      body.dark-mode .start-entry-btn {
-        background: #b8235a !important;
-        color: #fff !important;
-        border: none !important;
-        font-weight: 600;
-      }
-
-      body.dark-mode .action-btn:hover,
-      body.dark-mode .submit-btn:hover,
-      body.dark-mode .preview-close:hover,
-      body.dark-mode .preview-submit:hover,
-      body.dark-mode .start-entry-btn:hover {
-        background: #d7336f !important;
-        color: #fff !important;
-      }
-
-      body.dark-mode .tab.active {
-        background: #b8235a !important;
-        color: #fff !important;
-      }
-      
-    .preview-title {
-      color: #f989b8 !important;
-      background: #ffe6ee !important;
-      font-weight: 700;
-      font-size: 1.4em;
-      border-radius: 10px;
-      padding: 12px 18px;
-      margin-bottom: 18px;
-    }
-
-    .preview-grid > div {
-      background: #2c2c2c !important;
-      padding: 8px !important;
-      border-radius: 6px !important;
-    }
-
-    .preview-grid label {
-      color: #f78db9 !important;
-      font-weight: 600;
-    }
-
-    .preview-grid input,
-    .preview-grid select {
-      background: #222 !important;
-      color: #eee !important;
-      border: 1px solid #444 !important;
-      padding: 6px 8px !important;
-      border-radius: 4px !important;
-    }
-
-    .preview-body {
-      background: #2c2c2c !important;
-      color: #eee !important;
-    }
-
-    body.dark-mode .preview-title {
-      color: #fff !important;           
-      background: #333 !important;      
-      border: 1px solid #555 !important;
-      font-weight: 700;
-      font-size: 1.4em;
-      border-radius: 10px;
-      padding: 12px 18px;
-      margin-bottom: 18px;
-    }
-   
-    body.dark-mode .preview-dialog {
-      background: #2c2c2c !important;
-      color: #eee !important;
-    }
-
-    body.dark-mode .preview-body {
-      background: #2c2c2c !important;
-      color: #eee !important;
-    }}
   </style>
   <!-- Add Firebase SDKs  -->
   <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
@@ -665,7 +419,7 @@
       user_id: currentUser.uid,
       applicant_id: currentUser.uid,
       season: seasonName,
-      stage: 'draft',
+      stage: 'Draft',
       createdAt: now,
       updatedAt: now
     });
@@ -912,7 +666,7 @@
           const payload = {
             ...collectCriteria(form),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            stage: 'draft'
+            stage: 'Draft'
           };
           await db().collection('applications').doc(applicationId).set(payload, { merge: true });
           alert('Saved.');
@@ -927,7 +681,7 @@
           const payload = {
             ...collectCriteria(form),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            stage: 'draft'
+            stage: 'Draft'
           };
           await db().collection('applications').doc(applicationId).set(payload, { merge: true });
           const attTab = document.getElementById('tabAttachments');
@@ -1016,7 +770,7 @@
       const payload = {
         ...collectStartHere(form),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        stage: 'draft'
+        stage: 'Draft'
       };
       await db().collection('applications').doc(applicationId).set(payload, { merge: true });
     }
@@ -1155,12 +909,12 @@
           ...payload,
           submitted: true,
           submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          stage: 'Submitted'
         }, { merge: true });
         alert('Application submitted successfully!');
-        modal.classList.remove('open');
-        document.body.style.overflow = '';
-        setTimeout(() => { window.location.href = 'applicantdashboard.html'; }, 2000);
+        closePreviewModal()
+        window.location.href = 'applicationdashboard.html';
       } catch (err) {
         alert('Failed to submit application: ' + err.message);
       }
