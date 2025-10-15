@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WCW Admin – Judge Assignments</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; color: #333; }
+
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background-color: #d7336f; padding: 20px; color: #fff; display: flex; flex-direction: column;
+    }
+    .sidebar h2 { text-align: center; margin-bottom: 40px; font-size: 22px; }
+    .sidebar a {
+      color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px;
+      margin-bottom: 10px; transition: background-color 0.2s;
+    }
+    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
+
+    .main-content { margin-left: 220px; padding: 30px; }
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .logout-btn, .back-btn {
+      background: #fff; color: #d62d83; border: none; padding: 8px 16px;
+      border-radius: 4px; font-weight: bold; cursor: pointer;
+    }
+    .logout-btn:hover, .back-btn:hover { background: #ffe6ee; }
+
+    h3 { margin: 20px 0; color: #d62d83; }
+
+    .actions-row {
+      display: flex; gap: 12px; margin: 18px 0; align-items: center; flex-wrap: wrap;
+    }
+    .primary-btn {
+      background-color: #d7336f; color: #fff; border: none;
+      padding: 10px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;
+    }
+    .primary-btn:hover { background-color: #d7336f; }
+    .muted { color: #777; font-size: 14px; }
+
+    .searchbar {
+      margin-left: auto; display: flex; gap: 10px; align-items: center;
+      background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 8px 10px;
+    }
+    .searchbar input, .searchbar select {
+      padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: #fff;
+    }
+    .searchbar input { min-width: 360px; }
+
+    .table-wrap { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: top; }
+    th { background: #fafafa; color: #d62d83; font-weight: 700; }
+    tr:hover { background: #f9f9f9; }
+    tr.selected-row { background: #fff6fa; }
+
+    .status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #eee; color: #444; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-inprogress, .status-in-progress { background: #d1ecf1; color: #0c5460; }
+
+    /* Details panel (below table) */
+    .details-wrap {
+      margin-top: 18px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 16px;
+      border: 1px solid #eee;
+    }
+    .details-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .details-title { font-weight: 700; color: #d62d83; }
+    .details-subtle { color: #666; font-size: 13px; }
+    .badge {
+      display:inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background:#f1f1f1; color:#444;
+    }
+    .grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background:#fff; border:1px solid #eee; border-radius:8px; padding:12px;
+    }
+    .card h4 { margin:0 0 8px; color:#333; }
+    .field { background:#fff; border:1px solid #f0f0f0; border-radius:6px; padding:8px; white-space:pre-wrap; }
+
+    .crit-table { width:100%; border-collapse: collapse; }
+    .crit-table th, .crit-table td { padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
+    .crit-table th { background:#fafafa; color:#d62d83; font-weight:700; }
+
+    .empty { padding: 10px; color: #777; }
+
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-circle { background:#8d57a0;color:#fff;border:2px solid #5f386d;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
+    .user-dropdown{display:none;position:absolute;top:48px;right:0;background:#fff0f6;border:1px solid #b8235a;border-radius:8px;min-width:180px;z-index:100;flex-direction:column;}
+    .user-dropdown.open{display:flex;}
+    .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
+    .user-dropdown button:hover{background:#ffe6ee;}
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #121212; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .main-content { background: #121212; }
+      table { background: #1e1e1e; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+      th { background: #2c2c2c; color: #eee; }
+      tr:hover { background-color: #2a2a2a; }
+      .container { background: #121212; color: #eee; }
+      .searchbar { background: #1e1e1e; border: 1px solid #444; }
+      .searchbar input, .searchbar select { background: #2c2c2c; border: 1px solid #444; color: #eee; }
+      .details-wrap { background: #1e1e1e; border: 1px solid #444; }
+      .logout-btn, .back-btn { background: #2c2c2c; color: #ff79c6; border: 1px solid #444; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>WCW Admin</h2>
+    <a href="admindashboard.html">Dashboard</a>
+    <a href="adminentriestab.html">Entries</a>
+    <a href="adminusertab.html">Users</a>
+    <a href="adminjudgetab.html" class="active">Judging</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <h1>Judging Progress</h1>
+        <div class="user-menu-container" id="adminUserMenu" style="display:flex;align-items:center;gap:10px;position:relative;">
+          <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
+          <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <button onclick="window.location.href='adminprofile.html'">
+              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+            </button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+            </button>
+            <button onclick="logout()">
+              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+            </button>
+          </div>
+          <button class="back-btn" onclick="location.href='adminjudgetab.html'">Back</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="actions-row">
+      <button class="primary-btn" onclick="location.href='adminmanuallyassign.html'">Assign Judges</button>
+      <div class="searchbar">
+        <input id="searchBox" type="search" placeholder="Search judge, email, app id, entry, round, score set…" />
+        <select id="statusFilter" title="Filter by status">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select id="sortBy" title="Sort results">
+          <option value="updated_desc">Recently updated → Oldest</option>
+          <option value="updated_asc">Oldest updated → Newest</option>
+          <option value="assigned_desc">Recently assigned → Oldest</option>
+          <option value="assigned_asc">Oldest assigned → Newest</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="assignmentsTable">
+        <thead>
+          <tr>
+            <th>Judge</th>
+            <th>Email</th>
+            <th>Application ID</th>
+            <th>Entry</th>
+            <th>Score Set</th>
+            <th>Round</th>
+            <th>Status</th>
+            <th>Assigned</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody id="assignmentsBody">
+          <tr><td colspan="9" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Details panel -->
+    <section class="details-wrap" id="detailsWrap" aria-live="polite">
+      <div class="details-header">
+        <div>
+          <div class="details-title" id="detailsTitle">Select an assignment row to view judge submission</div>
+          <div class="details-subtle" id="detailsSub">—</div>
+        </div>
+        <div id="detailsBadges"></div>
+      </div>
+
+      <div id="detailsBody">
+        <div class="empty">Nothing selected.</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <script>
+    const db = firebase.firestore();
+    const tbody = document.getElementById('assignmentsBody');
+    const searchBox = document.getElementById('searchBox');
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+
+    function logout() {
+      firebase.auth().signOut().then(() => { window.location.href = 'signin.html'; });
+    }
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function statusClass(s) {
+      const v = String(s || '').toLowerCase();
+      if (v === 'pending')   return 'status-pill status-pending';
+      if (v === 'completed') return 'status-pill status-completed';
+      if (v === 'in-progress' || v === 'inprogress') return 'status-pill status-inprogress';
+      return 'status-pill';
+    }
+    function ts(v) {
+      try { if (!v) return null; if (v.toDate) return v.toDate(); return new Date(v); }
+      catch { return null; }
+    }
+    function tsText(v) {
+      const d = ts(v);
+      return d ? d.toLocaleString() : '-';
+    }
+
+    // Criteria used in judge view (read-only display here)
+    const CRITERIA_DEFS = [
+      { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
+      { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
+      { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
+      { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
+      { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
+      { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+      { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+      { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
+      { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
+    ];
+
+    let ALL = [];
+    let selectedRowEl = null;
+
+    function render(items) {
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="muted">No assignments found.</td></tr>';
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      items.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.dataset.judgeId = a.judgeId || '';
+        tr.dataset.applicationId = a.applicationId || '';
+        tr.dataset.judgeName = a.judgeName || '';
+        tr.dataset.judgeEmail = a.judgeEmail || '';
+        tr.innerHTML = `
+          <td>${esc(a.judgeName || '(Unnamed)')}</td>
+          <td>${esc(a.judgeEmail || '')}</td>
+          <td>${esc(a.applicationId || '')}</td>
+          <td>${esc(a.entryName || '')}</td>
+          <td>${esc(a.scoreSet || '')}</td>
+          <td>${esc(a.round || '')}</td>
+          <td><span class="${statusClass(a.status)}">${esc(a.status || 'pending')}</span></td>
+          <td>${esc(tsText(a.assignedAt))}</td>
+          <td>${esc(tsText(a.updatedAt))}</td>
+        `;
+        frag.appendChild(tr);
+      });
+      tbody.innerHTML = '';
+      tbody.appendChild(frag);
+    }
+
+    function sortItems(items, mode) {
+      const arr = [...items];
+      const getTime = (v) => {
+        const d = ts(v);
+        return d ? d.getTime() : 0;
+      };
+      switch (mode) {
+        case 'updated_asc':
+          arr.sort((a,b) => getTime(a.updatedAt) - getTime(b.updatedAt)); break;
+        case 'updated_desc':
+          arr.sort((a,b) => getTime(b.updatedAt) - getTime(a.updatedAt)); break;
+        case 'assigned_asc':
+          arr.sort((a,b) => getTime(a.assignedAt) - getTime(b.assignedAt)); break;
+        case 'assigned_desc':
+          arr.sort((a,b) => getTime(b.assignedAt) - getTime(a.assignedAt)); break;
+        default:
+          arr.sort((a,b) => getTime(b.updatedAt) - getTime(a.updatedAt));
+      }
+      return arr;
+    }
+
+    function applyFilters() {
+      const q = (searchBox.value || '').trim().toLowerCase();
+      const st = statusFilter.value.toLowerCase();
+      const sortMode = sortBy.value || 'updated_desc';
+
+      const filtered = ALL.filter(a => {
+        const hay = [
+          a.judgeName, a.judgeEmail, a.applicationId, a.entryName,
+          a.scoreSet, a.round, a.status
+        ].map(x => String(x || '').toLowerCase()).join(' ');
+        const qOk = q ? hay.includes(q) : true;
+        const sOk = st ? String(a.status || '').toLowerCase() === st : true;
+        return qOk && sOk;
+      });
+
+      render(sortItems(filtered, sortMode));
+    }
+
+    // --- Details Panel Helpers ---
+    const detailsTitle = document.getElementById('detailsTitle');
+    const detailsSub   = document.getElementById('detailsSub');
+    const detailsBadges= document.getElementById('detailsBadges');
+    const detailsBody  = document.getElementById('detailsBody');
+
+    function clearSelectionHighlight() {
+      if (selectedRowEl) selectedRowEl.classList.remove('selected-row');
+      selectedRowEl = null;
+    }
+
+    function setSelectionHighlight(tr) {
+      clearSelectionHighlight();
+      selectedRowEl = tr;
+      tr.classList.add('selected-row');
+    }
+
+    function showDetailsLoading(judgeName, judgeEmail, appId) {
+      detailsTitle.textContent = `Loading submission…`;
+      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+      detailsBadges.innerHTML = '';
+      detailsBody.innerHTML = `<div class="empty">Loading…</div>`;
+    }
+
+    function showDetailsEmpty(judgeName, judgeEmail, appId) {
+      detailsTitle.textContent = `No submission found`;
+      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+      detailsBadges.innerHTML = `<span class="badge">status: none</span>`;
+      detailsBody.innerHTML = `<div class="empty">This judge hasn’t saved or submitted any responses for this application yet.</div>`;
+    }
+
+    function renderDetails(appData, respData, judgeName, judgeEmail, appId) {
+      const entryName = appData?.entryName || appData?.name || '';
+      detailsTitle.textContent = entryName ? `Entry: ${entryName}` : `Entry details`;
+      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+
+      const stat = (respData?.status || '').toLowerCase();
+      const last = respData?.lastUpdated ? tsText(respData.lastUpdated) : '-';
+      detailsBadges.innerHTML = `
+        <span class="badge">response: ${esc(stat || 'none')}</span>
+        <span class="badge">last updated: ${esc(last)}</span>
+      `;
+
+      // Entrant summary + Responses grid
+      const entrantHtml = `
+        <div class="card">
+          <h4>Entrant Details</h4>
+          <div class="grid-2">
+            <div>
+              <div class="details-subtle">Category</div>
+              <div class="field">${esc(appData?.category || '-')}</div>
+            </div>
+            <div>
+              <div class="details-subtle">Subcategory</div>
+              <div class="field">${esc(appData?.subcategory || '-')}</div>
+            </div>
+            <div>
+              <div class="details-subtle">Award</div>
+              <div class="field">${esc(appData?.awards_choice || '-')}</div>
+            </div>
+            <div>
+              <div class="details-subtle">Entrant</div>
+              <div class="field">${esc(appData?.name || '-')}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Build criteria table
+      const scores = respData?.scores || {};
+      let rows = '';
+      CRITERIA_DEFS.forEach(c => {
+        const ans = appData?.[c.key] ?? '-';
+        const sc = scores?.[c.key]?.score;
+        const cm = scores?.[c.key]?.comment || '';
+        rows += `
+          <tr>
+            <td style="width:28%;"><strong>${esc(c.title)}</strong></td>
+            <td style="width:10%;">${sc == null || sc === '' ? '-' : esc(String(sc))}/10</td>
+            <td style="width:62%;">${cm ? esc(cm) : '<span class="muted">No comment</span>'}</td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="details-subtle" style="margin:6px 0 4px;">Entrant Answer</div>
+              <div class="field">${esc(ans)}</div>
+            </td>
+          </tr>
+        `;
+      });
+
+      const respHtml = `
+        <div class="card">
+          <h4>Scores & Comments</h4>
+          <table class="crit-table">
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th>Score</th>
+                <th>Judge Comment</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+
+      detailsBody.innerHTML = entrantHtml + respHtml;
+    }
+
+    async function loadDetailsForRow(tr) {
+      const judgeId = tr.dataset.judgeId;
+      const appId   = tr.dataset.applicationId;
+      const judgeName = tr.dataset.judgeName;
+      const judgeEmail = tr.dataset.judgeEmail;
+
+      if (!judgeId || !appId) return;
+
+      setSelectionHighlight(tr);
+      showDetailsLoading(judgeName, judgeEmail, appId);
+
+      try {
+        const appRef = db.collection('applications').doc(appId);
+        const respRef = db.collection('judgeResponses').doc(`${judgeId}_${appId}`);
+
+        const [appDoc, respDoc] = await Promise.all([appRef.get(), respRef.get()]);
+        if (!appDoc.exists) {
+          detailsTitle.textContent = 'Application not found';
+          detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
+          detailsBadges.innerHTML = '';
+          detailsBody.innerHTML = `<div class="empty">The application document does not exist.</div>`;
+          return;
+        }
+
+        if (!respDoc.exists) {
+          showDetailsEmpty(judgeName, judgeEmail, appId);
+          return;
+        }
+
+        renderDetails(appDoc.data(), respDoc.data(), judgeName, judgeEmail, appId);
+      } catch (e) {
+        detailsTitle.textContent = 'Error loading submission';
+        detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
+        detailsBadges.innerHTML = '';
+        detailsBody.innerHTML = `<div class="empty">Failed to load details: ${esc(e.message || e)}</div>`;
+      }
+    }
+
+    // Row click → load details
+    tbody.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr');
+      if (!tr || !tr.dataset) return;
+      loadDetailsForRow(tr);
+    });
+
+    // Filters
+    searchBox.addEventListener('input', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    sortBy.addEventListener('change', applyFilters);
+
+    // Auth + live data
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) return (window.location.href = 'signin.html');
+
+      try {
+        const me = await db.collection('users').doc(user.uid).get();
+        if (!me.exists || me.data().role !== 'admin') {
+          console.warn('Access denied: not admin');
+          return (window.location.href = 'signin.html');
+        }
+      } catch (e) {
+        console.warn('Admin check failed', e);
+      }
+
+      db.collection('judgeAssignments')
+        .orderBy('assignedAt', 'desc')
+        .onSnapshot({
+          next: (snap) => {
+            ALL = snap.docs.map(d => {
+              const x = d.data() || {};
+              return {
+                id: d.id,
+                judgeId: x.judgeId,
+                judgeName: x.judgeName,
+                judgeEmail: x.judgeEmail,
+                applicationId: x.applicationId,
+                entryName: x.entryName,
+                scoreSet: x.scoreSet,
+                round: x.round,
+                status: x.status || 'pending',
+                assignedAt: x.assignedAt,
+                updatedAt: x.updatedAt || x.assignedAt
+              };
+            });
+            applyFilters();
+            // Keep selection highlight if currently selected item still exists
+            if (selectedRowEl) {
+              const { judgeId, applicationId } = selectedRowEl.dataset;
+              const stillThere = Array.from(tbody.querySelectorAll('tr'))
+                .find(r => r.dataset.judgeId === judgeId && r.dataset.applicationId === applicationId);
+              if (!stillThere) {
+                clearSelectionHighlight();
+                detailsTitle.textContent = 'Select an assignment row to view judge submission';
+                detailsSub.textContent = '—';
+                detailsBadges.innerHTML = '';
+                detailsBody.innerHTML = `<div class="empty">Nothing selected.</div>`;
+              } else if (stillThere !== selectedRowEl) {
+                // Re-bind selection class to the new DOM row
+                setSelectionHighlight(stillThere);
+              }
+            }
+          },
+          error: (err) => {
+            console.error('onSnapshot error:', err);
+            tbody.innerHTML = `<tr><td colspan="9" class="muted">Error loading data.</td></tr>`;
+          }
+        });
+    });
+
+    // wire user menu
+    (function wireAdminUserMenu() {
+      const userCircle = document.getElementById('userCircle');
+      const userDropdown = document.getElementById('userDropdown');
+      const userFullNameEl = document.getElementById('userFullName');
+      if (userCircle && userDropdown) {
+        userCircle.addEventListener('click', ()=> { const open = userDropdown.classList.toggle('open'); userCircle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+        document.addEventListener('click', e => { if (!document.getElementById('adminUserMenu')?.contains(e.target)) { userDropdown.classList.remove('open'); userCircle.setAttribute('aria-expanded', 'false'); }});
+      }
+      if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+          if (!user) return;
+          const name = user.displayName || user.email || 'Admin';
+          if (userFullNameEl) userFullNameEl.textContent = name;
+          if (userCircle) {
+            let initials = user.displayName ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase() : (user.email?user.email[0].toUpperCase():'A');
+            userCircle.textContent = initials;
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
