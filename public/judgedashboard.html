@@ -454,6 +454,102 @@
   border-color: #d7336f;
   outline: none;
 }
+
+/* New styles for PDF export */
+@page { margin: 2cm; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #333;
+  background: #fff;
+}
+.header {
+  margin-bottom: 20px;
+  border-bottom: 2px solid #d7336f;
+  padding-bottom: 10px;
+}
+.content { padding: 0 20px; }
+.criteria-row {
+  margin-bottom: 30px;
+  page-break-inside: avoid;
+}
+.card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  margin-bottom: 18px;
+}
+h2 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-weight: 600;
+  font-size: 18px;
+}
+.field {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+  color: #333;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+.criterion {
+  margin: 0;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid #eee;
+  padding: 16px;
+  border-radius: 6px;
+  background: #fff;
+  margin-top: 15px;
+  width: 100%;
+}
+.score-box {
+  background: #6e1742;
+  color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  width: 120px;
+  text-align: center;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.score-input {
+  background: white;
+  color: #333;
+  padding: 6px 8px;
+  border-radius: 4px;
+  width: 100%;
+  text-align: center;
+}
+.comment-area {
+  flex: 1;
+  margin-right: 16px;
+  max-width: calc(100% - 140px);
+}
+.comment-box {
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
+  box-sizing: border-box;
+  margin-right: 16px;
+}
+footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
   </style>
 </head>
 
@@ -606,6 +702,218 @@
   <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
   <script src="/__/firebase/init.js?useEmulator=true"></script>
   <script>
+// Helper function to escape HTML
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const CRITERIA_DEFS = [
+  { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
+  { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
+  { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
+  { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
+  { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
+  { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+  { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+  { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
+  { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
+];
+// PDF export function
+async function exportAppPdf(id) {
+  try {
+    const db = firebase.firestore();
+    const doc = await db.collection('applications').doc(id).get();
+    if (!doc.exists) { 
+      alert("Application not found."); 
+      return; 
+    }
+    const d = doc.data();
+
+    const win = window.open('', '_blank');
+    if (!win) { 
+      alert('Please allow popups to view the PDF.'); 
+      return; 
+    }
+
+    // Create the criteria HTML
+    const criteriaHtml = CRITERIA_DEFS.map(c => `
+      <div class="criteria-row">
+        <div class="card">
+          <h2>${esc(c.title)}</h2>
+          <div class="field">${esc(d[c.key] || '-')}</div>
+          <div class="criterion">
+            <div class="score-box">
+              <div style="font-size:13px;">Judging</div>
+              <div class="score-input">____ / 10</div>
+            </div>
+            <div class="comment-area">
+              <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
+              <div class="comment-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Write the HTML content with updated styles
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Application Review - ${esc(id)}</title>
+        <style>
+          @page { margin: 2cm; }
+          body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            background: #fff;
+          }
+          .header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #d7336f;
+            padding-bottom: 10px;
+          }
+          .content { padding: 0 20px; }
+          .criteria-row {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+          }
+          .card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+            margin-bottom: 18px;
+          }
+          h2 {
+            margin: 0 0 12px 0;
+            color: #333;
+            font-weight: 600;
+            font-size: 18px;
+          }
+          .field {
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #f0f0f0;
+            color: #333;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            line-height: 1.45;
+          }
+          .criterion {
+            margin: 0;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            border: 1px solid #eee;
+            padding: 16px;
+            border-radius: 6px;
+            background: #fff;
+            margin-top: 15px;
+            width: 100%;
+          }
+          .score-box {
+            background: #6e1742;
+            color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            width: 120px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+          }
+          .score-input {
+            background: white;
+            color: #333;
+            padding: 6px 8px;
+            border-radius: 4px;
+            width: 100%;
+            text-align: center;
+          }
+          .comment-area {
+            flex: 1;
+            margin-right: 16px;
+            max-width: calc(100% - 140px);
+          }
+          .comment-box {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-right: 16px;
+          }
+          footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 style="margin:0;color:#d7336f;">WCW Awards - Application Review</h1>
+          <div style="color:#666;margin-top:5px;">Application ID: ${esc(id)}</div>
+        </div>
+        
+        <div class="content">
+          <div class="card">
+            <h2>Applicant Details</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <div style="color:#666;font-size:14px;">Category</div>
+                <div class="field">${esc(d.category || '-')}</div>
+              </div>
+              <div>
+                <div style="color:#666;font-size:14px;">Subcategory</div>
+                <div class="field">${esc(d.subcategory || '-')}</div>
+              </div>
+              <div>
+                <div style="color:#666;font-size:14px;">Name</div>
+                <div class="field">${esc(d.name || '-')}</div>
+              </div>
+            </div>
+          </div>
+
+          ${criteriaHtml}
+        </div>
+
+        <footer>
+          © ${new Date().getFullYear()} WCW Awards Platform
+        </footer>
+      </body>
+      </html>
+    `);
+
+    win.document.close();
+    win.focus();
+    
+    setTimeout(() => {
+      win.print();
+    }, 1000);
+
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    alert('Failed to generate PDF preview: ' + err.message);
+  }
+}
+</script>
+
+  <script>
 document.addEventListener('DOMContentLoaded', function() {
   const tableBody = document.getElementById('appsBody');
   let rows = [];
@@ -630,7 +938,7 @@ let filteredRows = [];
           <td>${row.status}</td>
           <td>${row.lastUpdated}</td>
           <td>
-            <button class="pdf-btn" title="Open printable preview" onclick="window.open('judgeapplicationview.html?id=${row.applicationId}&autoPrint=1','_blank')">
+            <button class="pdf-btn" title="Open printable preview" onclick="exportAppPdf('${row.applicationId}')">
               <span class="material-symbols-outlined pdf-icon" aria-hidden="true">picture_as_pdf</span>
             </button>
           </td>
