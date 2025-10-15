@@ -38,8 +38,9 @@
       margin-bottom: 10px;
       transition: background-color 0.2s;
     }
-    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
-
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #b8235a;
+    }
     .main-content {
       margin-left: 220px;
       padding: 30px;
@@ -63,17 +64,15 @@
       cursor: pointer;
     }
     .logout-btn:hover { background-color: #ffe6ee; }
-
     .cards-row, .tab-row {
       display: flex;
       gap: 20px;
       margin: 30px 0;
-      flex-wrap: wrap;
     }
     .card {
       background-color: white;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       padding: 20px;
       flex: 1;
       min-width: 260px;
@@ -81,7 +80,7 @@
     .card:hover { box-shadow: 0 0 10px rgba(245,1,147,0.2); }
     .card-title {
       font-weight: bold;
-      color: #d62d83;
+      color: #d7336f;
       margin-bottom: 10px;
     }
     .chart-canvas {
@@ -107,18 +106,38 @@
       margin-top: 40px;
       font-size: 14px;
     }
+  
+    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-circle { background:#8d57a0;color:#fff;border:2px solid #5f386d;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
+    .user-dropdown{display:none;position:absolute;top:48px;right:0;background:#fff0f6;border:1px solid #b8235a;border-radius:8px;min-width:180px;z-index:100;flex-direction:column;}
+    .user-dropdown.open{display:flex;}
+    .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
+    .user-dropdown button:hover{background:#ffe6ee;}
+
+    /* dark mode */
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #e0e0e0; }
+      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
+      .tab-content { background: #222 !important; color: #eee !important; }
+      .card { background: #1e1e1e; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+      .card:hover { box-shadow: 0 0 10px rgba(245,1,147,0.4); }
+      p { color: #fff !important; }
+      th, td { border-bottom: 1px solid #444 !important; }
+      th { background: #1a1a1a !important; color: #d62d83 !important; }
+      tr { color: #fff; }
+    }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="#" class="active">Dashboard</a>
-    <a href="adminentriestab.html">Entries</a>
+    <a href="adminentriestab.html">Entries</a> 
     <a href="adminusertab.html">Users</a>
     <a href="adminjudgetab.html">Judging</a>
     <a href="#" onclick="logout()">Logout</a>
   </div>
-
   <div class="main-content">
     <header>
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
@@ -134,7 +153,6 @@
         </div>
       </div>
     </header>
-
     <div class="cards-row">
       <div class="card" onclick="window.location.href='adminrounddetails.html'" style="cursor:pointer">
         <div class="card-title">WCW25</div><p>Open</p>
@@ -169,7 +187,7 @@
       <div class="card">
         <div class="card-title">Daily Volume</div>
         <canvas id="dailyChart" class="chart-canvas"></canvas>
-        <small><span style="color:#d62d83">●</span> Submitted &nbsp;
+        <small><span style="color:#d7336f">●</span> Submitted &nbsp;
                <span style="color:#e57373">●</span> Created</small>
       </div>
     </div>
@@ -208,14 +226,14 @@
         window.location.href = "signin.html";
       });
     }
-
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (!user) return (window.location.href = "signin.html");
-      try {
-        const me = await firebase.firestore().collection("users").doc(user.uid).get();
-        const name = me.exists && me.data().fullName ? me.data().fullName : "Trial Account";
+  
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) return window.location.href = "signin.html";
+      const uid = user.uid;
+      firebase.firestore().collection("users").doc(uid).get().then(doc => {
+        const name = doc.exists && doc.data().fullName ? doc.data().fullName : "Trial Account";
         document.getElementById("adminName").textContent = name;
-      } catch {}
+      });
       loadCompletionPie();
       loadMainAwardCounts();
     });
@@ -265,6 +283,28 @@
         }
       });
     }
+    // wire user menu
+    (function wireAdminUserMenu() {
+      const userCircle = document.getElementById('userCircle');
+      const userDropdown = document.getElementById('userDropdown');
+      const userFullNameEl = document.getElementById('userFullName');
+      if (userCircle && userDropdown) {
+        userCircle.addEventListener('click', ()=> { const open = userDropdown.classList.toggle('open'); userCircle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+        document.addEventListener('click', e => { if (!document.getElementById('adminUserMenu')?.contains(e.target)) { userDropdown.classList.remove('open'); userCircle.setAttribute('aria-expanded', 'false'); }});
+      }
+      if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(user => {
+          if (!user) return;
+          const name = user.displayName || user.email || 'Admin';
+          if (userFullNameEl) userFullNameEl.textContent = name;
+          if (userCircle) {
+            let initials = user.displayName ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase() : (user.email?user.email[0].toUpperCase():'A');
+            userCircle.textContent = initials;
+          }
+        });
+      }
+    })();
+
   </script>
 </body>
 </html>
