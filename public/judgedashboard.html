@@ -611,13 +611,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const tableBody = document.getElementById('appsBody');
   let rows = [];
 
-  function renderTable(filteredRows) {
+  // Add these variables at the top of your DOMContentLoaded event handler
+let currentSort = 'none';
+let filteredRows = [];
+
+  function renderTable(displayRows) {
     tableBody.innerHTML = '';
-    if (!filteredRows.length) {
+    if (!displayRows.length) {
       tableBody.innerHTML = '<tr><td colspan="8">No assigned applications found.</td></tr>';
       return;
     }
-    for (const row of filteredRows) {
+    for (const row of displayRows) {
       tableBody.innerHTML += `
         <tr>
           <td>${row.applicationId}</td>
@@ -651,6 +655,8 @@ sortBtn.onclick = () => sortList.classList.toggle('open');
 sortList.onclick = (e) => {
   if (e.target.tagName === 'BUTTON') {
     const sortMode = e.target.dataset.sort;
+    currentSort = sortMode; // Store current sort mode
+    
     sortBtn.textContent = 'SORT BY: ' + (
       sortMode === 'asc' ? 'Application ID Ascending' :
       sortMode === 'desc' ? 'Application ID Descending' :
@@ -660,18 +666,8 @@ sortList.onclick = (e) => {
     );
     sortList.classList.remove('open');
     
-    // Apply sorting
-    let filtered = [...rows];
-    if (sortMode === 'asc') {
-      filtered.sort((a, b) => String(a.applicationId).localeCompare(String(b.applicationId)));
-    } else if (sortMode === 'desc') {
-      filtered.sort((a, b) => String(b.applicationId).localeCompare(String(a.applicationId)));
-    } else if (sortMode === 'updated_desc') {
-      filtered.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-    } else if (sortMode === 'updated_asc') {
-      filtered.sort((a, b) => new Date(a.lastUpdated) - new Date(b.lastUpdated));
-    }
-    renderTable(filtered);
+    // Apply sorting to current filtered rows
+    applyCurrentSortAndFilter();
   }
 };
 
@@ -753,19 +749,39 @@ sortList.onclick = (e) => {
   });
 
   if (fApply) fApply.addEventListener('click', () => {
-    let filtered = rows.filter(row => {
-      const catOk = !FILTERS.category || row.category === FILTERS.category;
-      const subOk = !FILTERS.subcategory || row.subcategory === FILTERS.subcategory;
-      const nameOk = !FILTERS.name || row.name === FILTERS.name;
-      const statusOk = FILTERS.status.size === 0 || FILTERS.status.has(row.status);
-      return catOk && subOk && nameOk && statusOk;
-    });
-    renderTable(filtered);
+    // Update the filter apply button handler
+    applyCurrentSortAndFilter();
     fModal.classList.remove('open');
     fModal.setAttribute('aria-hidden', 'true');
   });
 
-  if (fClear) fClear.addEventListener('click', () => {
+  // Add this new function to handle both sorting and filtering
+function applyCurrentSortAndFilter() {
+  // First apply filters
+  filteredRows = rows.filter(row => {
+    const catOk = !FILTERS.category || row.category === FILTERS.category;
+    const subOk = !FILTERS.subcategory || row.subcategory === FILTERS.subcategory;
+    const nameOk = !FILTERS.name || row.name === FILTERS.name;
+    const statusOk = FILTERS.status.size === 0 || FILTERS.status.has(row.status);
+    return catOk && subOk && nameOk && statusOk;
+  });
+
+  // Then apply current sort
+  if (currentSort === 'asc') {
+    filteredRows.sort((a, b) => String(a.applicationId).localeCompare(String(b.applicationId)));
+  } else if (currentSort === 'desc') {
+    filteredRows.sort((a, b) => String(b.applicationId).localeCompare(String(a.applicationId)));
+  } else if (currentSort === 'updated_desc') {
+    filteredRows.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+  } else if (currentSort === 'updated_asc') {
+    filteredRows.sort((a, b) => new Date(a.lastUpdated) - new Date(b.lastUpdated));
+  }
+
+  renderTable(filteredRows);
+}
+
+// Update the clear filter handler
+if (fClear) fClear.addEventListener('click', () => {
     FILTERS.category = '';
     FILTERS.subcategory = '';
     FILTERS.name = '';
@@ -782,7 +798,8 @@ sortList.onclick = (e) => {
       checkbox.checked = false;
     });
     
-    renderTable(rows);
+    // Apply current sort to unfiltered rows
+    applyCurrentSortAndFilter();
   });
 
   firebase.auth().onAuthStateChanged(async user => {
