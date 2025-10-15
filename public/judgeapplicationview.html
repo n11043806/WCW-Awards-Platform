@@ -119,22 +119,22 @@
     }
   </style>
 
-  <script>
-    // if ?autoPrint=1 (or true) is present, mark page to hide UI chrome before the auto-print runs
-    (function(){
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const auto = params.get('autoPrint') === '1' || params.get('autoPrint') === 'true';
-        if (!auto) return;
-        // add class as early as possible
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', () => document.body.classList.add('auto-print-mode'));
-        } else {
-          document.body.classList.add('auto-print-mode');
-        }
-      } catch (e) { /* ignore */ }
-    })();
-  </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const autoPrint = params.get('autoPrint');
+    
+    if (autoPrint === '1' || autoPrint === 'true') {
+      // Add print mode class
+      document.body.classList.add('auto-print-mode');
+      
+      // Wait for content to be populated before printing
+      setTimeout(() => {
+        window.print();
+      }, 2000);
+    }
+  });
+</script>
 </head>
 <body>
   <header>
@@ -482,37 +482,6 @@
         addCriteriaBlock(c.key, c.title, answer, scoreVal, commentVal);
       });
 
-      // If caller requested auto-print, give the UI a moment to finish rendering then open the print dialog.
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const autoPrint = params.get('autoPrint');
-        if (autoPrint === '1' || autoPrint === 'true') {
-          // allow layout to settle
-          setTimeout(() => {
-            try { window.print(); } catch (e) { console.warn('auto-print failed', e); }
-          }, 300);
-
-          // After the print dialog closes (print or cancel) go back to the dashboard.
-          // Primary: onafterprint (most browsers). Fallbacks: visibilitychange and focus.
-          const returnToDashboard = () => {
-            try { window.location.href = 'judgedashboard.html'; } catch (e) { /* ignore */ }
-          };
-
-          if ('onafterprint' in window) {
-            window.onafterprint = () => {
-              // small delay to ensure print dialog fully closed
-              setTimeout(returnToDashboard, 200);
-            };
-          } else {
-            // fallback: when page regains focus / becomes visible, assume print dialog closed
-            const onDone = () => { setTimeout(returnToDashboard, 200); };
-            window.addEventListener('focus', onDone, { once: true });
-            document.addEventListener('visibilitychange', function v() {
-              if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', v); onDone(); }
-            });
-          }
-         }
-      } catch (e) { /* ignore */ }
 
     } catch (err) {
       console.error('Failed to load application:', err);
