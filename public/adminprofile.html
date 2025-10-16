@@ -190,12 +190,6 @@
     .toggle-password { background: none; border: none; cursor: pointer; margin-left: -36px; padding: 0 8px; font-size: 22px; color: #b8235a; display: flex; align-items: center; }
     .toggle-password:focus { outline: none; }
 
-    @media (prefers-color-scheme: dark) {
-      body { background-color: #121212; color: #e0e0e0; }
-      .user-dropdown { background: #2c2c2c; border: 1px solid #444; }
-      .tab-content { background: #222 !important; color: #eee !important; }
-      .form-group label { color: #eee; }
-    }
   </style>
 </head>
 <body>
@@ -305,8 +299,8 @@
         <form id="profileForm" class="profile-form">
           <div class="profile-fields">
             <div class="form-group">
-              <label for="full_name">Full Name:</label>
-              <input type="text" id="full_name" class="form-control" placeholder="Full Name" />
+              <label for="fullName">fullName:</label>
+              <input type="text" id="fullName" class="form-control" placeholder="fullName" />
             </div>
             <div class="form-group">
               <label for="email">Email Address:</label>
@@ -365,7 +359,24 @@
 
     function renderTab(tabKey) {
       content.innerHTML = tabContents[tabKey];
-      if (tabKey === "profile") { attachSaveHandler(); attachPasswordToggleHandlers(); }
+      if (tabKey === "profile") {
+        attachSaveHandler(); 
+        attachPasswordToggleHandlers();
+        // Fetch user data and prefill inputs again on each tab show
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+              if (doc.exists) {
+                const data = doc.data();
+                const fullNameInput = document.getElementById("fullName");
+                const emailInput = document.getElementById("email");
+                if (fullNameInput) fullNameInput.value = data["fullName"] || "";
+                if (emailInput) emailInput.value = data.email || "";
+              }
+            });
+          }
+        });
+      }
       if (tabKey === "preferences") attachDarkModeHandler();
     }
 
@@ -382,7 +393,7 @@
       const saveBtn = document.getElementById("saveProfileBtn");
       if (saveBtn) {
         saveBtn.onclick = async function() {
-          const fullName = document.getElementById("full_name").value.trim();
+          const fullName = document.getElementById("fullName").value.trim();
           const email = document.getElementById("email").value.trim();
           const newPassword = document.getElementById("newPassword").value;
           const reenterPassword = document.getElementById("reenterPassword").value;
@@ -398,7 +409,7 @@
           const db = firebase.firestore();
           try {
             await db.collection("users").doc(user.uid).set({
-              "full name": fullName,
+              "fullName": fullName,
               email: email
             }, { merge: true });
 
@@ -488,8 +499,8 @@
       if (!user) return window.location.href = "signin.html";
       firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
         if (doc.exists) {
-          const fullNameInput = document.getElementById("full_name");
-          if (fullNameInput && doc.data()["full name"]) fullNameInput.value = doc.data()["full name"];
+          const fullNameInput = document.getElementById("fullName");
+          if (fullNameInput && doc.data()["fullName"]) fullNameInput.value = doc.data()["fullName"];
           const emailInput = document.getElementById("email");
           if (emailInput && doc.data().email) emailInput.value = doc.data().email;
         }
