@@ -27,7 +27,7 @@
     .cards-row { display: flex; gap: 20px; margin: 30px 0; flex-wrap: wrap; }
     .card {
       background-color: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      padding: 20px; flex: 1; min-width: 260px;
+      padding: 20px; flex: 1; min-width: 260px; overflow: hidden;
     }
     .card:hover { box-shadow: 0 0 10px rgba(245,1,147,0.2); }
     .card-title { font-weight: bold; color: #d7336f; margin-bottom: 10px; }
@@ -55,6 +55,27 @@
     .submitted-num{ color:#d7336f; }  /* Pink */
     .judged-num{ color:#4caf50; }     /* Green */
     .completion-stats span{ color:#666; font-size:13px; display:block; text-align:center; }
+
+    /* Chart sizing – keep charts inside cards */
+    .chart-box{
+      position: relative;
+      width: 100%;
+      height: 260px;        /* control height here */
+    }
+    .chart-canvas{
+      position: absolute;   /* lets Chart.js fill container cleanly */
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100%;
+      display: block;
+    }
+
+    /* Make small viewports friendlier */
+    @media (max-width: 640px){
+      .chart-box{ height: 220px; }
+      .completion-pie{ width:160px; height:160px; }
+    }
   </style>
 </head>
 <body>
@@ -113,12 +134,12 @@
         </div>
       </div>
 
-      <!-- Daily Volume (placeholder) -->
+      <!-- Daily Volume -->
       <div class="card">
         <div class="card-title">Daily Volume</div>
-        <canvas id="dailyChart" class="chart-canvas"></canvas>
-        <small><span style="color:#d7336f">●</span> Submitted &nbsp;
-               <span style="color:#e57373">●</span> Created</small>
+        <div class="chart-box">
+          <canvas id="dailyChart" class="chart-canvas"></canvas>
+        </div>
       </div>
     </div>
 
@@ -152,6 +173,9 @@
   <script>
     function logout() { firebase.auth().signOut().then(() => window.location.href = "signin.html"); }
 
+    let dailyChartInstance = null;
+    let completionChartInstance = null;
+
     firebase.auth().onAuthStateChanged(user => {
       if (!user) return window.location.href = "signin.html";
       firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
@@ -160,9 +184,10 @@
       });
       loadCompletionPie();
       loadMainAwardCounts();
+      loadDailyVolume();
     });
 
-    /** ========= Completion Pie (Applications vs Judge Submissions) ========= */
+    /** ========= Completion Pie ========= */
     async function loadCompletionPie() {
       const db = firebase.firestore();
       let appSubmitted = 0;
@@ -190,7 +215,12 @@
       const total = appSubmitted + judgeSubmitted;
       const canvas = document.getElementById("completionChart");
 
-      new Chart(canvas, {
+      // destroy old
+      if (completionChartInstance) {
+        completionChartInstance.destroy();
+      }
+
+      completionChartInstance = new Chart(canvas, {
         type: "pie",
         data: {
           labels: ["Applications", "Judges"],
@@ -203,12 +233,152 @@
           }]
         },
         options: {
-          responsive: false,
-          maintainAspectRatio: false,
+          responsive: true,
+          maintainAspectRatio: true,   // pie already sized explicitly by CSS
           animation: { duration: 400, easing: "easeOutQuart" },
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false } // no hover
+            tooltip: { enabled: false }
+          }
+        }
+      });
+    }
+
+    /** ========= Daily Volume (Created vs Submitted per day) ========= */
+    async function loadDailyVolume() {
+      const db = firebase.firestore();
+      const DAYS = 14; // last 14 days including today
+      const now = new Date();
+
+      // Start local midnight DAYS-1 days ago
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      start.setDate(start.getDate() - (DAYS - 1));
+
+      const toKey = (d) => {
+        const y = d.getFullYear();
+        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+        const day = d.getDate().toString().padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+      const labelFor = (d) => d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+
+      const keys = [];
+      const labels = [];
+      const createdCounts = {};
+      const submittedCounts = {};
+      for (let i = 0; i < DAYS; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const key = toKey(d);
+        keys.push(key);
+        labels.push(labelFor(d));
+        createdCounts[key] = 0;
+        submittedCounts[key] = 0;
+      }
+
+      const startTS = firebase.firestore.Timestamp.fromDate(start);
+
+      try {
+        const createdSnap = await db.collection('applications')
+          .where('createdAt', '>=', startTS)
+          .get();
+
+        createdSnap.forEach(doc => {
+          const x = doc.data() || {};
+          const dt = x.createdAt?.toDate?.() || null;
+          if (!dt) return;
+          const k = toKey(dt);
+          if (k in createdCounts) createdCounts[k] += 1;
+        });
+
+        const seen = new Set();
+        const submittedAtSnap = await db.collection('applications')
+          .where('submittedAt', '>=', startTS)
+          .get();
+
+        submittedAtSnap.forEach(doc => {
+          const x = doc.data() || {};
+          const dt = x.submittedAt?.toDate?.() || null;
+          if (!dt) return;
+          const k = toKey(dt);
+          if (k in submittedCounts) {
+            submittedCounts[k] += 1;
+            seen.add(doc.id);
+          }
+        });
+
+        const altSubmittedSnap = await db.collection('applications')
+          .where('status', '==', 'submitted')
+          .where('updatedAt', '>=', startTS)
+          .get();
+
+        altSubmittedSnap.forEach(doc => {
+          if (seen.has(doc.id)) return;
+          const x = doc.data() || {};
+          const dt = x.updatedAt?.toDate?.() || null;
+          if (!dt) return;
+          const k = toKey(dt);
+          if (k in submittedCounts) submittedCounts[k] += 1;
+        });
+
+      } catch (e) {
+        console.warn('loadDailyVolume failed:', e?.message || e);
+      }
+
+      const createdSeries = keys.map(k => createdCounts[k] || 0);
+      const submittedSeries = keys.map(k => submittedCounts[k] || 0);
+
+      const ctx = document.getElementById('dailyChart');
+
+      // destroy old
+      if (dailyChartInstance) {
+        dailyChartInstance.destroy();
+      }
+
+      dailyChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Submitted',
+              data: submittedSeries,
+              tension: 0.25,
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              borderColor: '#d7336f',
+              backgroundColor: 'rgba(215, 51, 111, 0.12)',
+              fill: true,
+            },
+            {
+              label: 'Created',
+              data: createdSeries,
+              tension: 0.25,
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              borderColor: '#e57373',
+              backgroundColor: 'rgba(229, 115, 115, 0.12)',
+              fill: true,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,   // <-- respect .chart-box height
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'bottom' },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,0.06)' },
+              ticks: { precision: 0 }
+            }
           }
         }
       });
