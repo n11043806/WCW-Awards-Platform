@@ -66,9 +66,9 @@
     tr.selected-row { background: #fff6fa; }
 
     .status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #eee; color: #444; }
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-completed { background: #d4edda; color: #155724; }
-    .status-inprogress, .status-in-progress { background: #d1ecf1; color: #0c5460; }
+    .status-pending { background: #fff3cd; color: #856404; }     /* Pending */
+    .status-saved { background: #d1ecf1; color: #0c5460; }       /* Saved */
+    .status-submitted { background: #d4edda; color: #155724; }   /* Submitted */
 
     /* Details panel (below table) */
     .details-wrap {
@@ -113,7 +113,6 @@
     .user-dropdown.open{display:flex;}
     .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
     .user-dropdown button:hover{background:#ffe6ee;}
-
   </style>
 </head>
 <body>
@@ -156,8 +155,8 @@
         <select id="statusFilter" title="Filter by status">
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
-          <option value="in-progress">In progress</option>
-          <option value="completed">Completed</option>
+          <option value="saved">Saved</option>
+          <option value="submitted">Submitted</option>
         </select>
         <select id="sortBy" title="Sort results">
           <option value="updated_desc">Recently updated → Oldest</option>
@@ -218,6 +217,9 @@
     const statusFilter = document.getElementById('statusFilter');
     const sortBy = document.getElementById('sortBy');
 
+    // Live set of existing application IDs
+    let EXISTING_APPS = new Set();
+
     function logout() {
       firebase.auth().signOut().then(() => { window.location.href = 'signin.html'; });
     }
@@ -225,13 +227,15 @@
     function esc(s) {
       return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
-    function statusClass(s) {
-      const v = String(s || '').toLowerCase();
-      if (v === 'pending')   return 'status-pill status-pending';
-      if (v === 'completed') return 'status-pill status-completed';
-      if (v === 'in-progress' || v === 'inprogress') return 'status-pill status-inprogress';
-      return 'status-pill';
+
+    // Canonical pill styles for pending/saved/submitted
+    function statusClass(v) {
+      const s = String(v || '').toLowerCase();
+      if (s === 'submitted') return 'status-pill status-submitted';
+      if (s === 'saved') return 'status-pill status-saved';
+      return 'status-pill status-pending';
     }
+
     function ts(v) {
       try { if (!v) return null; if (v.toDate) return v.toDate(); return new Date(v); }
       catch { return null; }
@@ -255,7 +259,30 @@
     ];
 
     let ALL = [];
-    let selectedRowEl = null;
+    // judgeResponses override map
+    let RESP = new Map(); // key: `${judgeId}_${applicationId}` -> { status: 'saved'|'submitted', lastUpdated }
+
+    // Translate assignment/response to canonical: 'pending' | 'saved' | 'submitted'
+    function canonicalStatus(assignStatus, responseStatus) {
+      const r = String(responseStatus || '').toLowerCase();
+      if (r === 'submitted') return 'submitted';
+      if (r === 'saved') return 'saved';
+
+      const a = String(assignStatus || '').toLowerCase();
+      if (a === 'completed') return 'submitted';
+      if (a === 'in-progress' || a === 'inprogress') return 'saved';
+      return 'pending';
+    }
+
+    // Compute effective status and updatedAt for one assignment row
+    function effectiveFrom(a) {
+      const key = `${a.judgeId || ''}_${a.applicationId || ''}`;
+      const r = RESP.get(key);
+      return {
+        status: canonicalStatus(a.status, r?.status),
+        updatedAt: (r?.lastUpdated || a.updatedAt)
+      };
+    }
 
     function render(items) {
       if (!items.length) {
@@ -264,6 +291,7 @@
       }
       const frag = document.createDocumentFragment();
       items.forEach(a => {
+        const eff = effectiveFrom(a);
         const tr = document.createElement('tr');
         tr.dataset.judgeId = a.judgeId || '';
         tr.dataset.applicationId = a.applicationId || '';
@@ -276,9 +304,9 @@
           <td>${esc(a.entryName || '')}</td>
           <td>${esc(a.scoreSet || '')}</td>
           <td>${esc(a.round || '')}</td>
-          <td><span class="${statusClass(a.status)}">${esc(a.status || 'pending')}</span></td>
+          <td><span class="${statusClass(eff.status)}">${esc(eff.status)}</span></td>
           <td>${esc(tsText(a.assignedAt))}</td>
-          <td>${esc(tsText(a.updatedAt))}</td>
+          <td>${esc(tsText(eff.updatedAt))}</td>
         `;
         frag.appendChild(tr);
       });
@@ -294,15 +322,15 @@
       };
       switch (mode) {
         case 'updated_asc':
-          arr.sort((a,b) => getTime(a.updatedAt) - getTime(b.updatedAt)); break;
+          arr.sort((a,b) => getTime(effectiveFrom(a).updatedAt) - getTime(effectiveFrom(b).updatedAt)); break;
         case 'updated_desc':
-          arr.sort((a,b) => getTime(b.updatedAt) - getTime(a.updatedAt)); break;
+          arr.sort((a,b) => getTime(effectiveFrom(b).updatedAt) - getTime(effectiveFrom(a).updatedAt)); break;
         case 'assigned_asc':
           arr.sort((a,b) => getTime(a.assignedAt) - getTime(b.assignedAt)); break;
         case 'assigned_desc':
           arr.sort((a,b) => getTime(b.assignedAt) - getTime(a.assignedAt)); break;
         default:
-          arr.sort((a,b) => getTime(b.updatedAt) - getTime(a.updatedAt));
+          arr.sort((a,b) => getTime(effectiveFrom(b).updatedAt) - getTime(effectiveFrom(a).updatedAt));
       }
       return arr;
     }
@@ -313,12 +341,16 @@
       const sortMode = sortBy.value || 'updated_desc';
 
       const filtered = ALL.filter(a => {
+        // Hide rows whose application no longer exists
+        if (!EXISTING_APPS.has(a.applicationId)) return false;
+
+        const eff = effectiveFrom(a);
         const hay = [
           a.judgeName, a.judgeEmail, a.applicationId, a.entryName,
-          a.scoreSet, a.round, a.status
+          a.scoreSet, a.round, eff.status
         ].map(x => String(x || '').toLowerCase()).join(' ');
         const qOk = q ? hay.includes(q) : true;
-        const sOk = st ? String(a.status || '').toLowerCase() === st : true;
+        const sOk = st ? String(eff.status || '').toLowerCase() === st : true;
         return qOk && sOk;
       });
 
@@ -331,44 +363,40 @@
     const detailsBadges= document.getElementById('detailsBadges');
     const detailsBody  = document.getElementById('detailsBody');
 
+    let selectedRowEl = null;
     function clearSelectionHighlight() {
       if (selectedRowEl) selectedRowEl.classList.remove('selected-row');
       selectedRowEl = null;
     }
-
     function setSelectionHighlight(tr) {
       clearSelectionHighlight();
       selectedRowEl = tr;
       tr.classList.add('selected-row');
     }
-
     function showDetailsLoading(judgeName, judgeEmail, appId) {
       detailsTitle.textContent = `Loading submission…`;
       detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
       detailsBadges.innerHTML = '';
       detailsBody.innerHTML = `<div class="empty">Loading…</div>`;
     }
-
     function showDetailsEmpty(judgeName, judgeEmail, appId) {
       detailsTitle.textContent = `No submission found`;
       detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
       detailsBadges.innerHTML = `<span class="badge">status: none</span>`;
       detailsBody.innerHTML = `<div class="empty">This judge hasn’t saved or submitted any responses for this application yet.</div>`;
     }
-
     function renderDetails(appData, respData, judgeName, judgeEmail, appId) {
       const entryName = appData?.entryName || appData?.name || '';
       detailsTitle.textContent = entryName ? `Entry: ${entryName}` : `Entry details`;
       detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
 
-      const stat = (respData?.status || '').toLowerCase();
+      const stat = canonicalStatus(null, respData?.status);
       const last = respData?.lastUpdated ? tsText(respData.lastUpdated) : '-';
       detailsBadges.innerHTML = `
         <span class="badge">response: ${esc(stat || 'none')}</span>
         <span class="badge">last updated: ${esc(last)}</span>
       `;
 
-      // Entrant summary + Responses grid
       const entrantHtml = `
         <div class="card">
           <h4>Entrant Details</h4>
@@ -393,7 +421,6 @@
         </div>
       `;
 
-      // Build criteria table
       const scores = respData?.scores || {};
       let rows = '';
       CRITERIA_DEFS.forEach(c => {
@@ -451,10 +478,14 @@
 
         const [appDoc, respDoc] = await Promise.all([appRef.get(), respRef.get()]);
         if (!appDoc.exists) {
-          detailsTitle.textContent = 'Application not found';
-          detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
+          // If the application is gone, remove this row immediately and clear details
+          tr.remove();
+          ALL = ALL.filter(x => !(x.judgeId === judgeId && x.applicationId === appId));
+          clearSelectionHighlight();
+          detailsTitle.textContent = 'Select an assignment row to view judge submission';
+          detailsSub.textContent = '—';
           detailsBadges.innerHTML = '';
-          detailsBody.innerHTML = `<div class="empty">The application document does not exist.</div>`;
+          detailsBody.innerHTML = `<div class="empty">Nothing selected.</div>`;
           return;
         }
 
@@ -498,6 +529,18 @@
         console.warn('Admin check failed', e);
       }
 
+      // Live set of existing applications — used to hide orphaned assignments
+      db.collection('applications').onSnapshot({
+        next: (snap) => {
+          const set = new Set();
+          snap.forEach(d => set.add(d.id));
+          EXISTING_APPS = set;
+          applyFilters(); // re-evaluate visibility whenever apps set changes
+        },
+        error: (err) => console.error('applications onSnapshot error:', err)
+      });
+
+      // Live assignments
       db.collection('judgeAssignments')
         .orderBy('assignedAt', 'desc')
         .onSnapshot({
@@ -519,7 +562,8 @@
               };
             });
             applyFilters();
-            // Keep selection highlight if currently selected item still exists
+
+            // Keep selection highlight if still present
             if (selectedRowEl) {
               const { judgeId, applicationId } = selectedRowEl.dataset;
               const stillThere = Array.from(tbody.querySelectorAll('tr'))
@@ -531,15 +575,36 @@
                 detailsBadges.innerHTML = '';
                 detailsBody.innerHTML = `<div class="empty">Nothing selected.</div>`;
               } else if (stillThere !== selectedRowEl) {
-                // Re-bind selection class to the new DOM row
                 setSelectionHighlight(stillThere);
               }
             }
           },
           error: (err) => {
-            console.error('onSnapshot error:', err);
+            console.error('judgeAssignments onSnapshot error:', err);
             tbody.innerHTML = `<tr><td colspan="9" class="muted">Error loading data.</td></tr>`;
           }
+        });
+
+      // Live judge responses (override status/updated)
+      db.collection('judgeResponses')
+        .onSnapshot({
+          next: (snap) => {
+            const nextMap = new Map();
+            snap.forEach(d => {
+              const x = d.data() || {};
+              const j = x.judgeId || '';
+              const a = x.applicationId || '';
+              if (!j || !a) return;
+              const key = `${j}_${a}`;
+              nextMap.set(key, {
+                status: (x.status || '').toLowerCase(),   // 'saved' | 'submitted'
+                lastUpdated: x.lastUpdated || null
+              });
+            });
+            RESP = nextMap;
+            applyFilters();
+          },
+          error: (err) => console.error('judgeResponses onSnapshot error:', err)
         });
     });
 
@@ -549,8 +614,16 @@
       const userDropdown = document.getElementById('userDropdown');
       const userFullNameEl = document.getElementById('userFullName');
       if (userCircle && userDropdown) {
-        userCircle.addEventListener('click', ()=> { const open = userDropdown.classList.toggle('open'); userCircle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
-        document.addEventListener('click', e => { if (!document.getElementById('adminUserMenu')?.contains(e.target)) { userDropdown.classList.remove('open'); userCircle.setAttribute('aria-expanded', 'false'); }});
+        userCircle.addEventListener('click', ()=> {
+          const open = userDropdown.classList.toggle('open');
+          userCircle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', e => {
+          if (!document.getElementById('adminUserMenu')?.contains(e.target)) {
+            userDropdown.classList.remove('open');
+            userCircle.setAttribute('aria-expanded', 'false');
+          }
+        });
       }
       if (window.firebase && firebase.auth) {
         firebase.auth().onAuthStateChanged(user => {
@@ -558,7 +631,9 @@
           const name = user.displayName || user.email || 'Admin';
           if (userFullNameEl) userFullNameEl.textContent = name;
           if (userCircle) {
-            let initials = user.displayName ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase() : (user.email?user.email[0].toUpperCase():'A');
+            let initials = user.displayName
+              ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase()
+              : (user.email ? user.email[0].toUpperCase() : 'A');
             userCircle.textContent = initials;
           }
         });
