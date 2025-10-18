@@ -398,37 +398,53 @@
       });
     });
 
-    /** ========= Entries by Category ========= */
-    async function loadMainAwardCounts() {
-      const db = firebase.firestore();
-      const bodyEl = document.getElementById('categoriesBody');
-      bodyEl.innerHTML = `<tr><td colspan="3">Loading…</td></tr>`;
+    /** ========= Entries by Category (skip Uncategorized) ========= */
+  async function loadMainAwardCounts() {
+    const db = firebase.firestore();
+    const bodyEl = document.getElementById('categoriesBody');
+    bodyEl.innerHTML = `<tr><td colspan="3">Loading…</td></tr>`;
 
-      db.collection('applications').onSnapshot({
-        next: (snap) => {
-          const counts = new Map();
-          snap.forEach(doc => {
-            const d = doc.data() || {};
-            const cat = (d.category || '').trim();
-            if (!cat) return;
-            if (!counts.has(cat)) counts.set(cat, { submitted: 0, inProgress: 0 });
-            const status = String(d.status || '').toLowerCase();
-            if (status === 'submitted') counts.get(cat).submitted++;
-            else counts.get(cat).inProgress++;
-          });
+    db.collection('applications').onSnapshot({
+      next: (snap) => {
+        const counts = new Map();
 
-          const rows = Array.from(counts.entries())
-            .sort((a,b) => a[0].localeCompare(b[0]))
-            .map(([name, c]) => `<tr><td>${name}</td><td>${c.inProgress}</td><td>${c.submitted}</td></tr>`)
-            .join('');
-          bodyEl.innerHTML = rows || `<tr><td colspan="3">No categories found.</td></tr>`;
-        },
-        error: (err) => {
-          console.error(err);
-          bodyEl.innerHTML = `<tr><td colspan="3">Failed to load categories.</td></tr>`;
-        }
-      });
-    }
+        snap.forEach(doc => {
+          const d = doc.data() || {};
+          const rawCat = (d.category || '').trim();
+          if (!rawCat) return; // ⟵ skip uncategorized rows entirely
+
+          const status = String(d.status || '').toLowerCase();
+          const hasSubmittedAt = !!d.submittedAt;
+
+          if (!counts.has(rawCat)) {
+            counts.set(rawCat, { inProgress: 0, submitted: 0 });
+          }
+
+          if (status === 'submitted' || hasSubmittedAt) {
+            counts.get(rawCat).submitted++;
+          } else {
+            counts.get(rawCat).inProgress++;
+          }
+        });
+
+        const rows = Array.from(counts.entries())
+          .sort((a,b) => a[0].localeCompare(b[0]))
+          .map(([name, c]) =>
+            `<tr>
+              <td>${name}</td>
+              <td>${c.inProgress}</td>
+              <td>${c.submitted}</td>
+            </tr>`
+          ).join('');
+
+        bodyEl.innerHTML = rows || `<tr><td colspan="3">No categories found.</td></tr>`;
+      },
+      error: (err) => {
+        console.error("Error loading categories:", err);
+        bodyEl.innerHTML = `<tr><td colspan="3">Failed to load categories.</td></tr>`;
+      }
+    });
+  }
 
     (function userMenu() {
       const circle = document.getElementById("userCircle");
