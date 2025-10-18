@@ -253,18 +253,6 @@
                 <h2 style="color: #e91e63; margin-bottom: 1rem;">Assigned Tasks</h2>
                 <p style="color: #666; margin-bottom: 1rem;">Manage and evaluate your assigned tasks</p>
                 
-                <div class="filter-section" style="margin-bottom: 2rem;">
-                    <label for="categoryFilter" style="color: #333; font-weight: 500; margin-right: 1rem;">Browse by Category:</label>
-                    <select id="categoryFilter" onchange="filterByCategory()" style="padding: 0.5rem; border: 2px solid #e91e63; border-radius: 5px; background: white; color: #333; min-width: 200px;">
-                        <option value="">All Categories</option>
-                        <option value="scholarships">Scholarships</option>
-                        <option value="fellowships">Fellowships</option>
-                        <option value="grants">Grants</option>
-                        <option value="applications">Applications</option>
-                        <option value="research">Research</option>
-                    </select>
-                </div>
-                
                 <table>
                     <thead>
                         <tr>
@@ -283,36 +271,106 @@
         </div>
     </div>
 
-    <script>
-        function showTasksTable() {
-            document.getElementById('dashboardPage').style.display = 'none';
-            document.getElementById('tasksTablePage').classList.add('active');
-        }
+    <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+<script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+<script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+<script src="/__/firebase/init.js?useEmulator=true"></script>
+<script>
+    let allAssignments = [];
 
-        function backToDashboard() {
-            document.getElementById('tasksTablePage').classList.remove('active');
-            document.getElementById('dashboardPage').style.display = 'block';
-        }
+    function showTasksTable() {
+        document.getElementById('dashboardPage').style.display = 'none';
+        document.getElementById('tasksTablePage').classList.add('active');
+        loadAssignments();
+    }
 
-        function startScoring() {
-            alert('Redirecting to Scoring Interface...');
-        }
+    function backToDashboard() {
+        document.getElementById('tasksTablePage').classList.remove('active');
+        document.getElementById('dashboardPage').style.display = 'block';
+    }
 
-        function viewProfile() {
-            alert('Redirecting to Judge Profile...');
-        }
+    function startScoring() {
+        alert('Redirecting to Scoring Interface...');
+    }
 
-        function filterByCategory() {
-            const selectedCategory = document.getElementById('categoryFilter').value;
-            // Filter functionality can be implemented here
-            console.log('Filtering by category:', selectedCategory);
-        }
+    function viewProfile() {
+        alert('Redirecting to Judge Profile...');
+    }
 
-        function logout() {
-            if (confirm('Are you sure you want to log out?')) {
-                alert('Logging out...');
+    function logout() {
+        if (confirm('Are you sure you want to log out?')) {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "index.html";
+            });
+        }
+    }
+
+    // Load assignments from Firestore for the logged-in judge
+    function loadAssignments() {
+        const tableBody = document.getElementById('tasksTableBody');
+        tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+
+        firebase.auth().onAuthStateChanged(async user => {
+            if (!user) {
+                tableBody.innerHTML = '<tr><td colspan="5">Please log in.</td></tr>';
+                return;
             }
+            const judgeId = user.uid;
+            const db = firebase.firestore();
+
+            try {
+                const snapshot = await db.collection('judgeAssignments')
+                    .where('judgeId', '==', judgeId)
+                    .get();
+
+                allAssignments = [];
+                if (snapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="5">No assignments found.</td></tr>';
+                    return;
+                }
+
+                // Optionally, fetch application details for each assignment
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    let category = data.category || '';
+                    let applicantName = data.entryName || '';
+
+                    allAssignments.push({
+                        id: data.applicationId || '',
+                        applicantName,
+                        category,
+                        status: data.status || '',
+                        pdf: data.applicationId || ''
+                    });
+                }
+                renderAssignments();
+            } catch (err) {
+                tableBody.innerHTML = '<tr><td colspan="5">Error loading assignments.</td></tr>';
+            }
+        });
+    }
+
+    function renderAssignments() {
+        const tableBody = document.getElementById('tasksTableBody');
+        if (allAssignments.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5">No assignments found.</td></tr>';
+            return;
         }
-    </script>
+        tableBody.innerHTML = '';
+        allAssignments.forEach(a => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${a.id}</td>
+                    <td>${a.applicantName}</td>
+                    <td>${a.category}</td>
+                    <td>${a.status}</td>
+                    <td>
+                        <button class="btn action-btn" onclick="window.open('applicationPDF.html?id=${a.id}','_blank')">PDF</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+</script>
 </body>
 </html>

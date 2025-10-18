@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Profile - WCW Awards</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f4f4f4; color: #333; }
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 16px 30px;
+    }
+    header h1 { margin: 0; font-size: 24px; }
+    .user-menu-container { display: flex; align-items: center; gap: 10px; position: relative; }
+    .user-fullname {
+      font-weight: 600;
+      color: #fff;
+      font-size: 16px;
+    }
+    .user-circle {
+      background: #8d57a0;
+      color: #fff;
+      border: 2px solid #5f386d;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .user-circle:hover {
+      background: #5f386d;
+    }
+    .back-btn { background-color: white; color: #d7336f; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .back-btn:hover { background-color: #ffe6ee; }
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 30px;
+      background: #fff0f6;
+      border: 1px solid #b8235a;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(215,51,111,0.08);
+      min-width: 160px;
+      z-index: 100;
+      flex-direction: column;
+    }
+    .user-dropdown button {
+      background: none;
+      border: none;
+      color: #b8235a;
+      font-size: 15px;
+      text-align: left;
+      padding: 12px 18px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .user-dropdown button:hover {
+      background: #ffe6ee;
+    }
+    .user-dropdown.open {
+      display: flex;
+    }
+    .material-symbols-outlined {
+      color: #b8235a;
+      vertical-align: middle;
+    }
+    .tab-list { display: flex; gap: 0; margin: 40px auto 0 auto; max-width: 800px; }
+    .tab { flex: 1; padding: 16px 0; text-align: center; font-size: 18px; font-weight: 500; border: none; cursor: pointer; background: #888; color: #fff; border-radius: 6px 6px 0 0; margin-right: 2px; }
+    .tab.active { background: #b8235a; color: #fff; }
+    .tab-content { background: white; min-height: 200px; border-radius: 0 0 10px 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; padding: 30px; }
+    .form-group { margin-bottom: 18px; }
+     .save-btn { padding: 12px 20px; background-color: #d7336f; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+     .profile-form {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .profile-fields {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .form-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 0;
+      width: 100%;
+    }
+    .form-group label {
+      min-width: 180px;
+      text-align: left;
+      font-size: 16px;
+      color: #333;
+      font-weight: 500;
+    }
+    .form-control {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fafafa;
+      margin-left: 0; 
+    }
+    .save-btn-row {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 24px;
+    }
+    .save-btn {
+      padding: 8px 32px;
+      background-color: #d7336f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      width: auto;
+    }
+    .save-btn:hover {
+      background-color: #b8235a;
+    }
+    .darkmode-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #333;
+    }
+    .preferences-form .radio-label {
+      font-size: 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .preferences-form input[type="radio"] {
+      accent-color: #b8235a;
+      margin-right: 8px;
+    }
+    /* Add to your <style> section */
+    .password-input-wrapper {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .toggle-password {
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-left: -36px;
+      padding: 0 8px;
+      font-size: 22px;
+      color: #b8235a;
+      display: flex;
+      align-items: center;
+    }
+    .toggle-password:focus {
+      outline: none;
+    }
+    /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+      .container {
+        background: #1e1e1e;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      }
+      .section-title {
+        background: #2c2c2c;
+        color: #e0e0e0;
+      }
+      table {
+        background: #1e1e1e;
+        color: #e0e0e0;
+      }
+      th {
+        background: #2c2c2c;
+        color: #e0e0e0;
+      }
+      .user-dropdown {
+        background: #2c2c2c;
+        border: 1px solid #444;
+      }
+      .tab-content {
+        background: #222 !important;
+        color: #eee !important;
+      }
+      .radio-label {
+        color: #eee !important;
+      }
+      .profile-fields .form-group label {
+        color: #eee !important;
+      }
+      .darkmode-title {
+        color: #eee !important;
+      }
+    }
+
+  </style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <h1 id="welcomeMessage" style="margin:0;">Profile</h1>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="userFullName" class="user-fullname"></span>
+      <button id="userCircle" class="user-circle"></button>
+      <button class="back-btn" onclick="goBack()">Back</button>
+    </div>
+  </div>
+  <div id="userDropdown" class="user-dropdown">
+    <button onclick="showProfile()">
+      Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+    </button>
+    <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
+      Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
+    </button>
+    <button onclick="logout()">
+      Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+    </button>
+  </div>
+</header>
+  <main style="max-width:900px;margin:0 auto;">
+    <div class="tab-list">
+      <button class="tab active" data-tab="profile">Profile</button>
+      <button class="tab" data-tab="account">Account Fields</button>
+      <button class="tab" data-tab="security">Security</button>
+      <button class="tab" data-tab="preferences">Preferences</button>
+    </div>
+    <div id="profileContent" class="tab-content">
+    </div>
+  </main>
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "signin.html";
+      }).catch((error) => {
+        alert("Error signing out: " + error.message);
+      });
+    }
+    function showProfile() {
+      window.location.href = "judgeprofile.html";
+    }
+    function goBack() { 
+        window.location.href = "judgedashboard.html"; 
+    }
+    const userCircle = document.getElementById("userCircle");
+    const userDropdown = document.getElementById("userDropdown");
+    userCircle.onclick = function(e) {
+      userDropdown.classList.toggle("open");
+    };
+    document.addEventListener("click", function(e) {
+      if (!userCircle.contains(e.target) && !userDropdown.contains(e.target)) {
+        userDropdown.classList.remove("open");
+      }
+    });
+    firebase.auth().onAuthStateChanged(user => {
+      const welcomeEl = document.getElementById("welcomeMessage");
+      const fullNameEl = document.getElementById("userFullName");
+      const circleEl = document.getElementById("userCircle");
+      if (user) {
+        const name = user.displayName || user.email || "User";
+        welcomeEl.textContent = `Manage Profile`;
+        fullNameEl.textContent = name;
+        let initials = "U";
+        if (user.displayName) {
+          initials = user.displayName.split(' ').map(w => w[0]).join('').toUpperCase();
+        } else if (user.email) {
+          initials = user.email[0].toUpperCase();
+        }
+        circleEl.textContent = initials;
+
+        // Check dark mode preference from Firestore
+        firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists && doc.data().darkMode === "enabled") {
+            document.body.classList.add("dark-mode");
+          } else {
+            document.body.classList.remove("dark-mode");
+          }
+        }).catch(() => {
+          document.body.classList.remove("dark-mode");
+        });
+
+      } else {
+        window.location.href = "signin.html";
+      }
+    });
+    const tabs = document.querySelectorAll('.tab');
+    const content = document.getElementById('profileContent');
+    const tabContents = {
+      profile: `
+        <form id="profileForm" class="profile-form">
+          <div class="profile-fields">
+            <div class="form-group">
+              <label for="full name">Full Name:</label>
+              <input type="text" id="full name" class="form-control" placeholder="Full Name" />
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address:</label>
+              <input type="email" id="email" class="form-control" placeholder="Email Address" />
+            </div>
+            <div class="form-group">
+              <label for="currentPassword">Current Password:</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="currentPassword" class="form-control" placeholder="Current Password" />
+                <button type="button" class="toggle-password" data-target="currentPassword">
+                  <span class="material-symbols-outlined">visibility_off</span>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password:</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="newPassword" class="form-control" placeholder="New Password" />
+                <button type="button" class="toggle-password" data-target="newPassword">
+                  <span class="material-symbols-outlined">visibility_off</span>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reenterPassword">Re-enter New Password:</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="reenterPassword" class="form-control" placeholder="Re-enter New Password" />
+                <button type="button" class="toggle-password" data-target="reenterPassword">
+                  <span class="material-symbols-outlined">visibility_off</span>
+                </button>
+              </div>
+            </div>
+            <div class="save-btn-row">
+              <button type="button" id="saveProfileBtn" class="save-btn">Save</button>
+            </div>
+          </div>
+        </form>
+      `,
+      account: `<h2>Account Fields</h2><p>This will include address and other information.</p>`,
+      security: `<h2>Security</h2><p>This will include Multi-factor authentication.</p>`,
+      preferences: `
+        <form id="preferencesForm" class="preferences-form">
+          <div class="form-group" style="flex-direction:column;align-items:flex-start;">
+            <label class="darkmode-title" style="font-size:20px;margin-bottom:10px;">Dark Mode</label>
+            <label class="radio-label">
+              <input type="radio" name="darkMode" value="disabled" checked> Disabled
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="darkMode" value="enabled"> Enabled
+            </label>
+            <button type="button" id="savePreferencesBtn" class="save-btn" style="margin-top:18px;">Save</button>
+          </div>
+        </form>
+      `
+    };
+    function renderTab(tabKey) {
+      content.innerHTML = tabContents[tabKey];
+      if (tabKey === "profile") {attachSaveHandler(); attachPasswordToggleHandlers();}
+      if (tabKey === "preferences") attachDarkModeHandler();
+    }
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const key = tab.getAttribute('data-tab');
+        renderTab(key);
+      });
+    });
+    function attachSaveHandler() {
+      const saveBtn = document.getElementById("saveProfileBtn");
+      if (saveBtn) {
+        saveBtn.onclick = async function() {
+          // Get field values
+          const fullName = document.getElementById("full name").value.trim();
+          const email = document.getElementById("email").value.trim();
+          const newPassword = document.getElementById("newPassword").value;
+          const reenterPassword = document.getElementById("reenterPassword").value;
+
+          let errorMsg = document.getElementById("passwordErrorMsg");
+          if (errorMsg) errorMsg.remove();
+
+          const reenterGroup = document.getElementById("reenterPassword").parentElement.parentElement;
+
+          // Save fields
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            alert("Not signed in.");
+            return;
+          }
+          const db = firebase.firestore();
+          try {
+            await db.collection("users").doc(user.uid).set({
+              "full name": fullName,
+              email: email
+            }, { merge: true });
+
+            await user.updateProfile({ displayName: fullName });
+          } catch (err) {
+            alert("Error saving profile: " + err.message);
+            return;
+          }
+
+          // Password logic
+          if (newPassword) {
+            if (!reenterPassword) {
+              showPasswordError("Please re-enter your new password.");
+              return;
+            }
+            if (newPassword !== reenterPassword) {
+              showPasswordError("Passwords must match.");
+              return;
+            }
+            // Update password in Firebase Authentication
+            user.updatePassword(newPassword).then(() => {
+              alert("Profile and password updated!");
+            }).catch(err => {
+              showPasswordError("Error updating password: " + err.message);
+            });
+          } else {
+            alert("Profile updated!");
+          }
+
+          function showPasswordError(msg) {
+            let error = document.createElement("div");
+            error.id = "passwordErrorMsg";
+            error.style.color = "#d7336f";
+            error.style.fontSize = "14px";
+            error.style.marginTop = "8px";
+            error.textContent = msg;
+            const reenterInput = document.getElementById("reenterPassword");
+            reenterInput.parentElement.after(error);
+          }
+        };
+      }
+    }
+    function attachDarkModeHandler() {
+      const radios = document.querySelectorAll('input[name="darkMode"]');
+      radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.value === "enabled") {
+            document.body.classList.add("dark-mode");
+          } else {
+            document.body.classList.remove("dark-mode");
+          }
+        });
+      });
+
+      const saveBtn = document.getElementById("savePreferencesBtn");
+      if (saveBtn) {
+        saveBtn.onclick = function() {
+          const selected = document.querySelector('input[name="darkMode"]:checked').value;
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            alert("Not signed in.");
+            return;
+          }
+          const db = firebase.firestore();
+          db.collection("users").doc(user.uid).set({
+            darkMode: selected
+          }, { merge: true })
+          .then(() => {
+            alert("Preferences saved!");
+          })
+          .catch((err) => {
+            alert("Error saving preferences: " + err.message);
+          });
+        };
+      }
+    }
+    function attachPasswordToggleHandlers() {
+      document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.onclick = function() {
+          const targetId = btn.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          const icon = btn.querySelector('.material-symbols-outlined');
+          if (input.type === "password") {
+            input.type = "text";
+            icon.textContent = "visibility";
+          } else {
+            input.type = "password";
+            icon.textContent = "visibility_off";
+          }
+        };
+      });
+    }
+    // Initial render for default tab 
+    renderTab("profile");
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            // Prefill Full Name
+            const fullNameInput = document.getElementById("full name");
+            if (fullNameInput && doc.data()["full name"]) {
+              fullNameInput.value = doc.data()["full name"];
+            }
+            // Prefill Email
+            const emailInput = document.getElementById("email");
+            if (emailInput && doc.data().email) {
+              emailInput.value = doc.data().email;
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
