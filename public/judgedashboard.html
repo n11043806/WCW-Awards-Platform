@@ -713,26 +713,75 @@ function esc(str) {
 }
 
 const CRITERIA_DEFS = [
-  { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
-  { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
-  { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
-  { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
-  { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
-  { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-  { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-  { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
-  { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
+  { key: 'tell_us_about_yourself', title: 'Tell us about yourself' },
+  { key: 'tell_us_about_your_work', title: 'Tell us about your work' },
+  { key: 'what_inspired_you', title: 'What inspired you to do this work?' },
+  { key: 'what_makes_you_unique', title: 'What makes what you do special or unique?' },
+  { key: 'Greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
+  { key: 'Top_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+  { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+  { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
+  { key: 'recognition_reason', title: 'Why should you be recognised in this category' }
 ];
 // PDF export function
 async function exportAppPdf(id) {
   try {
     const db = firebase.firestore();
-    const doc = await db.collection('applications').doc(id).get();
-    if (!doc.exists) { 
-      alert("Application not found."); 
-      return; 
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      alert("Please log in first.");
+      return;
     }
-    const d = doc.data();
+
+    // Try to get data the same way the dashboard does
+    let appData = {};
+    
+    // First try to get from applications collection
+    try {
+      const appDoc = await db.collection('applications').doc(id).get();
+      if (appDoc.exists) {
+        appData = appDoc.data();
+        console.log('Loaded application data:', appData);
+      }
+    } catch (err) {
+      console.warn('Could not read application directly:', err);
+    }
+
+    // If no data from applications, try judgeAssignments
+    if (!appData.name) {
+      try {
+        const assignDoc = await db.collection('judgeAssignments')
+          .doc(`${user.uid}_${id}`)
+          .get();
+        if (assignDoc.exists) {
+          const assignData = assignDoc.data();
+          appData = {
+            name: assignData.entryName || assignData.name || '-',
+            category: assignData.category || '-',
+            subcategory: assignData.subcategory || '-',
+            // Try to get other fields from assignment data
+            tell_us_about_yourself: assignData.tell_us_about_yourself || '-',
+            tell_us_about_your_work: assignData.tell_us_about_your_work || '-',
+            what_inspired_you: assignData.what_inspired_you || '-',
+            what_makes_you_unique: assignData.what_makes_you_unique || '-',
+            Greatest_challenge: assignData.Greatest_challenge || '-',
+            Top_achievements: assignData.Top_achievements || '-',
+            achievements_significant: assignData.achievements_significant || '-',
+            big_picture_vision: assignData.big_picture_vision || '-',
+            recognition_reason: assignData.recognition_reason || '-'
+          };
+          console.log('Loaded assignment data:', appData);
+        }
+      } catch (err) {
+        console.warn('Could not read judge assignment:', err);
+      }
+    }
+
+    // If still no data, show error
+    if (!appData.name || appData.name === '-') {
+      alert("Could not load application data for PDF export.");
+      return;
+    }
 
     const win = window.open('', '_blank');
     if (!win) { 
@@ -740,27 +789,31 @@ async function exportAppPdf(id) {
       return; 
     }
 
-    // Create the criteria HTML
-    const criteriaHtml = CRITERIA_DEFS.map(c => `
-      <div class="criteria-row">
-        <div class="card">
-          <h2>${esc(c.title)}</h2>
-          <div class="field">${esc(d[c.key] || '-')}</div>
-          <div class="criterion">
-            <div class="score-box">
-              <div style="font-size:13px;">Judging</div>
-              <div class="score-input">____ / 10</div>
-            </div>
-            <div class="comment-area">
-              <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
-              <div class="comment-box"></div>
+    // Create the criteria HTML with debug info
+    const criteriaHtml = CRITERIA_DEFS.map(c => {
+      const value = appData[c.key] || '-';
+      console.log(`Field ${c.key}:`, value); // Debug log
+      return `
+        <div class="criteria-row">
+          <div class="card">
+            <h2>${esc(c.title)}</h2>
+            <div class="field">${esc(value)}</div>
+            <div class="criterion">
+              <div class="score-box">
+                <div style="font-size:13px;">Judging</div>
+                <div class="score-input">____ / 10</div>
+              </div>
+              <div class="comment-area">
+                <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
+                <div class="comment-box"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
-    // Write the HTML content with updated styles
+    // Rest of your existing HTML template code
     win.document.write(`
       <!DOCTYPE html>
       <html>
@@ -876,15 +929,15 @@ async function exportAppPdf(id) {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
               <div>
                 <div style="color:#666;font-size:14px;">Category</div>
-                <div class="field">${esc(d.category || '-')}</div>
+                <div class="field">${esc(appData.category || '-')}</div>
               </div>
               <div>
                 <div style="color:#666;font-size:14px;">Subcategory</div>
-                <div class="field">${esc(d.subcategory || '-')}</div>
+                <div class="field">${esc(appData.subcategory || '-')}</div>
               </div>
               <div>
                 <div style="color:#666;font-size:14px;">Name</div>
-                <div class="field">${esc(d.name || '-')}</div>
+                <div class="field">${esc(appData.name || '-')}</div>
               </div>
             </div>
           </div>
