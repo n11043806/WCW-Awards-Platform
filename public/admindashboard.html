@@ -219,13 +219,13 @@
         const appsSnap = await db.collection("applications").get();
         appsSnap.forEach(doc => {
           const s = (doc.data().status || "").toLowerCase();
-          if (s === "submitted") appSubmitted++;
+          if (s === "Submitted") appSubmitted++;
         });
 
         const jrSnap = await db.collection("judgeResponses").get();
         jrSnap.forEach(doc => {
           const s = (doc.data().status || "").toLowerCase();
-          if (s === "submitted") judgeSubmitted++;
+          if (s === "Submitted") judgeSubmitted++;
         });
       } catch (e) {
         console.warn("Failed to load completion counts:", e);

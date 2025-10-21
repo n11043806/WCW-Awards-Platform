@@ -4,15 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Invite Users - WCW Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      color: #ffffff;
+      background-color: #fafafa;
+      color: #333;
     }
 
+    /* Sidebar */
     .sidebar {
       position: fixed;
       top: 0;
@@ -21,82 +23,163 @@
       height: 100vh;
       background-color: #d7336f;
       padding: 20px;
-      color: white;
+      color: #fff;
       display: flex;
       flex-direction: column;
+      align-items: center;
     }
 
     .sidebar h2 {
       text-align: center;
       margin-bottom: 40px;
       font-size: 22px;
+      letter-spacing: 0.5px;
+      color: #fff; /* ensure consistent white heading like other pages */
     }
 
     .sidebar a {
       display: block;
-      color: white;
+      color: #fff;
       text-decoration: none;
       padding: 10px 15px;
       border-radius: 4px;
       margin-bottom: 10px;
+      transition: background-color 0.2s;
+      width: 100%;
+      text-align: left;
     }
 
-    .sidebar a:hover, .sidebar a.active {
+    .sidebar a:hover,
+    .sidebar a.active {
       background-color: #b8235a;
     }
 
+    /* Main content */
     .main-content {
       margin-left: 220px;
       padding: 40px;
+      min-height: 100vh;
     }
 
-    h1 {
+    header {
+      background-color: #d7336f;
+      color: white;
+      padding: 20px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      margin: 0;
+    }
+
+    /* Invite form layout */
+    .invite-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 70%;
+      max-width: 900px;
+    }
+
+    h2 {
       color: #d7336f;
-      font-size: 28px;
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+
+    p.description {
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 15px;
     }
 
     label {
       display: block;
       margin-top: 20px;
       font-weight: bold;
+      color: #444;
     }
 
-    input[type="text"], textarea {
+    input[type="text"],
+    textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-top: 8px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #333;
+      background-color: #fff;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #d7336f;
+      box-shadow: 0 0 3px rgba(215, 51, 111, 0.4);
     }
 
     .roles {
-      margin-top: 20px;
+      margin-top: 25px;
     }
 
     .roles label {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-weight: normal;
+      color: #333;
+      margin-top: 8px;
     }
 
     .message-box {
-      margin-top: 20px;
+      margin-top: 25px;
     }
 
     .send-btn {
-      margin-top: 20px;
+      margin-top: 30px;
       background-color: #d7336f;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 16px;
       cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .send-btn:hover {
       background-color: #b8235a;
     }
 
+    .send-btn:active {
+      transform: scale(0.98);
+    }
+
+    .send-btn span {
+      font-size: 20px;
+    }
+
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 50px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .main-content { margin-left: 0; padding: 20px; }
+      .sidebar { position: static; width: 100%; height: auto; flex-direction: row; justify-content: space-around; }
+      .invite-container { width: 100%; padding: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -104,29 +187,50 @@
     <h2>WCW Admin</h2>
     <a href="admindashboard.html">Dashboard</a>
     <a href="adminentriestab.html">Entries</a>
-    <a href="adminusertab.html">Users</a>
+    <a href="adminusertab.html" class="active">Users</a>
     <a href="adminjudgetab.html">Judging</a>
     <a href="#" onclick="logout()">Logout</a>
   </div>
 
   <div class="main-content">
-    <h1>Users &rarr; Invite users</h1>
+    <header>
+      <h1>Users &rarr; Invite Users</h1>
+    </header>
 
-    <label>Email address</label>
-    <input type="text" id="emailInput" placeholder="Enter an email address..." />
+    <div class="invite-container">
+      <h2>Invite New Users</h2>
+      <p class="description">
+        Send personalized invitations for new users to join the WCW Awards platform.
+        Select their role(s) and optionally include a custom message.
+      </p>
 
-    <div class="roles">
-      <label><input type="checkbox" value="Applicant"> Entrant</label>
-      <label><input type="checkbox" value="Judge"> Judge</label>
+      <label>Email address</label>
+      <input type="text" id="emailInput" placeholder="Enter an email address..." />
+
+      <div class="roles">
+        <label><input type="checkbox" value="Applicant"> Entrant</label>
+        <label><input type="checkbox" value="Judge"> Judge</label>
+      </div>
+
+      <div class="message-box">
+        <label>Message (optional)</label>
+        <textarea rows="6" placeholder="Write a custom message..."></textarea>
+      </div>
+
+      <button class="send-btn">
+        <span class="material-symbols-outlined">send</span> Send Invite
+      </button>
     </div>
 
-    <div class="message-box">
-      <label>Message (optional)</label>
-      <textarea rows="8" placeholder="Write a custom message..."></textarea>
-    </div>
-
-    <button class="send-btn">Send Invite</button>
+    <footer>
+      &copy; 2025 WCW Awards Platform. All rights reserved.
+    </footer>
   </div>
+
+  <!-- Firebase Logout -->
+  <script src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
+  <script src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
+  <script src="/__/firebase/init.js?useEmulator=true"></script>
   <script>
     function logout() {
       firebase.auth().signOut().then(() => {

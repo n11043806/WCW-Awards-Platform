@@ -14,135 +14,193 @@
       color: #333;
     }
 
+    /* Sidebar */
     .sidebar {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 220px;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 220px; height: 100vh;
       background-color: #d7336f;
       padding: 20px;
-      color: white;
-      display: flex;
-      flex-direction: column;
+      color: #fff;
+      display: flex; flex-direction: column;
     }
-
     .sidebar h2 {
       text-align: center;
       margin-bottom: 40px;
       font-size: 22px;
+      letter-spacing: .3px;
+      color: #fff; /* ensure crisp white like other pages */
     }
-
     .sidebar a {
-      color: white;
-      text-decoration: none;
-      padding: 10px 15px;
-      border-radius: 4px;
+      color: #fff; text-decoration: none;
+      padding: 10px 15px; border-radius: 4px;
       margin-bottom: 10px;
-      transition: background-color 0.2s;
+      transition: background-color .2s;
     }
+    .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
 
-    .sidebar a:hover, .sidebar a.active {
-      background-color: #b8235a;
-    }
-
+    /* Main area */
     .main-content {
       margin-left: 220px;
       padding: 40px;
+      min-height: 100vh;
     }
 
-    /* Main content wrapper */
-    .main-content {
-      margin-left: 220px;
-      padding: 40px;
-    }
-    h1 {
-      color: #d7336f;
-      font-size: 24px;
+    /* Page header (consistent with other pages) */
+    header {
+      background-color: #d7336f;
+      color: #fff;
+      padding: 20px 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,.1);
       margin-bottom: 30px;
     }
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+    }
 
+    /* Card wrapper for form */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      padding: 24px 26px;
+      max-width: 820px;
+    }
+
+    /* Form elements */
+    h2.form-title {
+      margin: 0 0 8px;
+      color: #d7336f;
+      font-size: 20px;
+    }
+    p.form-subtitle {
+      margin: 0 0 18px;
+      color: #666;
+      font-size: 14px;
+    }
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-top: 16px;
       font-weight: 600;
+      color: #444;
     }
     input, select {
       width: 100%;
-      padding: 10px;
+      padding: 10px 12px;
       margin-top: 6px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       background: #fff;
+      transition: border-color .15s, box-shadow .15s;
     }
-
+    input:focus, select:focus {
+      outline: none;
+      border-color: #d7336f;
+      box-shadow: 0 0 0 3px rgba(215,51,111,.15);
+    }
     .note {
       font-size: 12px;
       color: #777;
       margin-top: 6px;
     }
 
+    /* Buttons */
     .buttons {
-      margin-top: 24px;
+      margin-top: 22px;
       display: flex;
       gap: 10px;
     }
-    button {
-      background-color: #d7336f;
-      color: white;
-      padding: 10px 20px;
+    .btn {
       border: none;
-      border-radius: 4px;
-      font-weight: bold;
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-weight: 700;
       cursor: pointer;
+      transition: transform .05s ease-in-out, background-color .15s ease-in-out;
     }
+    .btn:active { transform: translateY(1px); }
 
-    .btn-save {
+    .btn-primary {
       background-color: #d7336f;
-      color: white;
-      margin-right: 10px;
+      color: #fff;
     }
+    .btn-primary:hover { background-color: #b8235a; }
+
     .btn-secondary {
       background-color: #444;
+      color: #fff;
     }
-    .btn-secondary:hover {
-      background-color: #333;
-    }
+    .btn-secondary:hover { background-color: #333; }
 
+    /* Status messages */
     .status {
       margin-top: 12px;
       font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .status.ok {
+      background: #e7f7ee;
+      color: #1a7b4a;
+      border: 1px solid #cceedd;
+    }
+    .status.error {
+      background: #fdecee;
+      color: #8c1f4c;
+      border: 1px solid #f6c6d5;
     }
 
+    /* Footer (optional if you add one later) */
+    footer {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .main-content { margin-left: 0; padding: 20px; }
+      .card { padding: 20px; }
+    }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="admindashboard.html">Dashboard</a>
-    <a href="#">Entries</a>
-    <a href="adminusertab.html">Users</a>
-    <a href="#">Judging</a>
+    <a href="adminentriestab.html">Entries</a>
+    <a href="adminusertab.html" class="active">Users</a>
+    <a href="adminjudgetab.html">Judging</a>
     <a href="#" onclick="logout()">Logout</a>
   </div>
 
   <div class="main-content">
-    <h1>Users → New user</h1>
+    <header>
+      <h1>Users → New user</h1>
+    </header>
 
     <div class="card">
-      <form id="newUserForm">
-        <label for="fullName">Full Name</label>
+      <h2 class="form-title">Create a new user</h2>
+      <p class="form-subtitle">Set their details and role. A temporary password will be used at first login.</p>
+
+      <form id="newUserForm" novalidate>
+        <label for="fullName">Full name</label>
         <input type="text" id="fullName" placeholder="Enter full name" required />
 
-        <label for="email">Email Address</label>
+        <label for="email">Email address</label>
         <input type="email" id="email" placeholder="Enter email address" required />
 
-        <label for="password">Temporary Password</label>
+        <label for="password">Temporary password</label>
         <input type="password" id="password" placeholder="Enter password" required />
         <div class="note">At least 8 characters, include a number and a capital letter.</div>
 
-        <label for="confirmPassword">Password Confirmation</label>
+        <label for="confirmPassword">Password confirmation</label>
         <input type="password" id="confirmPassword" placeholder="Confirm password" required />
 
         <label for="role">Role</label>
@@ -151,17 +209,21 @@
           <option value="applicant">Applicant</option>
           <option value="judge">Judge</option>
           <option value="admin">Admin</option>
-          <!-- Add more if you support them elsewhere: lead_judge, program_manager, etc. -->
+          <!-- Add more if supported: lead_judge, program_manager, etc. -->
         </select>
 
-        <div id="status" class="status" role="alert"></div>
+        <div id="status" class="status" role="alert" aria-live="polite" aria-atomic="true" style="display:none;"></div>
 
         <div class="buttons">
-          <button type="submit">Save</button>
-          <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
         </div>
       </form>
     </div>
+
+    <!-- Optional footer
+    <footer>&copy; 2025 WCW Awards Platform. All rights reserved.</footer>
+    -->
   </div>
 
   <!-- Firebase SDKs (Hosting auto init, compat build to match other pages) -->
@@ -174,6 +236,10 @@
     const app = firebase.app();
     const auth = firebase.auth();
     const db = firebase.firestore();
+
+    function logout() {
+      auth.signOut().then(() => { location.href = "signin.html"; });
+    }
 
     // Gate this page to admins only (matches your other admin pages)
     auth.onAuthStateChanged(async (user) => {
@@ -192,7 +258,7 @@
       }
     });
 
-    // Keep admin session intact: create the new user via a temporary secondary app
+    // Create user via a temporary secondary app to avoid dropping the current admin session
     async function createUserOnSecondary(email, password) {
       let secondary;
       try {
@@ -211,18 +277,20 @@
 
     function setStatus(message, type = "error") {
       const el = document.getElementById("status");
-      el.textContent = message || "";
-      el.className = `status ${type}`;
+      if (!message) {
+        el.style.display = "none";
+        el.textContent = "";
+        el.className = "status";
+        return;
+      }
+      el.style.display = "inline-block";
+      el.textContent = message;
+      el.className = "status " + (type === "ok" ? "ok" : "error");
     }
 
     function validPassword(pw) {
       return pw.length >= 8 && /[A-Z]/.test(pw) && /[0-9]/.test(pw);
     }
-
-    document.getElementById("logoutLink").addEventListener("click", (e) => {
-      e.preventDefault();
-      auth.signOut().then(() => location.href = "signin.html");
-    });
 
     document.getElementById("cancelBtn").addEventListener("click", () => {
       location.href = "adminusertab.html";
@@ -252,7 +320,6 @@
         setStatus("Creating user…", "ok");
         const newUser = await createUserOnSecondary(email, password);
 
-        // Save the user profile with a single-string role
         await db.collection("users").doc(newUser.uid).set({
           fullName,
           email,
@@ -261,7 +328,7 @@
         }, { merge: true });
 
         setStatus("User created successfully. Redirecting…", "ok");
-        setTimeout(() => location.href = "adminusertab.html", 650);
+        setTimeout(() => location.href = "adminusertab.html", 700);
       } catch (err) {
         console.error(err);
         setStatus(err?.message || "Failed to create user.");
