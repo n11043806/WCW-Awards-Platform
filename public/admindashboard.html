@@ -210,55 +210,55 @@
     });
 
     /** ========= Completion Pie ========= */
-    async function loadCompletionPie() {
-      const db = firebase.firestore();
-      let appSubmitted = 0;
-      let judgeSubmitted = 0;
+      async function loadCompletionPie() {
+    const db = firebase.firestore();
+    let appSubmitted = 0;
+    let judgeSubmitted = 0;
 
-      try {
-        const appsSnap = await db.collection("applications").get();
-        appsSnap.forEach(doc => {
-          const s = (doc.data().status || "").toLowerCase();
-          if (s === "Submitted") appSubmitted++;
-        });
-
-        const jrSnap = await db.collection("judgeResponses").get();
-        jrSnap.forEach(doc => {
-          const s = (doc.data().status || "").toLowerCase();
-          if (s === "Submitted") judgeSubmitted++;
-        });
-      } catch (e) {
-        console.warn("Failed to load completion counts:", e);
-      }
-
-      document.getElementById("submittedCount").textContent = appSubmitted;
-      document.getElementById("judgedCount").textContent = judgeSubmitted;
-
-      const total = appSubmitted + judgeSubmitted;
-      const canvas = document.getElementById("completionChart");
-
-      if (completionChartInstance) completionChartInstance.destroy();
-
-      completionChartInstance = new Chart(canvas, {
-        type: "pie",
-        data: {
-          labels: ["Applications", "Judges"],
-          datasets: [{
-            data: total ? [appSubmitted, judgeSubmitted] : [1],
-            backgroundColor: total ? ["#d7336f", "#4caf50"] : ["#ccc"],
-            borderColor: "#fff",
-            borderWidth: 2,
-            hoverOffset: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          animation: { duration: 400, easing: "easeOutQuart" },
-          plugins: { legend: { display: false }, tooltip: { enabled: false } }
-        }
+    try {
+      const appsSnap = await db.collection("applications").get();
+      appsSnap.forEach(doc => {
+        const d = doc.data() || {};
+        const status = String(d.status || d.stage || "").toLowerCase();
+        if (status === "submitted" || d.submittedAt) appSubmitted++; // also count by submittedAt if present
       });
+
+      const jrSnap = await db.collection("judgeResponses").get();
+      jrSnap.forEach(doc => {
+        const s = String((doc.data().status || "")).toLowerCase();
+        if (s === "submitted") judgeSubmitted++;
+      });
+    } catch (e) {
+      console.warn("Failed to load completion counts:", e);
     }
+
+    document.getElementById("submittedCount").textContent = appSubmitted;
+    document.getElementById("judgedCount").textContent = judgeSubmitted;
+
+    const total = appSubmitted + judgeSubmitted;
+    const canvas = document.getElementById("completionChart");
+    if (completionChartInstance) completionChartInstance.destroy();
+
+    completionChartInstance = new Chart(canvas, {
+      type: "pie",
+      data: {
+        labels: ["Applications", "Judges"],
+        datasets: [{
+          data: total ? [appSubmitted, judgeSubmitted] : [1],
+          backgroundColor: total ? ["#d7336f", "#4caf50"] : ["#ccc"],
+          borderColor: "#fff",
+          borderWidth: 2,
+          hoverOffset: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 400, easing: "easeOutQuart" },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+      }
+    });
+  }
 
     /** ========= Daily Volume (Created vs Submitted per day) ========= */
     async function loadDailyVolume(days) {
