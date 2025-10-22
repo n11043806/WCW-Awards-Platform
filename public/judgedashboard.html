@@ -733,10 +733,8 @@ async function exportAppPdf(id) {
       return;
     }
 
-    // Try to get data the same way the dashboard does
+    // Get application data
     let appData = {};
-    
-    // First try to get from applications collection
     try {
       const appDoc = await db.collection('applications').doc(id).get();
       if (appDoc.exists) {
@@ -745,10 +743,7 @@ async function exportAppPdf(id) {
       }
     } catch (err) {
       console.warn('Could not read application directly:', err);
-    }
-
-    // If no data from applications, try judgeAssignments
-    if (!appData.name) {
+      // Try judgeAssignments fallback if needed
       try {
         const assignDoc = await db.collection('judgeAssignments')
           .doc(`${user.uid}_${id}`)
@@ -759,7 +754,7 @@ async function exportAppPdf(id) {
             name: assignData.entryName || assignData.name || '-',
             category: assignData.category || '-',
             subcategory: assignData.subcategory || '-',
-            // Try to get other fields from assignment data
+            // Add other fields as needed
             tell_us_about_yourself: assignData.tell_us_about_yourself || '-',
             tell_us_about_your_work: assignData.tell_us_about_your_work || '-',
             what_inspired_you: assignData.what_inspired_you || '-',
@@ -770,14 +765,24 @@ async function exportAppPdf(id) {
             big_picture_vision: assignData.big_picture_vision || '-',
             recognition_reason: assignData.recognition_reason || '-'
           };
-          console.log('Loaded assignment data:', appData);
         }
-      } catch (err) {
-        console.warn('Could not read judge assignment:', err);
+      } catch (err2) {
+        console.warn('Could not read judge assignment:', err2);
       }
     }
 
-    // If still no data, show error
+    // Get judge scores and comments
+    let judgeScores = {};
+    try {
+      const judgeDoc = await db.collection('judgeResponses').doc(`${user.uid}_${id}`).get();
+      if (judgeDoc.exists && judgeDoc.data().scores) {
+        judgeScores = judgeDoc.data().scores;
+        console.log('Loaded judge scores:', judgeScores);
+      }
+    } catch (err) {
+      console.warn('Could not load judge scores:', err);
+    }
+
     if (!appData.name || appData.name === '-') {
       alert("Could not load application data for PDF export.");
       return;
@@ -789,10 +794,13 @@ async function exportAppPdf(id) {
       return; 
     }
 
-    // Create the criteria HTML with debug info
+    // Create the criteria HTML with actual scores and comments
     const criteriaHtml = CRITERIA_DEFS.map(c => {
       const value = appData[c.key] || '-';
-      console.log(`Field ${c.key}:`, value); // Debug log
+      const judgeData = judgeScores[c.key] || {};
+      const score = judgeData.score || '';
+      const comment = judgeData.comment || '';
+      
       return `
         <div class="criteria-row">
           <div class="card">
@@ -801,11 +809,11 @@ async function exportAppPdf(id) {
             <div class="criterion">
               <div class="score-box">
                 <div style="font-size:13px;">Judging</div>
-                <div class="score-input">____ / 10</div>
+                <div class="score-input">${score ? esc(score) : '____'} / 10</div>
               </div>
               <div class="comment-area">
                 <div style="font-size:13px;color:#666;margin-bottom:6px;">Comments</div>
-                <div class="comment-box"></div>
+                <div class="comment-box">${comment ? esc(comment) : ''}</div>
               </div>
             </div>
           </div>
@@ -813,7 +821,7 @@ async function exportAppPdf(id) {
       `;
     }).join('');
 
-    // Rest of your existing HTML template code
+    // Write the HTML with updated styles for displaying scores/comments
     win.document.write(`
       <!DOCTYPE html>
       <html>
@@ -871,7 +879,6 @@ async function exportAppPdf(id) {
             border-radius: 6px;
             background: #fff;
             margin-top: 15px;
-            width: 100%;
           }
           .score-box {
             background: #6e1742;
@@ -894,6 +901,7 @@ async function exportAppPdf(id) {
             border-radius: 4px;
             width: 100%;
             text-align: center;
+            font-weight: bold;
           }
           .comment-area {
             flex: 1;
@@ -907,7 +915,9 @@ async function exportAppPdf(id) {
             border-radius: 6px;
             padding: 8px;
             box-sizing: border-box;
-            margin-right: 16px;
+            background: #fff;
+            white-space: pre-wrap;
+            line-height: 1.4;
           }
           footer {
             margin-top: 30px;
