@@ -276,7 +276,7 @@ The system is built using modern web technologies with Firebase as the backend, 
   - Assign judges to applications
   - Monitor judging progress
 - Assigned by: Manual Firestore update or another admin
-- 
+  
 <b>Judge</b>
 - Access: Judge dashboard, assigned applications
 - Permissions: View assigned applications, submit scores and comments, abstain from entries
