@@ -712,20 +712,95 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-const CRITERIA_DEFS = [
-  { key: 'Tell_us_about_yourself', title: 'Tell us about yourself' },
-  { key: 'Tell_us_about_your_work', title: 'Tell us about your work' },
-  { key: 'What_inspired_you', title: 'What inspired you to do this work?' },
-  { key: 'What_makes_you_special_unique', title: 'What makes what you do special or unique?' },
-  { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
-  { key: 'top_greatest_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-  { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-  { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
-  { key: 'recognised_in_this_category', title: 'Why should you be recognised in this category' }
-];
-// PDF export function
+// Replace the hardcoded CRITERIA_DEFS with this dynamic version
+let CRITERIA_DEFS = []; // Start empty, will be populated from Firestore
+
+// Function to load criteria from Firestore
+async function loadCriteriaDefinitions() {
+  try {
+    const db = firebase.firestore();
+    
+    // Load questions from applicationInfo collection
+    const snapshot = await db.collection('applicationInfo')
+      .where('Question', '!=', null) // Only docs with Question field
+      .get();
+    
+    if (snapshot.empty) {
+      console.warn('No questions found in applicationInfo collection');
+      // Use hardcoded fallback
+      CRITERIA_DEFS = [
+        { key: 'Tell_us_about_yourself', title: 'Tell us about yourself' },
+        { key: 'Tell_us_about_your_work', title: 'Tell us about your work' },
+        { key: 'What_inspired_you', title: 'What inspired you to do this work?' },
+        { key: 'What_makes_you_special_unique', title: 'What makes what you do special or unique?' },
+        { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
+        { key: 'top_greatest_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+        { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+        { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
+        { key: 'recognised_in_this_category', title: 'Why should you be recognised in this category' }
+      ];
+      return;
+    }
+
+    // Convert Firestore docs to CRITERIA_DEFS format
+    const questions = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      
+      // Skip documents that don't have proper question structure
+      if (!data.Question || !data.question_ID) return;
+      
+      const question = {
+        key: data.question_ID, // Use question_ID as the key for matching responses
+        title: data.Question, // Use Question as the display title
+        docId: doc.id, // Store document ID for reference
+        wordLimit: data.wordLimit || null
+      };
+      
+      // Extract order from Season2025 field (e.g., "Q1" -> 1)
+      const seasonOrder = data.Season2025 || data.season2025;
+      if (seasonOrder) {
+        const orderMatch = String(seasonOrder).match(/Q?(\d+)/i);
+        question.order = orderMatch ? parseInt(orderMatch[1]) : 999;
+      } else {
+        question.order = 999; // No order specified
+      }
+      
+      questions.push(question);
+    });
+
+    // Sort by order field
+    questions.sort((a, b) => a.order - b.order);
+    
+    CRITERIA_DEFS = questions;
+    console.log(`Loaded ${CRITERIA_DEFS.length} criteria from applicationInfo:`, CRITERIA_DEFS);
+    
+  } catch (err) {
+    console.error('Error loading criteria definitions:', err);
+    // Use hardcoded fallback on error
+    CRITERIA_DEFS = [
+      { key: 'Tell_us_about_yourself', title: 'Tell us about yourself' },
+      { key: 'Tell_us_about_your_work', title: 'Tell us about your work' },
+      { key: 'What_inspired_you', title: 'What inspired you to do this work?' },
+      { key: 'What_makes_you_special_unique', title: 'What makes what you do special or unique?' },
+      { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
+      { key: 'top_greatest_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+      { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+      { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
+      { key: 'recognised_in_this_category', title: 'Why should you be recognised in this category' }
+    ];
+  }
+}
+
+// Update the exportAppPdf function to ensure criteria are loaded
 async function exportAppPdf(id) {
   try {
+    // Ensure criteria are loaded before generating PDF
+    if (CRITERIA_DEFS.length === 0) {
+      await loadCriteriaDefinitions();
+    }
+    
+    // Rest of your existing exportAppPdf code remains the same...
     const db = firebase.firestore();
     const user = firebase.auth().currentUser;
     if (!user) {
@@ -980,13 +1055,15 @@ async function exportAppPdf(id) {
 </script>
 
   <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+  // Load criteria definitions first
+  await loadCriteriaDefinitions();
+  
+  // Rest of your existing DOMContentLoaded code remains exactly the same...
   const tableBody = document.getElementById('appsBody');
   let rows = [];
-
-  // Add these variables at the top of your DOMContentLoaded event handler
-let currentSort = 'none';
-let filteredRows = [];
+  let currentSort = 'none';
+  let filteredRows = [];
 
   function renderTable(displayRows) {
     tableBody.innerHTML = '';
