@@ -180,49 +180,30 @@
     const tsText = v => { const d=ts(v); return d ? d.toLocaleString() : '-'; };
     const statusClass = v => (v==='submitted'?'status-pill status-submitted':v==='saved'?'status-pill status-saved':'status-pill status-pending');
 
-    // Criteria labels (answers pulled from application doc)
-    const CRITERIA_DEFS = [
-      { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
-      { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
-      { key: 'whatInspiredYou', title: 'What inspired you to do this work?' },
-      { key: 'whatMakesYouUnique', title: 'What makes what you do special or unique?' },
-      { key: 'greatestChallenge', title: 'What has been your greatest challenge & how have you addressed this' },
-      { key: 'topAchievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-      { key: 'achievementsSignificance', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-      { key: 'bigPictureVision', title: 'What is your big picture vision for the work you are doing' },
-      { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
-    ];
-
-    // camelCase -> snake_case helper (for judgeResponses.scores keys)
+    // casing helpers
     const toSnake = k => String(k).replace(/[A-Z]/g, m => '_' + m.toLowerCase()).replace(/^_/, '');
+    const toCamel = k => String(k).replace(/_([a-z])/g, (_,c) => c.toUpperCase());
 
-    // Judge responses cache
-    // RESP: Map<`${judgeId}_${applicationId}`, { status, lastUpdated, _docId }>
-    let RESP = new Map();
+    // judgeResponses cache
+    let RESP = new Map(); // key: `${judgeId}_${applicationId}` -> response doc data (+ _docId)
 
     function deriveResponseStatus(x){
-      const s = (x.status || '').toLowerCase();
+      const s = (x?.status || '').toLowerCase();
       if (s === 'submitted') return 'submitted';
       if (s === 'saved') return 'saved';
-      // No explicit status -> infer: if any score OR comment present => saved, else pending
-      const sc = x.scores || {};
-      const hasAny = Object.values(sc).some(v => {
-        if (!v || typeof v !== 'object') return false;
-        return v.score != null || (v.comment && String(v.comment).trim() !== '');
-      });
+      const sc = x?.scores || {};
+      const hasAny = Object.values(sc).some(v => v && (v.score != null || (v.comment && String(v.comment).trim() !== '')));
       return hasAny ? 'saved' : 'pending';
     }
-
     function canonicalStatus(assignStatus, responseStatus){
-      if (responseStatus) return responseStatus; // already derived
+      if (responseStatus) return responseStatus;
       const a = String(assignStatus || '').toLowerCase();
       if (a === 'completed') return 'submitted';
       if (a === 'in-progress' || a === 'inprogress') return 'saved';
       return 'pending';
     }
-
     const maxDate = (a,b,c) => {
-      const ta = ts(a)?.getTime() || 0, tb = ts(b)?.getTime() || 0, tc = ts(c)?.getTime() || 0;
+      const ta = ts(a)?.getTime()||0, tb = ts(b)?.getTime()||0, tc = ts(c)?.getTime()||0;
       const m = Math.max(ta,tb,tc); return m ? new Date(m) : null;
     };
 
@@ -240,7 +221,6 @@
       const updatedAt = maxDate(r?.lastUpdated || r?.updatedAt, a.updatedAt, appTime);
 
       const entryName = app?.entryName || app?.name || a.entryName || '';
-
       return { status, updatedAt, entryName };
     }
 
@@ -326,7 +306,60 @@
       detailsBadges.innerHTML  = '';
       detailsBody.innerHTML    = `<div class="empty">Loading…</div>`;
     }
-    function renderDetails(appData, respDoc, judgeName, judgeEmail, appId){
+
+    // ---- NEW: fetch dynamic question defs from applicationInfo ----
+    async function getQuestionDefsForApp(appData) {
+      // appData.season can be used to order questions via that season field on each question doc
+      const season = appData?.season || null;
+      const snap = await db.collection('applicationInfo').get();
+      const defs = [];
+      snap.forEach(doc => {
+        if (doc.id === 'DatesInfo') return;
+        const d = doc.data() || {};
+        const label = d.Question || d.label || doc.id;
+        const key   = d.question_ID || '';   // where the answer lives on the application (and score key)
+        if (!key) return;
+        const orderToken = season && d[season] ? String(d[season]) : null; // e.g. "Q1"
+        defs.push({ key, label, orderToken, wordLimit: d.wordLimit ?? null });
+      });
+
+      // natural-ish ordering by orderToken (Q1, Q2, CS1...) then by label
+      const ordVal = (t) => {
+        if (!t) return [Infinity, t || ''];
+        const m = String(t).match(/(\D*)(\d+)?/);
+        const prefix = (m && m[1] || '').toUpperCase();
+        const num = m && m[2] ? Number(m[2]) : 0;
+        return [prefix, num];
+      };
+      defs.sort((a,b) => {
+        const A = ordVal(a.orderToken), B = ordVal(b.orderToken);
+        if (A[0] !== B[0]) return (A[0] > B[0]) ? 1 : -1;
+        if (A[1] !== B[1]) return A[1] - B[1];
+        return a.label.localeCompare(b.label);
+      });
+
+      return defs;
+    }
+
+    function readAnswer(appData, key){
+      // try exact, camelCase, and snake_case variants
+      const candidates = [key, toCamel(key), toSnake(key)];
+      for (const k of candidates) {
+        if (appData && Object.prototype.hasOwnProperty.call(appData, k)) return appData[k];
+      }
+      return '-';
+    }
+    function readScore(scores, key){
+      if (!scores) return {};
+      const candidates = [key, toCamel(key), toSnake(key)];
+      for (const k of candidates) {
+        const hit = scores[k];
+        if (hit && typeof hit === 'object') return hit;
+      }
+      return {};
+    }
+
+    async function renderDetails(appData, respDoc, judgeName, judgeEmail, appId){
       const resp = respDoc?.data() || null;
       const entryName = appData?.entryName || appData?.name || '';
       detailsTitle.textContent = entryName ? `Entry: ${entryName}` : `Entry details`;
@@ -352,17 +385,17 @@
         </div>
       `;
 
+      // NEW: dynamic questions pulled from applicationInfo
+      const qDefs = await getQuestionDefsForApp(appData);
       const scores = resp?.scores || {};
-      const rows = CRITERIA_DEFS.map(c => {
-        const camel = c.key;
-        const snake = toSnake(c.key);
-        const ans = appData?.[camel] ?? '-';
-        const s   = scores[camel] ?? scores[snake] ?? {};
-        const sc  = s?.score;
-        const cm  = s?.comment || '';
+      const rows = qDefs.map(q => {
+        const ans = readAnswer(appData, q.key);
+        const scObj = readScore(scores, q.key);
+        const sc = scObj?.score;
+        const cm = scObj?.comment || '';
         return `
           <tr>
-            <td style="width:28%;"><strong>${esc(c.title)}</strong></td>
+            <td style="width:28%;"><strong>${esc(q.label)}</strong></td>
             <td style="width:10%;">${sc == null || sc === '' ? '-' : esc(String(sc))}/10</td>
             <td style="width:62%;">${cm ? esc(cm) : '<span class="muted">No comment</span>'}</td>
           </tr>
@@ -373,7 +406,9 @@
             </td>
           </tr>
         `;
-      }).join('');
+      }).join('') || `
+        <tr><td colspan="3" class="muted">No questions configured in applicationInfo.</td></tr>
+      `;
 
       const respHtml = `
         <div class="card">
@@ -400,14 +435,13 @@
 
       try {
         const appRef = db.collection('applications').doc(appId);
-        // IMPORTANT: query by fields; do not assume doc id format
         const respQ  = await db.collection('judgeResponses')
           .where('judgeId','==',judgeId)
           .where('applicationId','==',appId)
           .limit(1)
           .get();
 
-        const [appDoc] = await Promise.all([appRef.get()]);
+        const appDoc = await appRef.get();
         if (!appDoc.exists){
           tr.remove();
           ALL = ALL.filter(x => !(x.judgeId === judgeId && x.applicationId === appId));
@@ -419,7 +453,7 @@
           return;
         }
         const respDoc = !respQ.empty ? respQ.docs[0] : null;
-        renderDetails(appDoc.data(), respDoc, judgeName, judgeEmail, appId);
+        await renderDetails(appDoc.data(), respDoc, judgeName, judgeEmail, appId);
       } catch (e){
         detailsTitle.textContent = 'Error loading submission';
         detailsSub.textContent   = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
@@ -428,16 +462,19 @@
       }
     }
 
+    // row click
     tbody.addEventListener('click', e => {
       const tr = e.target.closest('tr');
       if (!tr || !tr.dataset) return;
       loadDetailsForRow(tr);
     });
 
+    // filters
     searchBox.addEventListener('input', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
     sortBy.addEventListener('change', applyFilters);
 
+    // auth + live data
     firebase.auth().onAuthStateChanged(async user => {
       if (!user) return (window.location.href='signin.html');
 
@@ -446,7 +483,7 @@
         if (!me.exists || me.data().role !== 'admin') return (window.location.href='signin.html');
       } catch { return (window.location.href='signin.html'); }
 
-      // Live Applications (index the fields we need)
+      // applications index
       db.collection('applications').onSnapshot({
         next: snap => {
           const map = new Map();
@@ -459,6 +496,7 @@
               subcategory: x.subcategory || '',
               awards_choice: x.awards_choice || '',
               status: (x.status || '').toLowerCase(),
+              season: x.season || null,
               submittedAt: x.submittedAt || null,
               updatedAt: x.updatedAt || x.createdAt || null
             });
@@ -469,7 +507,7 @@
         error: err => console.error('applications onSnapshot error:', err)
       });
 
-      // Live Assignments
+      // assignments
       db.collection('judgeAssignments').orderBy('assignedAt','desc').onSnapshot({
         next: snap => {
           ALL = snap.docs.map(d => {
@@ -496,7 +534,7 @@
         }
       });
 
-      // Live Judge Responses
+      // judge responses
       db.collection('judgeResponses').onSnapshot({
         next: snap => {
           const nextMap = new Map();
@@ -505,10 +543,7 @@
             const j = x.judgeId || '';
             const a = x.applicationId || '';
             if (!j || !a) return;
-            nextMap.set(`${j}_${a}`, {
-              ...x,
-              _docId: d.id
-            });
+            nextMap.set(`${j}_${a}`, { ...x, _docId: d.id });
           });
           RESP = nextMap;
           applyFilters();
