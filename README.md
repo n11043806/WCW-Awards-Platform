@@ -56,7 +56,7 @@ The system is built using modern web technologies with Firebase as the backend, 
   - Firebase SDK (v12.0.0) - Firebase services
  
   # Project Setup
-  1. Clone the project from github
+  1. Clone the project from Github
      ```
      git clone https://github.com/n11043806/WCW-Awards-Platform.git
      cd wcw-awards-platform
@@ -151,7 +151,7 @@ The system is built using modern web technologies with Firebase as the backend, 
   └── app.js                          # Shared JavaScript utilities
 ```
 
-# Firebae Configuration - collections structure
+# Firebase Configuration - collections structure
   1. users collection
      ```
       {
