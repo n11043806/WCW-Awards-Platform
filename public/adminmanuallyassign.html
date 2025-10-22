@@ -6,7 +6,6 @@
   <title>Admin – Manual Assignment | WCW Awards</title>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
-
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #fafafa; color: #333; }
 
@@ -15,195 +14,65 @@
       background-color: #d7336f; padding: 20px; color: #fff; display: flex; flex-direction: column;
     }
     .sidebar h2 { text-align: center; margin-bottom: 40px; font-size: 22px; }
-    .sidebar a {
-      color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px;
-      margin-bottom: 10px; transition: background-color 0.2s;
-    }
+    .sidebar a { color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; transition: background-color 0.2s; }
     .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
 
     .main-content { margin-left: 220px; padding: 30px; }
     header {
-      background-color: #d7336f;
-      color: white;
-      padding: 20px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background-color: #d7336f; color: white; padding: 20px; border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center;
     }
 
-    /* === Page layout matching dashboard spacing === */
-    .main-content {
-      margin-left: 220px;
-      padding: 30px;
-    }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .page-header h1 { color: #d62d83; font-size: 26px; margin: 0; line-height: 1.2; }
+    .back-btn { background:#fff; color:#d62d83; border:1px solid #d62d83; padding:8px 12px; border-radius:6px; font-weight:700; cursor:pointer; }
+    .back-btn:hover { background:#ffe6ee; }
 
-    /* Header row with Back button on the RIGHT */
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between; /* push title left, button right */
-      margin-bottom: 14px;
-    }
-    .page-header h1 {
-      color: #d62d83;
-      font-size: 26px;
-      margin: 0;
-      line-height: 1.2;
-    }
-    .back-btn {
-      background: #fff;
-      color: #d62d83;
-      border: 1px solid #d62d83;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .back-btn:hover { background: #ffe6ee; }
-
-    /* === Inline toolbar (Score Set & Round) === */
     .toolbar {
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
+      background:#fff; border:1px solid #eee; border-radius:8px; padding:12px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:20px;
     }
-    .tool { display: flex; align-items: center; gap: 8px; }
-    .tool label { font-weight: 600; font-size: 14px; color: #444; }
-    select {
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      background: #fff;
-      outline: none;
-    }
+    .tool { display:flex; align-items:center; gap:8px; }
+    .tool label { font-weight:600; font-size:14px; color:#444; }
+    select { padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; background:#fff; outline:none; }
 
-    /* === Panels grid === */
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; } }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media (max-width: 1024px) { .grid { grid-template-columns:1fr; } }
 
     .panel {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      padding: 20px;
-      border: 1px solid #eee;
-      display: flex;
-      flex-direction: column;
-      /* Give the panel a stable height relative to the viewport so inner list can scroll */
-      min-height: 420px;
-      height: calc(100vh - 260px);
-      /* 260px ≈ header + toolbar + margins; adjust if your layout changes */
-      overflow: hidden;
+      background:#fff; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); padding:20px; border:1px solid #eee;
+      display:flex; flex-direction:column; min-height:420px; height:calc(100vh - 260px); overflow:hidden;
     }
-    .panel h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
-      color: #d62d83;
-    }
-    .meta-note { color: #777; font-size: 12.5px; margin-top: 10px; }
+    .panel h2 { margin:0 0 12px; font-size:18px; color:#d62d83; }
+    .meta-note { color:#777; font-size:12.5px; margin-top:10px; }
 
-    .row-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 10px 0;
-    }
-    .search { flex: 1; }
-    .search input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      background: #fff;
-    }
-    .tiny {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      color: #555;
-    }
+    .row-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0; }
+    .search { flex:1; }
+    .search input { width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; background:#fff; }
+    .tiny { display:flex; align-items:center; gap:10px; font-size:14px; color:#555; }
 
-    /* The scrolling list area */
-    .list {
-      border: 1px solid #eee;
-      border-radius: 8px;
-      background: #fcfcfc;
-      overflow-y: auto;
-      overflow-x: hidden;
-      flex: 1;
-      max-height: calc(100% - 70px);
-    }
-    .item {
-      display: grid;
-      grid-template-columns: 26px 1fr;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 12px;
-      border-bottom: 1px solid #eee;
-    }
-    .item:last-child { border-bottom: none; }
-    .item:hover { background: #fff; }
-    .sub { color: #777; font-size: 12.5px; }
+    .list { border:1px solid #eee; border-radius:8px; background:#fcfcfc; overflow-y:auto; overflow-x:hidden; flex:1; max-height:calc(100% - 70px); }
+    .item { display:grid; grid-template-columns:26px 1fr; gap:10px; align-items:center; padding:10px 12px; border-bottom:1px solid #eee; }
+    .item:last-child { border-bottom:none; }
+    .item:hover { background:#fff; }
+    .sub { color:#777; font-size:12.5px; }
 
-    /* === Footer action row === */
-    .footer-actions {
-      margin-top: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 999px;
-      font-size: 12.5px;
-      color: #555;
-    }
-    .btn-primary {
-      background: #d62d83;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-primary:hover { background: #b8235a; }
+    .footer-actions { margin-top:16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; background:#fff; border:1px solid #eee; border-radius:999px; font-size:12.5px; color:#555; }
+    .btn-primary { background:#d62d83; color:white; border:none; border-radius:6px; padding:10px 16px; font-weight:bold; cursor:pointer; }
+    .btn-primary:hover { background:#b8235a; }
 
-    .error { color: #b00020; font-weight: 700; margin: 8px 0 0; }
+    .error { color:#b00020; font-weight:700; margin:8px 0 0; }
 
-    .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
-    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
+    .user-menu-container { position:relative; display:flex; gap:10px; align-items:center; }
+    .user-fullname { color:#fff; font-weight:600; margin-right:6px; }
     .user-circle { background:#8d57a0;color:#fff;border:2px solid #5f386d;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
     .user-dropdown{display:none;position:absolute;top:48px;right:0;background:#fff0f6;border:1px solid #b8235a;border-radius:8px;min-width:180px;z-index:100;flex-direction:column;}
     .user-dropdown.open{display:flex;}
     .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
     .user-dropdown button:hover{background:#ffe6ee;}
-
   </style>
 </head>
 <body>
-  <!-- Sidebar (exactly like dashboard) -->
   <div class="sidebar">
     <h2>WCW Admin</h2>
     <a href="admindashboard.html">Dashboard</a>
@@ -213,7 +82,6 @@
     <a href="#" onclick="logout()">Logout</a>
   </div>
 
-  <!-- Main content -->
   <div class="main-content">
     <header>
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
@@ -222,22 +90,15 @@
           <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
           <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
           <div id="userDropdown" class="user-dropdown" aria-hidden="true">
-            <button onclick="window.location.href='adminprofile.html'">
-              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
-            </button>
-            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
-              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
-            </button>
-            <button onclick="logout()">
-              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
-            </button>
+            <button onclick="window.location.href='adminprofile.html'">Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span></button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span></button>
+            <button onclick="logout()">Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span></button>
           </div>
           <button class="back-btn" onclick="location.href='adminmanagejudge.html'">Back</button>
         </div>
       </div>
     </header>
 
-    <!-- Slim inline toolbar under title -->
     <div class="toolbar">
       <div class="tool">
         <label for="scoreSet">Score Set</label>
@@ -263,9 +124,7 @@
         <h2>Judges</h2>
         <div class="row-actions">
           <div class="search"><input id="judgeSearch" type="text" placeholder="Search judges by name or email…"></div>
-          <div class="tiny">
-            <label><input type="checkbox" id="selectAllJudges"> Select all</label>
-          </div>
+          <div class="tiny"><label><input type="checkbox" id="selectAllJudges"> Select all</label></div>
         </div>
         <div id="judgeList" class="list"></div>
         <div class="meta-note">Only users with role <b>judge</b> are listed.</div>
@@ -275,13 +134,11 @@
       <section class="panel">
         <h2>Entries</h2>
         <div class="row-actions">
-          <div class="search"><input id="entrySearch" type="text" placeholder="Search entries by title/name, id, or category…"></div>
-          <div class="tiny">
-            <label><input type="checkbox" id="selectAllEntries"> Select all</label>
-          </div>
+          <div class="search"><input id="entrySearch" type="text" placeholder="Search submitted entries by title/name, id, or category…"></div>
+          <div class="tiny"><label><input type="checkbox" id="selectAllEntries"> Select all</label></div>
         </div>
         <div id="entryList" class="list"></div>
-        <div class="meta-note">Loaded from the <b>applications</b> collection.</div>
+        <div class="meta-note">Showing <b>submitted</b> applications only.</div>
       </section>
     </div>
 
@@ -300,33 +157,29 @@
 
   <script>
     const db = () => firebase.firestore();
-    const $ = (id) => document.getElementById(id);
+    const $  = (id) => document.getElementById(id);
 
     let ALL_JUDGES = [];
-    let ALL_ENTRIES = [];
+    let ALL_ENTRIES = []; // submitted-only
     const JUDGE_MAP = new Map(); // id -> { id, fullName, email }
-    const ENTRY_MAP = new Map(); // id -> { id, entryName, category, subcategory, awards_choice }
+    const ENTRY_MAP = new Map(); // id -> { id, entryName, category, subcategory, awards_choice, submittedAt, status }
 
-    function logout() {
-      firebase.auth().signOut().then(() => (window.location.href = "signin.html"));
-    }
-    function showError(msg) { $('errorBox').textContent = msg || ''; }
-    function esc(s) {
-      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-    function updateSelectedPills() {
+    function logout(){ firebase.auth().signOut().then(()=> (window.location.href="signin.html")); }
+    function showError(msg){ $('errorBox').textContent = msg || ''; }
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    function updateSelectedPills(){
       $('selJudgesCount').textContent = document.querySelectorAll('.ck-judge:checked').length;
       $('selEntriesCount').textContent = document.querySelectorAll('.ck-entry:checked').length;
     }
 
-    // Render lists
-    function renderJudges(list) {
+    /* ---------- Renderers ---------- */
+    function renderJudges(list){
       const box = $('judgeList'); box.innerHTML = '';
-      if (!list.length) { box.innerHTML = `<div class="item"><div></div><div class="sub">No judges found.</div></div>`; return; }
+      if(!list.length){ box.innerHTML = `<div class="item"><div></div><div class="sub">No judges found.</div></div>`; return; }
       const frag = document.createDocumentFragment();
-      list.forEach(j => {
-        const el = document.createElement('div');
-        el.className = 'item';
+      list.forEach(j=>{
+        const el = document.createElement('div'); el.className='item';
         el.innerHTML = `
           <input type="checkbox" class="ck-judge" value="${j.id}">
           <div>
@@ -339,15 +192,15 @@
       box.querySelectorAll('.ck-judge').forEach(cb => cb.addEventListener('change', updateSelectedPills));
       updateSelectedPills();
     }
-    function renderEntries(list) {
+
+    function renderEntries(list){
       const box = $('entryList'); box.innerHTML = '';
-      if (!list.length) { box.innerHTML = `<div class="item"><div></div><div class="sub">No entries found.</div></div>`; return; }
+      if(!list.length){ box.innerHTML = `<div class="item"><div></div><div class="sub">No submitted entries found.</div></div>`; return; }
       const frag = document.createDocumentFragment();
-      list.forEach(e => {
+      list.forEach(e=>{
         const line1 = e.entryName || '(Untitled)';
         const line2 = [e.category, e.subcategory, e.awards_choice].filter(Boolean).join(' • ');
-        const el = document.createElement('div');
-        el.className = 'item';
+        const el = document.createElement('div'); el.className='item';
         el.innerHTML = `
           <input type="checkbox" class="ck-entry" value="${e.id}">
           <div>
@@ -361,69 +214,97 @@
       updateSelectedPills();
     }
 
-    // Filters
-    function filterJudges(q) {
-      q = q.trim().toLowerCase();
-      if (!q) return ALL_JUDGES;
+    /* ---------- Filters ---------- */
+    function filterJudges(q){
+      q = (q||'').trim().toLowerCase();
+      if(!q) return ALL_JUDGES;
       return ALL_JUDGES.filter(j =>
-        (j.fullName || '').toLowerCase().includes(q) ||
-        (j.email || '').toLowerCase().includes(q)
+        (j.fullName||'').toLowerCase().includes(q) ||
+        (j.email||'').toLowerCase().includes(q)
       );
     }
-    function filterEntries(q) {
-      q = q.trim().toLowerCase();
-      if (!q) return ALL_ENTRIES;
+
+    function filterEntries(q){
+      q = (q||'').trim().toLowerCase();
+      if(!q) return ALL_ENTRIES;
       return ALL_ENTRIES.filter(e =>
-        (e.entryName || '').toLowerCase().includes(q) ||
-        (e.id || '').toLowerCase().includes(q) ||
-        (e.category || '').toLowerCase().includes(q) ||
-        (e.subcategory || '').toLowerCase().includes(q) ||
-        (e.awards_choice || '').toLowerCase().includes(q)
+        (e.entryName||'').toLowerCase().includes(q) ||
+        (e.id||'').toLowerCase().includes(q) ||
+        (e.category||'').toLowerCase().includes(q) ||
+        (e.subcategory||'').toLowerCase().includes(q) ||
+        (e.awards_choice||'').toLowerCase().includes(q)
       );
-    } 
-
-    // Helpers
-    function toggleAll(selector, checked) {
-      document.querySelectorAll(selector).forEach(cb => cb.checked = checked);
-      updateSelectedPills();
-    }
-    function checkedIds(containerSel, boxSel) {
-      return Array.from(document.querySelector(containerSel).querySelectorAll(boxSel))
-        .filter(cb => cb.checked).map(cb => cb.value);
     }
 
-    // Loads
-    async function loadJudges() {
-      const snap = await db().collection('users').where('role', '==', 'judge').get();
-      ALL_JUDGES = snap.docs.map(d => {
+    /* ---------- Submitted helpers ---------- */
+    function isSubmitted(app){
+      const status = String(app.status || '').toLowerCase();
+      const hasSubmittedAt = !!app.submittedAt;
+      return status === 'submitted' || hasSubmittedAt;
+    }
+
+    /* ---------- Loads ---------- */
+    async function loadJudges(){
+      const snap = await db().collection('users').where('role','==','judge').get();
+      ALL_JUDGES = snap.docs.map(d=>{
         const x = d.data();
         const fullName = x.fullName || x['full name'] || x.displayName || '';
         const email = x.email || '';
-        const j = { id: d.id, fullName, email };
+        const j = { id:d.id, fullName, email };
         JUDGE_MAP.set(d.id, j);
         return j;
       });
       renderJudges(ALL_JUDGES);
     }
-    async function loadEntries() {
-      const snap = await db().collection('applications').get();
-      ALL_ENTRIES = snap.docs.map(d => {
-        const x = d.data();
-        const e = {
-          id: d.id,
-          entryName: x.entryName || x.name || '',
-          category: x.category || '',
-          subcategory: x.subcategory || '',
-          awards_choice: x.awards_choice || ''
-        };
-        ENTRY_MAP.set(d.id, e);
-        return e;
-      });
+
+    async function loadEntries(){
+      const coll = db().collection('applications');
+      const results = new Map();
+
+      // Query A: explicit submitted status (cover common casings)
+      try {
+        const q1 = await coll.where('status','in',['submitted','Submitted']).get();
+        q1.forEach(d => results.set(d.id, d));
+      } catch(e) { /* 'in' may need index; ignore and fallback */ }
+
+      // Query B: has submittedAt timestamp (>= epoch)
+      try {
+        const epoch = new Date(0);
+        const q2 = await coll.where('submittedAt','>=', epoch).get();
+        q2.forEach(d => results.set(d.id, d));
+      } catch(e) { /* could require index; ignore and fallback */ }
+
+      // Fallback: if nothing returned (indexes missing), fetch all and filter client-side
+      if (results.size === 0) {
+        const all = await coll.get();
+        all.forEach(d => results.set(d.id, d));
+      }
+
+      ALL_ENTRIES = Array.from(results.values())
+        .map(d => {
+          const x = d.data();
+          const e = {
+            id: d.id,
+            entryName: x.entryName || x.name || '',
+            category: x.category || '',
+            subcategory: x.subcategory || '',
+            awards_choice: x.awards_choice || '',
+            submittedAt: x.submittedAt || null,
+            status: x.status || ''
+          };
+          return e;
+        })
+        .filter(isSubmitted); // ensure submitted only
+
+      // keep map for validation later
+      ENTRY_MAP.clear();
+      ALL_ENTRIES.forEach(e => ENTRY_MAP.set(e.id, e));
+
       renderEntries(ALL_ENTRIES);
     }
 
-    // Fallback getters
-    async function getJudgeInfo(id) {
+    /* ---------- Fallback getters ---------- */
+    async function getJudgeInfo(id){
       let j = JUDGE_MAP.get(id);
       if (j && (j.fullName || j.email)) return j;
       try {
@@ -435,25 +316,38 @@
           return j;
         }
       } catch {}
-      return { id, fullName: '', email: '' };
+      return { id, fullName:'', email:'' };
     }
-    async function getEntryInfo(id) {
+
+    async function getEntryInfo(id){
       let e = ENTRY_MAP.get(id);
       if (e && e.entryName) return e;
       try {
         const doc = await db().collection('applications').doc(id).get();
         if (doc.exists) {
           const x = doc.data();
-          e = { id, entryName: x.entryName || x.name || '', category: x.category || '', subcategory: x.subcategory || '', awards_choice: x.awards_choice || '' };
-          ENTRY_MAP.set(id, e);
+          e = {
+            id,
+            entryName: x.entryName || x.name || '',
+            category: x.category || '',
+            subcategory: x.subcategory || '',
+            awards_choice: x.awards_choice || '',
+            submittedAt: x.submittedAt || null,
+            status: x.status || ''
+          };
           return e;
         }
       } catch {}
-      return { id, entryName: '' };
+      return { id, entryName:'', status:'' };
     }
 
-    // Assign (idempotent upsert by judgeId + applicationId)
-    async function assignSelected() {
+    /* ---------- Assign (with submitted-only guard) ---------- */
+    function checkedIds(containerSel, boxSel){
+      return Array.from(document.querySelector(containerSel).querySelectorAll(boxSel))
+        .filter(cb => cb.checked).map(cb => cb.value);
+    }
+
+    async function assignSelected(){
       const judgeIds = checkedIds('#judgeList', '.ck-judge');
       const entryIds = checkedIds('#entryList', '.ck-entry');
       const scoreSet = $('scoreSet').value;
@@ -465,8 +359,17 @@
       }
       showError('');
 
+      // Safety: ensure every selected entry is submitted
+      for (const id of entryIds) {
+        const info = await getEntryInfo(id);
+        if (!isSubmitted(info)) {
+          showError('One or more selected entries are not submitted. Please deselect them.');
+          return;
+        }
+      }
+
       const total = judgeIds.length * entryIds.length;
-      if (!confirm(`Create or update ${total} assignment${total > 1 ? 's' : ''}?`)) return;
+      if (!confirm(`Create or update ${total} assignment${total>1?'s':''}?`)) return;
 
       try {
         const ts = firebase.firestore.FieldValue.serverTimestamp();
@@ -481,37 +384,25 @@
             const e = await getEntryInfo(applicationId);
             const entryName = e.entryName || '(Untitled)';
 
-            // Deterministic doc id to avoid duplicates and allow updates
             const docId = `${judgeId}__${applicationId}`;
             const ref = db().collection('judgeAssignments').doc(docId);
 
-            // Use a transaction to preserve first assignedAt if doc already exists
             await db().runTransaction(async (trx) => {
               const snap = await trx.get(ref);
               if (snap.exists) {
                 trx.set(ref, {
-                  judgeId,
-                  judgeName,
-                  judgeEmail,
-                  applicationId,
-                  entryName,
-                  scoreSet,
-                  round,
-                  method: 'manual',
+                  judgeId, judgeName, judgeEmail,
+                  applicationId, entryName,
+                  scoreSet, round, method: 'manual',
                   status: snap.data().status || 'pending',
                   assignedBy: me,
                   updatedAt: ts
                 }, { merge: true });
               } else {
                 trx.set(ref, {
-                  judgeId,
-                  judgeName,
-                  judgeEmail,
-                  applicationId,
-                  entryName,
-                  scoreSet,
-                  round,
-                  method: 'manual',
+                  judgeId, judgeName, judgeEmail,
+                  applicationId, entryName,
+                  scoreSet, round, method: 'manual',
                   status: 'pending',
                   assignedAt: ts,
                   assignedBy: me,
@@ -523,22 +414,20 @@
         }
 
         alert('Assignments saved (created/updated) successfully!');
-        toggleAll('.ck-judge', false);
-        toggleAll('.ck-entry', false);
+        document.querySelectorAll('.ck-judge,.ck-entry').forEach(cb => cb.checked = false);
+        updateSelectedPills();
       } catch (err) {
         console.error(err);
         showError('Failed to save assignments: ' + (err.message || 'permission denied'));
       }
     }
 
-    // Auth + init
+    /* ---------- Auth + init ---------- */
     firebase.auth().onAuthStateChanged(async user => {
-      if (!user) return (window.location.href = 'signin.html');
+      if (!user) return (window.location.href='signin.html');
       try {
         const me = await db().collection('users').doc(user.uid).get();
-        if (!me.exists || me.data().role !== 'admin') {
-          return (window.location.href = 'unauthorized.html');
-        }
+        if (!me.exists || me.data().role !== 'admin') return (window.location.href='unauthorized.html');
         await Promise.all([loadJudges(), loadEntries()]);
       } catch (e) {
         console.error(e);
@@ -546,22 +435,29 @@
       }
     });
 
-    // Wire UI
+    /* ---------- Wire UI ---------- */
     $('judgeSearch').addEventListener('input', e => renderJudges(filterJudges(e.target.value)));
     $('entrySearch').addEventListener('input', e => renderEntries(filterEntries(e.target.value)));
-    $('selectAllJudges').addEventListener('change', e => toggleAll('.ck-judge', e.target.checked));
-    $('selectAllEntries').addEventListener('change', e => toggleAll('.ck-entry', e.target.checked));
+    $('selectAllJudges').addEventListener('change', e => { document.querySelectorAll('.ck-judge').forEach(cb => cb.checked = e.target.checked); updateSelectedPills(); });
+    $('selectAllEntries').addEventListener('change', e => { document.querySelectorAll('.ck-entry').forEach(cb => cb.checked = e.target.checked); updateSelectedPills(); });
     $('assignBtn').addEventListener('click', assignSelected);
 
-
-    // wire user menu
-    (function wireAdminUserMenu() {
+    // user menu
+    (function wireAdminUserMenu(){
       const userCircle = document.getElementById('userCircle');
       const userDropdown = document.getElementById('userDropdown');
       const userFullNameEl = document.getElementById('userFullName');
       if (userCircle && userDropdown) {
-        userCircle.addEventListener('click', ()=> { const open = userDropdown.classList.toggle('open'); userCircle.setAttribute('aria-expanded', open ? 'true' : 'false'); });
-        document.addEventListener('click', e => { if (!document.getElementById('adminUserMenu')?.contains(e.target)) { userDropdown.classList.remove('open'); userCircle.setAttribute('aria-expanded', 'false'); }});
+        userCircle.addEventListener('click', ()=> {
+          const open = userDropdown.classList.toggle('open');
+          userCircle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', e => {
+          if (!document.getElementById('adminUserMenu')?.contains(e.target)) {
+            userDropdown.classList.remove('open');
+            userCircle.setAttribute('aria-expanded', 'false');
+          }
+        });
       }
       if (window.firebase && firebase.auth) {
         firebase.auth().onAuthStateChanged(user => {
@@ -569,7 +465,9 @@
           const name = user.displayName || user.email || 'Admin';
           if (userFullNameEl) userFullNameEl.textContent = name;
           if (userCircle) {
-            let initials = user.displayName ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase() : (user.email?user.email[0].toUpperCase():'A');
+            const initials = user.displayName
+              ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase()
+              : (user.email?user.email[0].toUpperCase():'A');
             userCircle.textContent = initials;
           }
         });
