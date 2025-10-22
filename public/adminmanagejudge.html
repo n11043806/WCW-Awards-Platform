@@ -14,104 +14,64 @@
       background-color: #d7336f; padding: 20px; color: #fff; display: flex; flex-direction: column;
     }
     .sidebar h2 { text-align: center; margin-bottom: 40px; font-size: 22px; }
-    .sidebar a {
-      color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px;
-      margin-bottom: 10px; transition: background-color 0.2s;
-    }
+    .sidebar a { color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; transition: background-color 0.2s; }
     .sidebar a:hover, .sidebar a.active { background-color: #b8235a; }
 
     .main-content { margin-left: 220px; padding: 30px; }
     header {
-      background-color: #d7336f;
-      color: white;
-      padding: 20px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background-color: #d7336f; color: white; padding: 20px; border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .topbar-actions { display: flex; gap: 10px; align-items: center; }
-    .logout-btn, .back-btn {
-      background: #fff; color: #d62d83; border: none; padding: 8px 16px;
-      border-radius: 4px; font-weight: bold; cursor: pointer;
-    }
-    .logout-btn:hover, .back-btn:hover { background: #ffe6ee; }
+    .back-btn { background:#fff; color:#d62d83; border:none; padding:8px 16px; border-radius:4px; font-weight:700; cursor:pointer; }
+    .back-btn:hover { background:#ffe6ee; }
 
-    h3 { margin: 20px 0; color: #d62d83; }
+    .actions-row { display:flex; gap:12px; margin:18px 0; align-items:center; flex-wrap:wrap; }
+    .primary-btn { background:#d7336f; color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:700; cursor:pointer; }
+    .primary-btn:hover { background:#b8235a; }
+    .muted { color:#777; font-size:14px; }
 
-    .actions-row {
-      display: flex; gap: 12px; margin: 18px 0; align-items: center; flex-wrap: wrap;
-    }
-    .primary-btn {
-      background-color: #d7336f; color: #fff; border: none;
-      padding: 10px 16px; border-radius: 6px; font-weight: 700; cursor: pointer;
-    }
-    .primary-btn:hover { background-color: #d7336f; }
-    .muted { color: #777; font-size: 14px; }
+    .searchbar { margin-left:auto; display:flex; gap:10px; align-items:center; background:#fff; border:1px solid #eee; border-radius:8px; padding:8px 10px; }
+    .searchbar input, .searchbar select { padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px; background:#fff; }
+    .searchbar input { min-width:360px; }
 
-    .searchbar {
-      margin-left: auto; display: flex; gap: 10px; align-items: center;
-      background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 8px 10px;
-    }
-    .searchbar input, .searchbar select {
-      padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: #fff;
-    }
-    .searchbar input { min-width: 360px; }
+    .table-wrap { background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px 14px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:top; }
+    th { background:#fafafa; color:#d62d83; font-weight:700; }
+    tr:hover { background:#f9f9f9; }
+    tr.selected-row { background:#fff6fa; }
 
-    .table-wrap { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px 14px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: top; }
-    th { background: #fafafa; color: #d62d83; font-weight: 700; }
-    tr:hover { background: #f9f9f9; }
-    tr.selected-row { background: #fff6fa; }
+    .status-pill { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#eee; color:#444; }
+    .status-pending { background:#fff3cd; color:#856404; }
+    .status-saved { background:#d1ecf1; color:#0c5460; }
+    .status-submitted { background:#d4edda; color:#155724; }
 
-    .status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #eee; color: #444; }
-    .status-pending { background: #fff3cd; color: #856404; }     /* Pending */
-    .status-saved { background: #d1ecf1; color: #0c5460; }       /* Saved */
-    .status-submitted { background: #d4edda; color: #155724; }   /* Submitted */
+    .details-wrap { margin-top:18px; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:16px; border:1px solid #eee; }
+    .details-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .details-title { font-weight:700; color:#d62d83; }
+    .details-subtle { color:#666; font-size:13px; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#f1f1f1; color:#444; }
 
-    /* Details panel (below table) */
-    .details-wrap {
-      margin-top: 18px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: 16px;
-      border: 1px solid #eee;
-    }
-    .details-header {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      margin-bottom: 10px;
-    }
-    .details-title { font-weight: 700; color: #d62d83; }
-    .details-subtle { color: #666; font-size: 13px; }
-    .badge {
-      display:inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background:#f1f1f1; color:#444;
-    }
-    .grid-2 {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-    }
-    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media (max-width:900px){ .grid-2{ grid-template-columns:1fr; } }
 
-    .card {
-      background:#fff; border:1px solid #eee; border-radius:8px; padding:12px;
-    }
-    #detailsBody { display: flex; flex-direction: column; gap: 16px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:8px; padding:12px; }
+    #detailsBody { display:flex; flex-direction:column; gap:16px; }
     .card h4 { margin:0 0 8px; color:#232121; }
     .field { background:#fff; border:1px solid #f0f0f0; border-radius:6px; padding:8px; white-space:pre-wrap; }
 
-    .crit-table { width:100%; border-collapse: collapse; }
+    .crit-table { width:100%; border-collapse:collapse; }
     .crit-table th, .crit-table td { padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
     .crit-table th { background:#ffffff; color:#d62d83; font-weight:700; }
 
-    .empty { padding: 10px; color: #777; }
+    .empty { padding:10px; color:#777; }
 
     .user-menu-container { position: relative; display:flex; gap:10px; align-items:center; }
-    .user-fullname { color: #fff; font-weight:600; margin-right:6px; }
-    .user-circle { background:#8d57a0;color:#fff;border:2px solid #5f386d;border-radius:50%;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;}
-    .user-dropdown{display:none;position:absolute;top:48px;right:0;background:#fff0f6;border:1px solid #b8235a;border-radius:8px;min-width:180px;z-index:100;flex-direction:column;}
+    .user-fullname { color:#fff; font-weight:600; margin-right:6px; }
+    .user-circle { background:#8d57a0; color:#fff; border:2px solid #5f386d; border-radius:50%; width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; }
+    .user-dropdown{display:none; position:absolute; top:48px; right:0; background:#fff0f6; border:1px solid #b8235a; border-radius:8px; min-width:180px; z-index:100; flex-direction:column;}
     .user-dropdown.open{display:flex;}
-    .user-dropdown button{background:none;border:none;color:#b8235a;padding:12px 18px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;}
+    .user-dropdown button{background:none; border:none; color:#b8235a; padding:12px 18px; text-align:left; cursor:pointer; display:flex; justify-content:space-between;}
     .user-dropdown button:hover{background:#ffe6ee;}
   </style>
 </head>
@@ -133,15 +93,9 @@
           <span id="userFullName" class="user-fullname" style="font-weight:600;color:#fff;"></span>
           <button id="userCircle" class="user-circle" aria-haspopup="true" aria-expanded="false" title="Account"></button>
           <div id="userDropdown" class="user-dropdown" aria-hidden="true">
-            <button onclick="window.location.href='adminprofile.html'">
-              Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span>
-            </button>
-            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">
-              Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span>
-            </button>
-            <button onclick="logout()">
-              Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
-            </button>
+            <button onclick="window.location.href='adminprofile.html'">Profile <span class="material-symbols-outlined" style="font-size:20px;">person</span></button>
+            <button onclick="window.open('https://support.awardforce.com/hc/en-us','_blank')">Get help <span class="material-symbols-outlined" style="font-size:20px;">help</span></button>
+            <button onclick="logout()">Log out <span class="material-symbols-outlined" style="font-size:20px;">logout</span></button>
           </div>
           <button class="back-btn" onclick="location.href='adminjudgetab.html'">Back</button>
         </div>
@@ -217,35 +171,16 @@
     const statusFilter = document.getElementById('statusFilter');
     const sortBy = document.getElementById('sortBy');
 
-    // Live set of existing application IDs
-    let EXISTING_APPS = new Set();
+    // Live Applications index
+    let APP_INDEX = new Map();
 
-    function logout() {
-      firebase.auth().signOut().then(() => { window.location.href = 'signin.html'; });
-    }
+    function logout(){ firebase.auth().signOut().then(()=>{ window.location.href='signin.html'; }); }
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const ts = v => { try{ if(!v) return null; if(v.toDate) return v.toDate(); return new Date(v); } catch{ return null; } };
+    const tsText = v => { const d=ts(v); return d ? d.toLocaleString() : '-'; };
+    const statusClass = v => (v==='submitted'?'status-pill status-submitted':v==='saved'?'status-pill status-saved':'status-pill status-pending');
 
-    function esc(s) {
-      return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    // Canonical pill styles for pending/saved/submitted
-    function statusClass(v) {
-      const s = String(v || '').toLowerCase();
-      if (s === 'submitted') return 'status-pill status-submitted';
-      if (s === 'saved') return 'status-pill status-saved';
-      return 'status-pill status-pending';
-    }
-
-    function ts(v) {
-      try { if (!v) return null; if (v.toDate) return v.toDate(); return new Date(v); }
-      catch { return null; }
-    }
-    function tsText(v) {
-      const d = ts(v);
-      return d ? d.toLocaleString() : '-';
-    }
-
-    // Criteria used in judge view (read-only display here)
+    // Criteria labels (answers pulled from application doc)
     const CRITERIA_DEFS = [
       { key: 'tellUsAboutYourself', title: 'Tell us about yourself' },
       { key: 'tellUsAboutYourWork', title: 'Tell us about your work' },
@@ -258,39 +193,65 @@
       { key: 'recognitionReason', title: 'Why should you be recognised in this category' }
     ];
 
-    let ALL = [];
-    // judgeResponses override map
-    let RESP = new Map(); // key: `${judgeId}_${applicationId}` -> { status: 'saved'|'submitted', lastUpdated }
+    // camelCase -> snake_case helper (for judgeResponses.scores keys)
+    const toSnake = k => String(k).replace(/[A-Z]/g, m => '_' + m.toLowerCase()).replace(/^_/, '');
 
-    // Translate assignment/response to canonical: 'pending' | 'saved' | 'submitted'
-    function canonicalStatus(assignStatus, responseStatus) {
-      const r = String(responseStatus || '').toLowerCase();
-      if (r === 'submitted') return 'submitted';
-      if (r === 'saved') return 'saved';
+    // Judge responses cache
+    // RESP: Map<`${judgeId}_${applicationId}`, { status, lastUpdated, _docId }>
+    let RESP = new Map();
 
+    function deriveResponseStatus(x){
+      const s = (x.status || '').toLowerCase();
+      if (s === 'submitted') return 'submitted';
+      if (s === 'saved') return 'saved';
+      // No explicit status -> infer: if any score OR comment present => saved, else pending
+      const sc = x.scores || {};
+      const hasAny = Object.values(sc).some(v => {
+        if (!v || typeof v !== 'object') return false;
+        return v.score != null || (v.comment && String(v.comment).trim() !== '');
+      });
+      return hasAny ? 'saved' : 'pending';
+    }
+
+    function canonicalStatus(assignStatus, responseStatus){
+      if (responseStatus) return responseStatus; // already derived
       const a = String(assignStatus || '').toLowerCase();
       if (a === 'completed') return 'submitted';
       if (a === 'in-progress' || a === 'inprogress') return 'saved';
       return 'pending';
     }
 
-    // Compute effective status and updatedAt for one assignment row
-    function effectiveFrom(a) {
+    const maxDate = (a,b,c) => {
+      const ta = ts(a)?.getTime() || 0, tb = ts(b)?.getTime() || 0, tc = ts(c)?.getTime() || 0;
+      const m = Math.max(ta,tb,tc); return m ? new Date(m) : null;
+    };
+
+    let ALL = [];
+
+    function effectiveFrom(a){
       const key = `${a.judgeId || ''}_${a.applicationId || ''}`;
       const r = RESP.get(key);
-      return {
-        status: canonicalStatus(a.status, r?.status),
-        updatedAt: (r?.lastUpdated || a.updatedAt)
-      };
+      const app = APP_INDEX.get(a.applicationId);
+
+      const respStatus = r ? deriveResponseStatus(r) : null;
+      const status = canonicalStatus(a.status, respStatus);
+
+      const appTime = app?.updatedAt || app?.submittedAt;
+      const updatedAt = maxDate(r?.lastUpdated || r?.updatedAt, a.updatedAt, appTime);
+
+      const entryName = app?.entryName || app?.name || a.entryName || '';
+
+      return { status, updatedAt, entryName };
     }
 
-    function render(items) {
-      if (!items.length) {
+    function render(items){
+      if (!items.length){
         tbody.innerHTML = '<tr><td colspan="9" class="muted">No assignments found.</td></tr>';
         return;
       }
       const frag = document.createDocumentFragment();
       items.forEach(a => {
+        if (!APP_INDEX.has(a.applicationId)) return;
         const eff = effectiveFrom(a);
         const tr = document.createElement('tr');
         tr.dataset.judgeId = a.judgeId || '';
@@ -301,7 +262,7 @@
           <td>${esc(a.judgeName || '(Unnamed)')}</td>
           <td>${esc(a.judgeEmail || '')}</td>
           <td>${esc(a.applicationId || '')}</td>
-          <td>${esc(a.entryName || '')}</td>
+          <td>${esc(eff.entryName)}</td>
           <td>${esc(a.scoreSet || '')}</td>
           <td>${esc(a.round || '')}</td>
           <td><span class="${statusClass(eff.status)}">${esc(eff.status)}</span></td>
@@ -314,120 +275,92 @@
       tbody.appendChild(frag);
     }
 
-    function sortItems(items, mode) {
+    function sortItems(items, mode){
+      const getTime = v => { const d=ts(v); return d?d.getTime():0; };
       const arr = [...items];
-      const getTime = (v) => {
-        const d = ts(v);
-        return d ? d.getTime() : 0;
-      };
-      switch (mode) {
-        case 'updated_asc':
-          arr.sort((a,b) => getTime(effectiveFrom(a).updatedAt) - getTime(effectiveFrom(b).updatedAt)); break;
-        case 'updated_desc':
-          arr.sort((a,b) => getTime(effectiveFrom(b).updatedAt) - getTime(effectiveFrom(a).updatedAt)); break;
-        case 'assigned_asc':
-          arr.sort((a,b) => getTime(a.assignedAt) - getTime(b.assignedAt)); break;
-        case 'assigned_desc':
-          arr.sort((a,b) => getTime(b.assignedAt) - getTime(a.assignedAt)); break;
-        default:
-          arr.sort((a,b) => getTime(effectiveFrom(b).updatedAt) - getTime(effectiveFrom(a).updatedAt));
+      switch(mode){
+        case 'updated_asc':  arr.sort((a,b)=> getTime(effectiveFrom(a).updatedAt)-getTime(effectiveFrom(b).updatedAt)); break;
+        case 'updated_desc': arr.sort((a,b)=> getTime(effectiveFrom(b).updatedAt)-getTime(effectiveFrom(a).updatedAt)); break;
+        case 'assigned_asc': arr.sort((a,b)=> getTime(a.assignedAt)-getTime(b.assignedAt)); break;
+        case 'assigned_desc':arr.sort((a,b)=> getTime(b.assignedAt)-getTime(a.assignedAt)); break;
+        default:             arr.sort((a,b)=> getTime(effectiveFrom(b).updatedAt)-getTime(effectiveFrom(a).updatedAt));
       }
       return arr;
     }
 
-    function applyFilters() {
-      const q = (searchBox.value || '').trim().toLowerCase();
+    function applyFilters(){
+      const q = (searchBox.value||'').trim().toLowerCase();
       const st = statusFilter.value.toLowerCase();
       const sortMode = sortBy.value || 'updated_desc';
 
       const filtered = ALL.filter(a => {
-        // Hide rows whose application no longer exists
-        if (!EXISTING_APPS.has(a.applicationId)) return false;
-
+        if (!APP_INDEX.has(a.applicationId)) return false;
         const eff = effectiveFrom(a);
+        const app = APP_INDEX.get(a.applicationId);
         const hay = [
-          a.judgeName, a.judgeEmail, a.applicationId, a.entryName,
-          a.scoreSet, a.round, eff.status
-        ].map(x => String(x || '').toLowerCase()).join(' ');
+          a.judgeName, a.judgeEmail, a.applicationId,
+          eff.entryName, a.scoreSet, a.round, eff.status,
+          app?.category, app?.status
+        ].map(x => String(x||'').toLowerCase()).join(' ');
         const qOk = q ? hay.includes(q) : true;
-        const sOk = st ? String(eff.status || '').toLowerCase() === st : true;
+        const sOk = st ? String(eff.status||'').toLowerCase() === st : true;
         return qOk && sOk;
       });
 
       render(sortItems(filtered, sortMode));
     }
 
-    // --- Details Panel Helpers ---
+    // —— Details panel ——
     const detailsTitle = document.getElementById('detailsTitle');
     const detailsSub   = document.getElementById('detailsSub');
     const detailsBadges= document.getElementById('detailsBadges');
     const detailsBody  = document.getElementById('detailsBody');
 
     let selectedRowEl = null;
-    function clearSelectionHighlight() {
-      if (selectedRowEl) selectedRowEl.classList.remove('selected-row');
-      selectedRowEl = null;
+    function clearSelectionHighlight(){ if (selectedRowEl) selectedRowEl.classList.remove('selected-row'); selectedRowEl = null; }
+    function setSelectionHighlight(tr){ clearSelectionHighlight(); selectedRowEl = tr; tr.classList.add('selected-row'); }
+
+    function showDetailsLoading(judgeName, judgeEmail, appId){
+      detailsTitle.textContent = 'Loading submission…';
+      detailsSub.textContent   = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+      detailsBadges.innerHTML  = '';
+      detailsBody.innerHTML    = `<div class="empty">Loading…</div>`;
     }
-    function setSelectionHighlight(tr) {
-      clearSelectionHighlight();
-      selectedRowEl = tr;
-      tr.classList.add('selected-row');
-    }
-    function showDetailsLoading(judgeName, judgeEmail, appId) {
-      detailsTitle.textContent = `Loading submission…`;
-      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
-      detailsBadges.innerHTML = '';
-      detailsBody.innerHTML = `<div class="empty">Loading…</div>`;
-    }
-    function showDetailsEmpty(judgeName, judgeEmail, appId) {
-      detailsTitle.textContent = `No submission found`;
-      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
-      detailsBadges.innerHTML = `<span class="badge">status: none</span>`;
-      detailsBody.innerHTML = `<div class="empty">This judge hasn’t saved or submitted any responses for this application yet.</div>`;
-    }
-    function renderDetails(appData, respData, judgeName, judgeEmail, appId) {
+    function renderDetails(appData, respDoc, judgeName, judgeEmail, appId){
+      const resp = respDoc?.data() || null;
       const entryName = appData?.entryName || appData?.name || '';
       detailsTitle.textContent = entryName ? `Entry: ${entryName}` : `Entry details`;
-      detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
+      detailsSub.textContent   = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId || '-'}`;
 
-      const stat = canonicalStatus(null, respData?.status);
-      const last = respData?.lastUpdated ? tsText(respData.lastUpdated) : '-';
+      const status = resp ? deriveResponseStatus(resp) : 'pending';
+      const last   = resp?.lastUpdated || resp?.updatedAt || null;
       detailsBadges.innerHTML = `
-        <span class="badge">response: ${esc(stat || 'none')}</span>
-        <span class="badge">last updated: ${esc(last)}</span>
+        <span class="badge">response: ${esc(status)}</span>
+        <span class="badge">last updated: ${esc(tsText(last))}</span>
+        ${respDoc ? `<span class="badge">doc: ${esc(respDoc.id)}</span>` : ''}
       `;
 
       const entrantHtml = `
         <div class="card">
           <h4>Entrant Details</h4>
           <div class="grid-2">
-            <div>
-              <div class="details-subtle">Category</div>
-              <div class="field">${esc(appData?.category || '-')}</div>
-            </div>
-            <div>
-              <div class="details-subtle">Subcategory</div>
-              <div class="field">${esc(appData?.subcategory || '-')}</div>
-            </div>
-            <div>
-              <div class="details-subtle">Award</div>
-              <div class="field">${esc(appData?.awards_choice || '-')}</div>
-            </div>
-            <div>
-              <div class="details-subtle">Entrant</div>
-              <div class="field">${esc(appData?.name || '-')}</div>
-            </div>
+            <div><div class="details-subtle">Category</div><div class="field">${esc(appData?.category || '-')}</div></div>
+            <div><div class="details-subtle">Subcategory</div><div class="field">${esc(appData?.subcategory || '-')}</div></div>
+            <div><div class="details-subtle">Award</div><div class="field">${esc(appData?.awards_choice || '-')}</div></div>
+            <div><div class="details-subtle">Entrant</div><div class="field">${esc(appData?.name || '-')}</div></div>
           </div>
         </div>
       `;
 
-      const scores = respData?.scores || {};
-      let rows = '';
-      CRITERIA_DEFS.forEach(c => {
-        const ans = appData?.[c.key] ?? '-';
-        const sc = scores?.[c.key]?.score;
-        const cm = scores?.[c.key]?.comment || '';
-        rows += `
+      const scores = resp?.scores || {};
+      const rows = CRITERIA_DEFS.map(c => {
+        const camel = c.key;
+        const snake = toSnake(c.key);
+        const ans = appData?.[camel] ?? '-';
+        const s   = scores[camel] ?? scores[snake] ?? {};
+        const sc  = s?.score;
+        const cm  = s?.comment || '';
+        return `
           <tr>
             <td style="width:28%;"><strong>${esc(c.title)}</strong></td>
             <td style="width:10%;">${sc == null || sc === '' ? '-' : esc(String(sc))}/10</td>
@@ -440,19 +373,13 @@
             </td>
           </tr>
         `;
-      });
+      }).join('');
 
       const respHtml = `
         <div class="card">
           <h4>Scores & Comments</h4>
           <table class="crit-table">
-            <thead>
-              <tr>
-                <th>Criterion</th>
-                <th>Score</th>
-                <th>Judge Comment</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Criterion</th><th>Score</th><th>Judge Comment</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>
@@ -461,12 +388,11 @@
       detailsBody.innerHTML = entrantHtml + respHtml;
     }
 
-    async function loadDetailsForRow(tr) {
+    async function loadDetailsForRow(tr){
       const judgeId = tr.dataset.judgeId;
       const appId   = tr.dataset.applicationId;
-      const judgeName = tr.dataset.judgeName;
+      const judgeName  = tr.dataset.judgeName;
       const judgeEmail = tr.dataset.judgeEmail;
-
       if (!judgeId || !appId) return;
 
       setSelectionHighlight(tr);
@@ -474,147 +400,130 @@
 
       try {
         const appRef = db.collection('applications').doc(appId);
-        const respRef = db.collection('judgeResponses').doc(`${judgeId}_${appId}`);
+        // IMPORTANT: query by fields; do not assume doc id format
+        const respQ  = await db.collection('judgeResponses')
+          .where('judgeId','==',judgeId)
+          .where('applicationId','==',appId)
+          .limit(1)
+          .get();
 
-        const [appDoc, respDoc] = await Promise.all([appRef.get(), respRef.get()]);
-        if (!appDoc.exists) {
-          // If the application is gone, remove this row immediately and clear details
+        const [appDoc] = await Promise.all([appRef.get()]);
+        if (!appDoc.exists){
           tr.remove();
           ALL = ALL.filter(x => !(x.judgeId === judgeId && x.applicationId === appId));
           clearSelectionHighlight();
           detailsTitle.textContent = 'Select an assignment row to view judge submission';
-          detailsSub.textContent = '—';
-          detailsBadges.innerHTML = '';
-          detailsBody.innerHTML = `<div class="empty">Nothing selected.</div>`;
+          detailsSub.textContent   = '—';
+          detailsBadges.innerHTML  = '';
+          detailsBody.innerHTML    = `<div class="empty">Nothing selected.</div>`;
           return;
         }
-
-        if (!respDoc.exists) {
-          showDetailsEmpty(judgeName, judgeEmail, appId);
-          return;
-        }
-
-        renderDetails(appDoc.data(), respDoc.data(), judgeName, judgeEmail, appId);
-      } catch (e) {
+        const respDoc = !respQ.empty ? respQ.docs[0] : null;
+        renderDetails(appDoc.data(), respDoc, judgeName, judgeEmail, appId);
+      } catch (e){
         detailsTitle.textContent = 'Error loading submission';
-        detailsSub.textContent = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
-        detailsBadges.innerHTML = '';
-        detailsBody.innerHTML = `<div class="empty">Failed to load details: ${esc(e.message || e)}</div>`;
+        detailsSub.textContent   = `${judgeName || 'Judge'} — ${judgeEmail || ''} | Application ID: ${appId}`;
+        detailsBadges.innerHTML  = '';
+        detailsBody.innerHTML    = `<div class="empty">Failed to load details: ${esc(e.message || e)}</div>`;
       }
     }
 
-    // Row click → load details
-    tbody.addEventListener('click', (e) => {
+    tbody.addEventListener('click', e => {
       const tr = e.target.closest('tr');
       if (!tr || !tr.dataset) return;
       loadDetailsForRow(tr);
     });
 
-    // Filters
     searchBox.addEventListener('input', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
     sortBy.addEventListener('change', applyFilters);
 
-    // Auth + live data
     firebase.auth().onAuthStateChanged(async user => {
-      if (!user) return (window.location.href = 'signin.html');
+      if (!user) return (window.location.href='signin.html');
 
       try {
         const me = await db.collection('users').doc(user.uid).get();
-        if (!me.exists || me.data().role !== 'admin') {
-          console.warn('Access denied: not admin');
-          return (window.location.href = 'signin.html');
-        }
-      } catch (e) {
-        console.warn('Admin check failed', e);
-      }
+        if (!me.exists || me.data().role !== 'admin') return (window.location.href='signin.html');
+      } catch { return (window.location.href='signin.html'); }
 
-      // Live set of existing applications — used to hide orphaned assignments
+      // Live Applications (index the fields we need)
       db.collection('applications').onSnapshot({
-        next: (snap) => {
-          const set = new Set();
-          snap.forEach(d => set.add(d.id));
-          EXISTING_APPS = set;
-          applyFilters(); // re-evaluate visibility whenever apps set changes
+        next: snap => {
+          const map = new Map();
+          snap.forEach(d => {
+            const x = d.data() || {};
+            map.set(d.id, {
+              entryName: x.entryName || '',
+              name: x.name || '',
+              category: x.category || '',
+              subcategory: x.subcategory || '',
+              awards_choice: x.awards_choice || '',
+              status: (x.status || '').toLowerCase(),
+              submittedAt: x.submittedAt || null,
+              updatedAt: x.updatedAt || x.createdAt || null
+            });
+          });
+          APP_INDEX = map;
+          applyFilters();
         },
-        error: (err) => console.error('applications onSnapshot error:', err)
+        error: err => console.error('applications onSnapshot error:', err)
       });
 
-      // Live assignments
-      db.collection('judgeAssignments')
-        .orderBy('assignedAt', 'desc')
-        .onSnapshot({
-          next: (snap) => {
-            ALL = snap.docs.map(d => {
-              const x = d.data() || {};
-              return {
-                id: d.id,
-                judgeId: x.judgeId,
-                judgeName: x.judgeName,
-                judgeEmail: x.judgeEmail,
-                applicationId: x.applicationId,
-                entryName: x.entryName,
-                scoreSet: x.scoreSet,
-                round: x.round,
-                status: x.status || 'pending',
-                assignedAt: x.assignedAt,
-                updatedAt: x.updatedAt || x.assignedAt
-              };
-            });
-            applyFilters();
+      // Live Assignments
+      db.collection('judgeAssignments').orderBy('assignedAt','desc').onSnapshot({
+        next: snap => {
+          ALL = snap.docs.map(d => {
+            const x = d.data() || {};
+            return {
+              id: d.id,
+              judgeId: x.judgeId,
+              judgeName: x.judgeName,
+              judgeEmail: x.judgeEmail,
+              applicationId: x.applicationId,
+              entryName: x.entryName,
+              scoreSet: x.scoreSet,
+              round: x.round,
+              status: x.status || 'pending',
+              assignedAt: x.assignedAt,
+              updatedAt: x.updatedAt || x.assignedAt
+            };
+          });
+          applyFilters();
+        },
+        error: err => {
+          console.error('judgeAssignments onSnapshot error:', err);
+          tbody.innerHTML = `<tr><td colspan="9" class="muted">Error loading data.</td></tr>`;
+        }
+      });
 
-            // Keep selection highlight if still present
-            if (selectedRowEl) {
-              const { judgeId, applicationId } = selectedRowEl.dataset;
-              const stillThere = Array.from(tbody.querySelectorAll('tr'))
-                .find(r => r.dataset.judgeId === judgeId && r.dataset.applicationId === applicationId);
-              if (!stillThere) {
-                clearSelectionHighlight();
-                detailsTitle.textContent = 'Select an assignment row to view judge submission';
-                detailsSub.textContent = '—';
-                detailsBadges.innerHTML = '';
-                detailsBody.innerHTML = `<div class="empty">Nothing selected.</div>`;
-              } else if (stillThere !== selectedRowEl) {
-                setSelectionHighlight(stillThere);
-              }
-            }
-          },
-          error: (err) => {
-            console.error('judgeAssignments onSnapshot error:', err);
-            tbody.innerHTML = `<tr><td colspan="9" class="muted">Error loading data.</td></tr>`;
-          }
-        });
-
-      // Live judge responses (override status/updated)
-      db.collection('judgeResponses')
-        .onSnapshot({
-          next: (snap) => {
-            const nextMap = new Map();
-            snap.forEach(d => {
-              const x = d.data() || {};
-              const j = x.judgeId || '';
-              const a = x.applicationId || '';
-              if (!j || !a) return;
-              const key = `${j}_${a}`;
-              nextMap.set(key, {
-                status: (x.status || '').toLowerCase(),   // 'saved' | 'submitted'
-                lastUpdated: x.lastUpdated || null
-              });
+      // Live Judge Responses
+      db.collection('judgeResponses').onSnapshot({
+        next: snap => {
+          const nextMap = new Map();
+          snap.forEach(d => {
+            const x = d.data() || {};
+            const j = x.judgeId || '';
+            const a = x.applicationId || '';
+            if (!j || !a) return;
+            nextMap.set(`${j}_${a}`, {
+              ...x,
+              _docId: d.id
             });
-            RESP = nextMap;
-            applyFilters();
-          },
-          error: (err) => console.error('judgeResponses onSnapshot error:', err)
-        });
+          });
+          RESP = nextMap;
+          applyFilters();
+        },
+        error: err => console.error('judgeResponses onSnapshot error:', err)
+      });
     });
 
-    // wire user menu
-    (function wireAdminUserMenu() {
+    // user menu
+    (function(){
       const userCircle = document.getElementById('userCircle');
       const userDropdown = document.getElementById('userDropdown');
       const userFullNameEl = document.getElementById('userFullName');
-      if (userCircle && userDropdown) {
-        userCircle.addEventListener('click', ()=> {
+      if (userCircle && userDropdown){
+        userCircle.addEventListener('click', ()=>{
           const open = userDropdown.classList.toggle('open');
           userCircle.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
@@ -625,19 +534,17 @@
           }
         });
       }
-      if (window.firebase && firebase.auth) {
-        firebase.auth().onAuthStateChanged(user => {
-          if (!user) return;
-          const name = user.displayName || user.email || 'Admin';
-          if (userFullNameEl) userFullNameEl.textContent = name;
-          if (userCircle) {
-            let initials = user.displayName
-              ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase()
-              : (user.email ? user.email[0].toUpperCase() : 'A');
-            userCircle.textContent = initials;
-          }
-        });
-      }
+      firebase.auth().onAuthStateChanged(user => {
+        if (!user) return;
+        const name = user.displayName || user.email || 'Admin';
+        if (userFullNameEl) userFullNameEl.textContent = name;
+        if (userCircle) {
+          const initials = user.displayName
+            ? user.displayName.split(' ').map(w=>w[0]).join('').toUpperCase()
+            : (user.email ? user.email[0].toUpperCase() : 'A');
+          userCircle.textContent = initials;
+        }
+      });
     })();
   </script>
 </body>

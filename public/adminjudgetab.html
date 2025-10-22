@@ -176,7 +176,7 @@
       });
     }
 
-    // ✅ Track all valid application IDs
+    // Track all valid application IDs
     function listenApplications() {
       db.collection("applications").onSnapshot({
         next: (snap) => {
@@ -293,7 +293,7 @@
       })[m]);
     }
 
-    // user menu
+    // User menu
     (function wireAdminUserMenu() {
       const userCircle = document.getElementById('userCircle');
       const userDropdown = document.getElementById('userDropdown');
