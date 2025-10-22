@@ -597,17 +597,7 @@ footer {
           <li>You can also view/download a PDF for each entry for offline use.</li>
         </ol>
       </div>
-      <!-- Place this above your table in the dashboard -->
-<!-- <div style="margin-bottom:18px;">
-  <label for="categoryFilter" style="font-weight:bold;font-size:16px;color:#d7336f;">Browse by category</label>
-  <select id="categoryFilter" style="margin-left:12px;padding:10px 16px;border-radius:6px;border:1px solid #d7336f;font-size:1em;background:#fff;color:#d7336f;min-width:220px;">
-    <option value="">(All Categories)</option>
-    <option value="IMPACT AWARDS">IMPACT AWARDS</option>
-    <option value="INDUSTRY AWARDS">INDUSTRY AWARDS</option>
-    <option value="LEADERSHIP AWARDS">LEADERSHIP AWARDS</option>
-    <!-- Add more categories as needed 
-  </select>
-</div> -->
+
 <div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:20px;">
         <div class="sort-dropdown" id="sortDropdown">
           <button class="sort-btn" id="sortBtn">SORT BY: -select-</button>
@@ -800,7 +790,6 @@ async function exportAppPdf(id) {
       await loadCriteriaDefinitions();
     }
     
-    // Rest of your existing exportAppPdf code remains the same...
     const db = firebase.firestore();
     const user = firebase.auth().currentUser;
     if (!user) {
@@ -846,7 +835,7 @@ async function exportAppPdf(id) {
       }
     }
 
-    // ** ADD THIS: Get judge scores and comments **
+    // Get judge scores and comments
     let judgeScores = {};
     try {
       const judgeDoc = await db.collection('judgeResponses').doc(`${user.uid}_${id}`).get();
@@ -869,7 +858,7 @@ async function exportAppPdf(id) {
       return; 
     }
 
-    // ** UPDATE THIS: Create the criteria HTML with actual scores and comments **
+    // Create the criteria HTML with actual scores and comments
     const criteriaHtml = CRITERIA_DEFS.map(c => {
       const value = appData[c.key] || '-';
       const judgeData = judgeScores[c.key] || {};
@@ -898,7 +887,7 @@ async function exportAppPdf(id) {
       `;
     }).join('');
 
-    // ** UPDATE CSS: Better styling for displaying scores/comments **
+    // Write the complete HTML document
     win.document.write(`
       <!DOCTYPE html>
       <html>
@@ -1052,14 +1041,11 @@ async function exportAppPdf(id) {
     alert('Failed to generate PDF preview: ' + err.message);
   }
 }
-</script>
 
-  <script>
 document.addEventListener('DOMContentLoaded', async function() {
   // Load criteria definitions first
   await loadCriteriaDefinitions();
   
-  // Rest of your existing DOMContentLoaded code remains exactly the same...
   const tableBody = document.getElementById('appsBody');
   let rows = [];
   let currentSort = 'none';
@@ -1096,30 +1082,55 @@ document.addEventListener('DOMContentLoaded', async function() {
     const orderedAppIds = filteredRows.map(row => row.applicationId);
     localStorage.setItem('judgeOrderedAppIds', JSON.stringify(orderedAppIds));
   }
+
+  // Add this new function to handle both sorting and filtering
+  function applyCurrentSortAndFilter() {
+    // First apply filters
+    filteredRows = rows.filter(row => {
+      const catOk = !FILTERS.category || row.category === FILTERS.category;
+      const subOk = !FILTERS.subcategory || row.subcategory === FILTERS.subcategory;
+      const nameOk = !FILTERS.name || row.name === FILTERS.name;
+      const statusOk = FILTERS.status.size === 0 || FILTERS.status.has(row.status);
+      return catOk && subOk && nameOk && statusOk;
+    });
+
+    // Then apply current sort
+    if (currentSort === 'asc') {
+      filteredRows.sort((a, b) => String(a.applicationId).localeCompare(String(b.applicationId)));
+    } else if (currentSort === 'desc') {
+      filteredRows.sort((a, b) => String(b.applicationId).localeCompare(String(a.applicationId)));
+    } else if (currentSort === 'updated_desc') {
+      filteredRows.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+    } else if (currentSort === 'updated_asc') {
+      filteredRows.sort((a, b) => new Date(a.lastUpdated) - new Date(b.lastUpdated));
+    }
+
+    renderTable(filteredRows);
+  }
   
   const sortBtn = document.getElementById('sortBtn');
-const sortList = document.getElementById('sortList');
+  const sortList = document.getElementById('sortList');
 
-sortBtn.onclick = () => sortList.classList.toggle('open');
+  sortBtn.onclick = () => sortList.classList.toggle('open');
 
-sortList.onclick = (e) => {
-  if (e.target.tagName === 'BUTTON') {
-    const sortMode = e.target.dataset.sort;
-    currentSort = sortMode; // Store current sort mode
-    
-    sortBtn.textContent = 'SORT BY: ' + (
-      sortMode === 'asc' ? 'Application ID Ascending' :
-      sortMode === 'desc' ? 'Application ID Descending' :
-      sortMode === 'updated_desc' ? 'Updated (Newest first)' :
-      sortMode === 'updated_asc' ? 'Updated (Oldest first)' :
-      '-select-'
-    );
-    sortList.classList.remove('open');
-    
-    // Apply sorting to current filtered rows
-    applyCurrentSortAndFilter();
-  }
-};
+  sortList.onclick = (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      const sortMode = e.target.dataset.sort;
+      currentSort = sortMode; // Store current sort mode
+      
+      sortBtn.textContent = 'SORT BY: ' + (
+        sortMode === 'asc' ? 'Application ID Ascending' :
+        sortMode === 'desc' ? 'Application ID Descending' :
+        sortMode === 'updated_desc' ? 'Updated (Newest first)' :
+        sortMode === 'updated_asc' ? 'Updated (Oldest first)' :
+        '-select-'
+      );
+      sortList.classList.remove('open');
+      
+      // Apply sorting to current filtered rows
+      applyCurrentSortAndFilter();
+    }
+  };
 
   // Filter state and handlers
   const FILTERS = {
@@ -1205,33 +1216,8 @@ sortList.onclick = (e) => {
     fModal.setAttribute('aria-hidden', 'true');
   });
 
-  // Add this new function to handle both sorting and filtering
-function applyCurrentSortAndFilter() {
-  // First apply filters
-  filteredRows = rows.filter(row => {
-    const catOk = !FILTERS.category || row.category === FILTERS.category;
-    const subOk = !FILTERS.subcategory || row.subcategory === FILTERS.subcategory;
-    const nameOk = !FILTERS.name || row.name === FILTERS.name;
-    const statusOk = FILTERS.status.size === 0 || FILTERS.status.has(row.status);
-    return catOk && subOk && nameOk && statusOk;
-  });
-
-  // Then apply current sort
-  if (currentSort === 'asc') {
-    filteredRows.sort((a, b) => String(a.applicationId).localeCompare(String(b.applicationId)));
-  } else if (currentSort === 'desc') {
-    filteredRows.sort((a, b) => String(b.applicationId).localeCompare(String(a.applicationId)));
-  } else if (currentSort === 'updated_desc') {
-    filteredRows.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-  } else if (currentSort === 'updated_asc') {
-    filteredRows.sort((a, b) => new Date(a.lastUpdated) - new Date(b.lastUpdated));
-  }
-
-  renderTable(filteredRows);
-}
-
-// Update the clear filter handler
-if (fClear) fClear.addEventListener('click', () => {
+  // Update the clear filter handler
+  if (fClear) fClear.addEventListener('click', () => {
     FILTERS.category = '';
     FILTERS.subcategory = '';
     FILTERS.name = '';
@@ -1299,13 +1285,21 @@ if (fClear) fClear.addEventListener('click', () => {
       for (const doc of assignmentsSnap.docs) {
         const assign = doc.data();
         const appId = assign.applicationId;
+        
         // Try to read full application doc; if forbidden, fall back to assignment summary fields
         let appData = {};
+        let isWithdrawn = false; // Track withdrawal status
+        
         if (appId) {
           try {
             const appDoc = await db.collection('applications').doc(appId).get();
             if (appDoc.exists) {
               appData = appDoc.data();
+              
+              // Check if application is withdrawn
+              if (appData.stage === "withdrawn" || appData.stage === "Withdrawn") {
+                isWithdrawn = true;
+              }
             } else {
               // app missing — use assignment summary if present
               appData = {
@@ -1313,6 +1307,11 @@ if (fClear) fClear.addEventListener('click', () => {
                 category: assign.category || '-',
                 subcategory: assign.subcategory || '-'
               };
+              
+              // Check assignment for withdrawal status as fallback
+              if (assign.stage === "withdrawn" || assign.stage === "Withdrawn") {
+                isWithdrawn = true;
+              }
             }
           } catch (readErr) {
             // permission-denied or other read error: fallback to assignment fields
@@ -1322,9 +1321,20 @@ if (fClear) fClear.addEventListener('click', () => {
               category: assign.category || assign.cat || '-',
               subcategory: assign.subcategory || assign.subCat || '-'
             };
+            
+            // Check assignment for withdrawal status as fallback
+            if (assign.stage === "withdrawn" || assign.stage === "Withdrawn") {
+              isWithdrawn = true;
+            }
           }
         }
- 
+
+        // Skip withdrawn applications
+        if (isWithdrawn) {
+          console.log(`Skipping withdrawn application: ${appId}`);
+          continue; // Skip this iteration, don't add to rows
+        }
+
         // Fetch judgeResponses status
         let judgeStatus = "new";
         try {
@@ -1335,7 +1345,7 @@ if (fClear) fClear.addEventListener('click', () => {
         } catch (e) {
           // ignore, fallback to "new"
         }
- 
+
         // Construct PDF URL (safe, do NOT attempt to read non-existent pdfUploads collection)
         // Prefer (in order): assignment.pdfUrl, application doc fields (appData.pdfUrl / pdfURL / pdf), otherwise empty.
         let pdfUrl = '';
@@ -1346,17 +1356,7 @@ if (fClear) fClear.addEventListener('click', () => {
         } else {
           pdfUrl = '';
         }
-        // If you later introduce a `pdfUploads` collection and want to read it,
-        // you can attempt a guarded read here (uncomment and ensure rules allow it):
-        /*
-        try {
-          const pdfDoc = await db.collection('pdfUploads').doc(appId).get();
-          if (pdfDoc.exists && pdfDoc.data().url) pdfUrl = pdfDoc.data().url;
-        } catch (e) {
-          console.warn('pdfUploads read skipped or failed:', e);
-        }
-        */
- 
+
         rows.push({
           applicationId: appId || '-',
           name: appData.name || assign.entryName || '-',
@@ -1367,24 +1367,20 @@ if (fClear) fClear.addEventListener('click', () => {
           pdfUrl: pdfUrl
         });
       }
-      renderTable(rows);
+      
+      // Initialize filteredRows and apply current sort and filter
+      filteredRows = rows;
+      applyCurrentSortAndFilter();
+      
     } catch (err) {
       console.error(err);
       tableBody.innerHTML = '<tr><td colspan="8">Error loading assignments.</td></tr>';
     }
   });
 
-  window.onView = function(applicationId) {
-    const orderedAppIds = JSON.parse(localStorage.getItem('judgeOrderedAppIds') || '[]');
-    const currentIndex = orderedAppIds.indexOf(applicationId);
-    localStorage.setItem('judgeCurrentIndex', currentIndex);
-    window.location.href = `judgeapplicationview.html?id=${applicationId}`;
-  }
-});
-  </script>
+}); // <-- ADD THIS CLOSING BRACE for DOMContentLoaded
 
-  <script>
-// dropdown toggle (idempotent, matches judgeprofile behaviour)
+// Move the dropdown script OUTSIDE the DOMContentLoaded function
 (function(){
   const avatar = document.getElementById('avatarBtn');
   const dropdown = document.getElementById('profileDropdown');
