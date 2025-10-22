@@ -1084,29 +1084,42 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // Add this new function to handle both sorting and filtering
-  function applyCurrentSortAndFilter() {
-    // First apply filters
-    filteredRows = rows.filter(row => {
-      const catOk = !FILTERS.category || row.category === FILTERS.category;
-      const subOk = !FILTERS.subcategory || row.subcategory === FILTERS.subcategory;
-      const nameOk = !FILTERS.name || row.name === FILTERS.name;
-      const statusOk = FILTERS.status.size === 0 || FILTERS.status.has(row.status);
-      return catOk && subOk && nameOk && statusOk;
+// Add this new function to handle both sorting and filtering
+function applyCurrentSortAndFilter() {
+  // First apply filters
+  filteredRows = rows.filter(row => {
+    const catOk = !FILTERS.category || row.category === FILTERS.category;
+    const subOk = !FILTERS.subcategory || row.subcategory === FILTERS.subcategory;
+    const nameOk = !FILTERS.name || row.name === FILTERS.name;
+    const statusOk = FILTERS.status.size === 0 || FILTERS.status.has(row.status);
+    return catOk && subOk && nameOk && statusOk;
+  });
+
+  // Then apply current sort
+  if (currentSort === 'asc') {
+    filteredRows.sort((a, b) => String(a.applicationId).localeCompare(String(b.applicationId)));
+  } else if (currentSort === 'desc') {
+    filteredRows.sort((a, b) => String(b.applicationId).localeCompare(String(a.applicationId)));
+  } else if (currentSort === 'updated_desc') {
+    // **FIX: Sort by newest first (most recent at top)**
+    filteredRows.sort((a, b) => {
+      // Use the original timestamp data, not the formatted string
+      const timeA = a.originalTimestamp || new Date(a.lastUpdated).getTime() || 0;
+      const timeB = b.originalTimestamp || new Date(b.lastUpdated).getTime() || 0;
+      return timeB - timeA; // Newest first (higher timestamp first)
     });
-
-    // Then apply current sort
-    if (currentSort === 'asc') {
-      filteredRows.sort((a, b) => String(a.applicationId).localeCompare(String(b.applicationId)));
-    } else if (currentSort === 'desc') {
-      filteredRows.sort((a, b) => String(b.applicationId).localeCompare(String(a.applicationId)));
-    } else if (currentSort === 'updated_desc') {
-      filteredRows.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-    } else if (currentSort === 'updated_asc') {
-      filteredRows.sort((a, b) => new Date(a.lastUpdated) - new Date(b.lastUpdated));
-    }
-
-    renderTable(filteredRows);
+  } else if (currentSort === 'updated_asc') {
+    // **FIX: Sort by oldest first (earliest at top)**
+    filteredRows.sort((a, b) => {
+      // Use the original timestamp data, not the formatted string
+      const timeA = a.originalTimestamp || new Date(a.lastUpdated).getTime() || 0;
+      const timeB = b.originalTimestamp || new Date(b.lastUpdated).getTime() || 0;
+      return timeA - timeB; // Oldest first (lower timestamp first)
+    });
   }
+
+  renderTable(filteredRows);
+}
   
   const sortBtn = document.getElementById('sortBtn');
   const sortList = document.getElementById('sortList');
@@ -1357,13 +1370,18 @@ document.addEventListener('DOMContentLoaded', async function() {
           pdfUrl = '';
         }
 
+        // **IMPROVED: Store both formatted string and original timestamp**
+        const originalTimestamp = assign.updatedAt ? assign.updatedAt.seconds * 1000 : 0;
+        const formattedTime = assign.updatedAt ? new Date(originalTimestamp).toLocaleString() : '-';
+
         rows.push({
           applicationId: appId || '-',
           name: appData.name || assign.entryName || '-',
           category: appData.category || '-',
           subcategory: appData.subcategory || '-',
           status: judgeStatus,
-          lastUpdated: assign.updatedAt ? new Date(assign.updatedAt.seconds * 1000).toLocaleString() : '-',
+          lastUpdated: formattedTime, // Display formatted time
+          originalTimestamp: originalTimestamp, // Store original timestamp for sorting
           pdfUrl: pdfUrl
         });
       }
