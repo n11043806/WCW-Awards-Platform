@@ -243,28 +243,206 @@
     container.appendChild(row);
   }
 
-  // Map of criteria definitions with EXACT field names in your data
-const CRITERIA_DEFS = [
-  { key: 'tell_us_about_yourself', title: 'Tell us about yourself' },
-  { key: 'tell_us_about_your_work', title: 'Tell us about your work' },
-  { key: 'what_inspired_you', title: 'What inspired you to do this work?' },
-  { key: 'what_makes_you_unique', title: 'What makes what you do special or unique?' },
-  { key: 'Greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
-  { key: 'Top_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
-  { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
-  { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
-  { key: 'recognition_reason', title: 'Why should you be recognised in this category' }
-];
-  // Bottom buttons should do nothing per request
-  document.getElementById('bottomSaveBtn').addEventListener('click', async function(e){
-    e.preventDefault();
-    const uid = firebase.auth().currentUser.uid;
+// Replace the hardcoded CRITERIA_DEFS in judgeapplicationview.html
+let CRITERIA_DEFS = [];
+
+// Add this function to load criteria dynamically
+async function loadCriteriaDefinitions() {
+  try {
+    const db = firebase.firestore();
+    
+    // Load questions from applicationInfo collection
+    const snapshot = await db.collection('applicationInfo')
+      .where('Question', '!=', null) // Only docs with Question field
+      .get();
+    
+    if (snapshot.empty) {
+      console.warn('No questions found in applicationInfo collection');
+      // Use hardcoded fallback
+      CRITERIA_DEFS = [
+        { key: 'Tell_us_about_yourself', title: 'Tell us about yourself' },
+        { key: 'Tell_us_about_your_work', title: 'Tell us about your work' },
+        { key: 'What_inspired_you', title: 'What inspired you to do this work?' },
+        { key: 'What_makes_you_special_unique', title: 'What makes what you do special or unique?' },
+        { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
+        { key: 'top_greatest_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+        { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+        { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
+        { key: 'recognised_in_this_category', title: 'Why should you be recognised in this category' }
+      ];
+      return;
+    }
+
+    // Convert Firestore docs to CRITERIA_DEFS format
+    const questions = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      
+      // Skip documents that don't have proper question structure
+      if (!data.Question || !data.question_ID) return;
+      
+      const question = {
+        key: data.question_ID, // Use question_ID as the key for matching responses
+        title: data.Question, // Use Question as the display title
+        docId: doc.id, // Store document ID for reference
+        wordLimit: data.wordLimit || null
+      };
+      
+      // Extract order from Season2025 field (e.g., "Q1" -> 1)
+      const seasonOrder = data.Season2025 || data.season2025;
+      if (seasonOrder) {
+        const orderMatch = String(seasonOrder).match(/Q?(\d+)/i);
+        question.order = orderMatch ? parseInt(orderMatch[1]) : 999;
+      } else {
+        question.order = 999; // No order specified
+      }
+      
+      questions.push(question);
+    });
+
+    // Sort by order field
+    questions.sort((a, b) => a.order - b.order);
+    
+    CRITERIA_DEFS = questions;
+    console.log(`Loaded ${CRITERIA_DEFS.length} criteria from applicationInfo:`, CRITERIA_DEFS);
+    
+  } catch (err) {
+    console.error('Error loading criteria definitions:', err);
+    // Use hardcoded fallback
+    CRITERIA_DEFS = [
+      { key: 'Tell_us_about_yourself', title: 'Tell us about yourself' },
+      { key: 'Tell_us_about_your_work', title: 'Tell us about your work' },
+      { key: 'What_inspired_you', title: 'What inspired you to do this work?' },
+      { key: 'What_makes_you_special_unique', title: 'What makes what you do special or unique?' },
+      { key: 'greatest_challenge', title: 'What has been your greatest challenge & how have you addressed this' },
+      { key: 'top_greatest_achievements', title: 'What have been your top 3 greatest achievements in the past 12 months' },
+      { key: 'achievements_significant', title: 'Why were these achievements significant and what do you attribute your achievements to' },
+      { key: 'big_picture_vision', title: 'What is your big picture vision for the work you are doing' },
+      { key: 'recognised_in_this_category', title: 'Why should you be recognised in this category' }
+    ];
+  }
+}
+
+// Update your existing DOMContentLoaded and firebase.auth().onAuthStateChanged
+document.addEventListener('DOMContentLoaded', async function() {
+  // Load criteria definitions first
+  await loadCriteriaDefinitions();
+  
+  // Add event listeners for Save and Submit buttons
+  document.getElementById('bottomSaveBtn').addEventListener('click', async function() {
+    const uid = firebase.auth().currentUser?.uid;
+    if (!uid) {
+      alert('Please log in first.');
+      return;
+    }
+
     const scores = {};
     CRITERIA_DEFS.forEach(c => {
-      const score = parseInt(document.getElementById('score_' + c.key).value, 10);
-      const comment = document.getElementById('comment_' + c.key).value;
-      if (!isNaN(score) || comment) {
+      const scoreElement = document.getElementById('score_' + c.key);
+      const commentElement = document.getElementById('comment_' + c.key);
+      
+      if (scoreElement && commentElement) {
+        const score = parseInt(scoreElement.value, 10);
+        const comment = commentElement.value;
+        if (!isNaN(score) || comment) {
+          scores[c.key] = { score: isNaN(score) ? null : score, comment: comment || "" };
+        }
+      }
+    });
+
+    try {
+      await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set({
+        judgeId: uid,
+        applicationId: APP_ID,
+        scores: scores,
+        status: "saved",
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      alert('Progress saved successfully!');
+    } catch (err) {
+      console.error('Save error:', err);
+      alert('Error saving: ' + err.message);
+    }
+  });
+
+  document.getElementById('bottomSubmitBtn').addEventListener('click', async function() {
+    const uid = firebase.auth().currentUser?.uid;
+    if (!uid) {
+      alert('Please log in first.');
+      return;
+    }
+
+    const scores = {};
+    let allScored = true;
+    
+    CRITERIA_DEFS.forEach(c => {
+      const scoreElement = document.getElementById('score_' + c.key);
+      const commentElement = document.getElementById('comment_' + c.key);
+      
+      if (scoreElement && commentElement) {
+        const score = parseInt(scoreElement.value, 10);
+        const comment = commentElement.value;
+        
+        if (isNaN(score) || score < 1 || score > 10) {
+          allScored = false;
+        }
+        
         scores[c.key] = { score: isNaN(score) ? null : score, comment: comment || "" };
+      }
+    });
+
+    if (!allScored) {
+      alert('Please score all criteria (1-10) before submitting.');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to submit your final scores? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set({
+        judgeId: uid,
+        applicationId: APP_ID,
+        scores: scores,
+        status: "submitted",
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      alert('Scores submitted successfully!');
+    } catch (err) {
+      console.error('Submit error:', err);
+      alert('Error submitting: ' + err.message);
+    }
+  });
+
+  // Fix the Next button event listener (it was trying to access nextBtn before it was created)
+  const judgeActionsDiv = document.querySelector('.judge-actions');
+  const nextBtn = document.createElement('button');
+  nextBtn.id = "nextBtn";
+  nextBtn.className = "btn action-btn";
+  nextBtn.textContent = "Next";
+  judgeActionsDiv.appendChild(nextBtn);
+
+  // NOW add the event listener after the button is created
+  nextBtn.addEventListener('click', async function() {
+    const uid = firebase.auth().currentUser?.uid;
+    if (!uid) {
+      alert('Please log in first.');
+      return;
+    }
+
+    const scores = {};
+    CRITERIA_DEFS.forEach(c => {
+      const scoreElement = document.getElementById('score_' + c.key);
+      const commentElement = document.getElementById('comment_' + c.key);
+      
+      if (scoreElement && commentElement) {
+        const score = parseInt(scoreElement.value, 10);
+        const comment = commentElement.value;
+        if (!isNaN(score) || comment) {
+          scores[c.key] = { score: isNaN(score) ? null : score, comment: comment || "" };
+        }
       }
     });
 
@@ -278,215 +456,167 @@ const CRITERIA_DEFS = [
       }, { merge: true });
       alert('Progress saved!');
     } catch (err) {
+      console.error('Save error:', err);
       alert('Error saving: ' + err.message);
     }
-  });
-  document.getElementById('bottomSubmitBtn').addEventListener('click', async function(e){
-    e.preventDefault();
-    const uid = firebase.auth().currentUser.uid;
-    const scores = {};
-    CRITERIA_DEFS.forEach(c => {
-      const score = parseInt(document.getElementById('score_' + c.key).value, 10);
-      const comment = document.getElementById('comment_' + c.key).value;
-      if (!isNaN(score) || comment) {
-        scores[c.key] = { score: isNaN(score) ? null : score, comment: comment || "" };
-      }
-    });
 
-    try {
-      await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).set({
-        judgeId: uid,
-        applicationId: APP_ID,
-        scores: scores,
-        status: "submitted", // <-- set status to submitted
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      alert('Judging submitted!');
-    } catch (err) {
-      alert('Error submitting: ' + err.message);
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const judgeActionsDiv = document.querySelector('.judge-actions');
-    const nextBtn = document.createElement('button');
-    nextBtn.id = "nextBtn";
-    nextBtn.className = "btn action-btn";
-    nextBtn.textContent = "Next";
-    judgeActionsDiv.appendChild(nextBtn);
-
+    const params = new URLSearchParams(window.location.search);
+    const currentId = params.get('id');
     const orderedAppIds = JSON.parse(localStorage.getItem('judgeOrderedAppIds') || '[]');
-    const APP_ID = new URLSearchParams(window.location.search).get('id');
-    let currentIndex = orderedAppIds.indexOf(APP_ID);
+    const currentIndex = orderedAppIds.indexOf(currentId);
 
-    // Always show the Next button unless at the last entry
     if (currentIndex !== -1 && currentIndex < orderedAppIds.length - 1) {
-      nextBtn.disabled = false;
-      nextBtn.style.background = "#fff";
-      nextBtn.style.color = "#d7336f";
-      nextBtn.style.borderColor = "#d7336f";
-      nextBtn.style.cursor = "pointer";
-      nextBtn.onclick = function() {
-        window.location.href = `judgeapplicationview.html?id=${orderedAppIds[currentIndex + 1]}`;
-      };
+      const nextId = orderedAppIds[currentIndex + 1];
+      window.location.href = `judgeapplicationview.html?id=${nextId}`;
     } else {
-      // At the last entry, show but grey out
-      nextBtn.disabled = true;
-      nextBtn.style.background = "#eee";
-      nextBtn.style.color = "#aaa";
-      nextBtn.style.borderColor = "#ccc";
-      nextBtn.style.cursor = "not-allowed";
-      nextBtn.onclick = null;
+      alert('This is the last application in the list.');
     }
   });
 
-  async function fetchApplicationWithFallback(appId, judgeId) {
+  const orderedAppIds = JSON.parse(localStorage.getItem('judgeOrderedAppIds') || '[]');
+  const APP_ID = new URLSearchParams(window.location.search).get('id');
+  let currentIndex = orderedAppIds.indexOf(APP_ID);
+
+  // Set up Next button styling and behavior
+  if (currentIndex !== -1 && currentIndex < orderedAppIds.length - 1) {
+    nextBtn.disabled = false;
+    nextBtn.style.background = "#fff";
+    nextBtn.style.color = "#d7336f";
+    nextBtn.style.borderColor = "#d7336f";
+    nextBtn.style.cursor = "pointer";
+  } else {
+    // At the last entry, show but grey out
+    nextBtn.disabled = true;
+    nextBtn.style.background = "#eee";
+    nextBtn.style.color = "#aaa";
+    nextBtn.style.borderColor = "#ccc";
+    nextBtn.style.cursor = "not-allowed";
+  }
+});
+
+
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) { location.href = 'signin.html'; return; }
+  
+  // Ensure criteria are loaded before proceeding
+  if (CRITERIA_DEFS.length === 0) {
+    await loadCriteriaDefinitions();
+  }
+  
+  const uid = user.uid;
+  const judgeId = uid;
+  const APP_ID = new URLSearchParams(window.location.search).get('id');
+  document.getElementById('appIdLabel').textContent = APP_ID || '-';
+
+  try {
+    // Get application data directly from Firestore
     const db = firebase.firestore();
     let appData = {};
-
-    // Try reading full application document
+    
     try {
-      const appDoc = await db.collection('applications').doc(appId).get();
+      const appDoc = await db.collection('applications').doc(APP_ID).get();
       if (appDoc.exists) {
         appData = appDoc.data();
-        console.log('Loaded full application:', appId);
-        return appData;
+        console.log('Loaded application data:', appData);
       }
-      console.warn('Application doc not found:', appId);
     } catch (err) {
-      // likely permission-denied for judges
-      console.warn('Reading applications/' + appId + ' failed, falling back to judgeAssignments:', err);
+      console.warn('Could not read application directly:', err);
+      // Try judgeAssignments fallback
+      try {
+        const assignDoc = await db.collection('judgeAssignments').doc(`${uid}_${APP_ID}`).get();
+        if (assignDoc.exists) {
+          appData = assignDoc.data();
+          console.log('Loaded from judge assignments:', appData);
+        }
+      } catch (err2) {
+        console.warn('Could not read judge assignment:', err2);
+      }
     }
 
-    // Fallback 1: deterministic assignment doc id `${judgeId}_${appId}`
+    console.log('appData used to populate UI:', appData);
+
+    // helper: try candidates + snake_case + lowercase variants
+    const toSnake = s => s.replace(/([A-Z])/g, '_$1').replace(/\./g,'_').toLowerCase();
+    const pick = (obj, candidates) => {
+      if (!obj) return null;
+      for (const k of candidates) {
+        const variants = [k];
+        try { variants.push(toSnake(k)); } catch(e) {}
+        variants.push(k.toLowerCase());
+        for (const v of variants) {
+          if (Object.prototype.hasOwnProperty.call(obj, v) && obj[v] !== undefined && obj[v] !== null && obj[v] !== '') return obj[v];
+        }
+      }
+      return null;
+    };
+
+    const setField = (selectors, value) => {
+      const val = (value === null || value === undefined || value === '') ? '-' : value;
+      for (const sel of selectors) {
+        const elById = document.getElementById(sel);
+        if (elById) {
+          if (elById.tagName === 'INPUT' || elById.tagName === 'TEXTAREA') elById.value = val;
+          else elById.textContent = val;
+          return true;
+        }
+        const elByData = document.querySelector(`[data-field="${sel}"]`);
+        if (elByData) {
+          if (elByData.tagName === 'INPUT' || elByData.tagName === 'TEXTAREA') elByData.value = val;
+          else elByData.textContent = val;
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const d = appData || {};
+
+    setField(['entrantCategory', 'category', 'entryCategory'], pick(d, ['category','categoryName','cat']));
+    setField(['entrantSubcategory', 'subcategory', 'entrySubcategory'], pick(d, ['subcategory','sub_category','subCat']));
+    setField(['entrantAward','award','entrantAwardChoice'], pick(d, ['awards_choice','award','awardsChoice']));
+    setField(['entrantFullName','name','entrantName'], pick(d, ['name','entryName','fullName']));
+    setField(['entrantWebsite','website','website_url','url'], pick(d, ['website','website_url','url']));
+    setField(['entrantEmail','email','contact_email'], pick(d, ['email','contact_email']));
+    setField(['entrantMobile','mobile','mobile_number','phone'], pick(d, ['mobile_number','mobile','phone']));
+    setField(['entrantAddress','address','location'], pick(d, ['address','location']));
+    setField(['entrantInstagram','instagram','instagram_url'], pick(d, ['instagram_url','instagram']));
+    setField(['entrantLinkedIn','linkedin','linkedin_url'], pick(d, ['linkedin_url','linkedin']));
+
+    // Render criteria/questions using CRITERIA_DEFS and saved judge responses
+    document.getElementById('applicationSections').innerHTML = '';
+    let judgeScores = {};
     try {
-      const assignId = `${judgeId}_${appId}`;
-      const assignDoc = await db.collection('judgeAssignments').doc(assignId).get();
-      if (assignDoc.exists) {
-        const a = assignDoc.data();
-        console.log('Using assignment summary (doc id):', assignId);
-        appData = {
-          name: a.entryName || a.name || '-',
-          category: a.category || '-',
-          subcategory: a.subcategory || '-',
-          // add any other summary fields your admin stores on the assignment
-          pdfUrl: a.pdfUrl || a.pdfurl || ''
-        };
-        return appData;
-      }
+      const respDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).get();
+      if (respDoc.exists && respDoc.data().scores) judgeScores = respDoc.data().scores;
     } catch (err) {
-      console.warn('Deterministic assignment lookup failed:', err);
+      console.warn('Failed to load judge responses:', err);
     }
 
-    // Fallback 2: query for assignment where applicationId == appId and judgeId == judgeId
-    try {
-      const q = await db.collection('judgeAssignments')
-        .where('applicationId', '==', appId)
-        .where('judgeId', '==', judgeId)
-        .limit(1)
-        .get();
-      if (!q.empty) {
-        const a = q.docs[0].data();
-        console.log('Using assignment summary (query):', q.docs[0].id);
-        appData = {
-          name: a.entryName || a.name || '-',
-          category: a.category || '-',
-          subcategory: a.subcategory || '-',
-          pdfUrl: a.pdfUrl || a.pdfurl || ''
-        };
-        return appData;
-      }
-    } catch (err) {
-      console.warn('Assignment query fallback failed:', err);
-    }
+    CRITERIA_DEFS.forEach(c => {
+      const answer = pick(d, [c.key, c.altKey || '']) || '-';
+      const scoreVal = judgeScores[c.key]?.score;
+      const commentVal = judgeScores[c.key]?.comment;
+      addCriteriaBlock(c.key, c.title, answer, scoreVal, commentVal);
+    });
 
-    // Nothing available
-    return appData;
+  } catch (err) {
+    console.error('Failed to load application:', err);
+    document.getElementById('applicationSections').innerHTML = '<div style="color:#d7336f;">Error loading application.</div>';
   }
 
-  // Example: integrate into your existing onAuthStateChanged / loader logic
-  // replace your current appDoc fetch with:
-  firebase.auth().onAuthStateChanged(async user => {
-    if (!user) { location.href = 'signin.html'; return; }
-    const uid = user.uid;
-    const judgeId = uid;
-    const APP_ID = new URLSearchParams(window.location.search).get('id');
-    document.getElementById('appIdLabel').textContent = APP_ID || '-';
-
-    try {
-      const appData = await fetchApplicationWithFallback(APP_ID, uid);
-      console.log('appData used to populate UI:', appData);
-
-      // helper: try candidates + snake_case + lowercase variants
-      const toSnake = s => s.replace(/([A-Z])/g, '_$1').replace(/\./g,'_').toLowerCase();
-      const pick = (obj, candidates) => {
-        if (!obj) return null;
-        for (const k of candidates) {
-          const variants = [k];
-          try { variants.push(toSnake(k)); } catch(e) {}
-          variants.push(k.toLowerCase());
-          for (const v of variants) {
-            if (Object.prototype.hasOwnProperty.call(obj, v) && obj[v] !== undefined && obj[v] !== null && obj[v] !== '') return obj[v];
-          }
-        }
-        return null;
-      };
-
-      const setField = (selectors, value) => {
-        const val = (value === null || value === undefined || value === '') ? '-' : value;
-        for (const sel of selectors) {
-          const elById = document.getElementById(sel);
-          if (elById) {
-            if (elById.tagName === 'INPUT' || elById.tagName === 'TEXTAREA') elById.value = val;
-            else elById.textContent = val;
-            return true;
-          }
-          const elByData = document.querySelector(`[data-field="${sel}"]`);
-          if (elByData) {
-            if (elByData.tagName === 'INPUT' || elByData.tagName === 'TEXTAREA') elByData.value = val;
-            else elByData.textContent = val;
-            return true;
-          }
-        }
-        return false;
-      };
-
-      const d = appData || {};
-
-      setField(['entrantCategory', 'category', 'entryCategory'], pick(d, ['category','categoryName','cat']));
-      setField(['entrantSubcategory', 'subcategory', 'entrySubcategory'], pick(d, ['subcategory','sub_category','subCat']));
-      setField(['entrantAward','award','entrantAwardChoice'], pick(d, ['awards_choice','award','awardsChoice']));
-      setField(['entrantFullName','name','entrantName'], pick(d, ['name','entryName','fullName']));
-      setField(['entrantWebsite','website','website_url','url'], pick(d, ['website','website_url','url']));
-      setField(['entrantEmail','email','contact_email'], pick(d, ['email','contact_email']));
-      setField(['entrantMobile','mobile','mobile_number','phone'], pick(d, ['mobile_number','mobile','phone']));
-      setField(['entrantAddress','address','location'], pick(d, ['address','location']));
-      setField(['entrantInstagram','instagram','instagram_url'], pick(d, ['instagram_url','instagram']));
-      setField(['entrantLinkedIn','linkedin','linkedin_url'], pick(d, ['linkedin_url','linkedin']));
-
-      // Render criteria/questions using CRITERIA_DEFS and saved judge responses
-      document.getElementById('applicationSections').innerHTML = '';
-      let judgeScores = {};
-      try {
-        const respDoc = await firebase.firestore().collection('judgeResponses').doc(uid + '_' + APP_ID).get();
-        if (respDoc.exists && respDoc.data().scores) judgeScores = respDoc.data().scores;
-      } catch (err) {
-        console.warn('Failed to load judge responses:', err);
-      }
-
-      CRITERIA_DEFS.forEach(c => {
-        const answer = pick(d, [c.key, c.altKey || '']) || '-';
-        const scoreVal = judgeScores[c.key]?.score;
-        const commentVal = judgeScores[c.key]?.comment;
-        addCriteriaBlock(c.key, c.title, answer, scoreVal, commentVal);
-      });
-
-
-    } catch (err) {
-      console.error('Failed to load application:', err);
-      document.getElementById('applicationSections').innerHTML = '<div style="color:#d7336f;">Error loading application.</div>';
+  // Set judge name in header
+  try {
+    const userDoc = await firebase.firestore().collection('users').doc(uid).get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const name = userData.name || userData.firstName || user.email.split('@')[0];
+      document.getElementById('judgeName').textContent = name;
     }
-  });
+  } catch (err) {
+    console.warn('Could not load judge name:', err);
+    document.getElementById('judgeName').textContent = user.email.split('@')[0];
+  }
+});
   </script>
 </body>
 </html>
