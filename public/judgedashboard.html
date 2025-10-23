@@ -818,21 +818,6 @@ async function exportAppPdf(id) {
             name: assignData.entryName || assignData.name || '-',
             category: assignData.category || '-',
             subcategory: assignData.subcategory || '-',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            // Add other fields as needed
-            tell_us_about_yourself: assignData.tell_us_about_yourself || '-',
-            tell_us_about_your_work: assignData.tell_us_about_your_work || '-',
-            what_inspired_you: assignData.what_inspired_you || '-',
-            what_makes_you_unique: assignData.what_makes_you_unique || '-',
-            Greatest_challenge: assignData.Greatest_challenge || '-',
-            Top_achievements: assignData.Top_achievements || '-',
-=======
-=======
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
             // Add the correct field names based on your Firebase structure
             Tell_us_about_yourself: assignData.Tell_us_about_yourself || '-',
             Tell_us_about_your_work: assignData.Tell_us_about_your_work || '-',
@@ -840,13 +825,6 @@ async function exportAppPdf(id) {
             What_makes_you_special_unique: assignData.What_makes_you_special_unique || '-',
             greatest_challenge: assignData.greatest_challenge || '-',
             top_greatest_achievements: assignData.top_greatest_achievements || '-',
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
             achievements_significant: assignData.achievements_significant || '-',
             big_picture_vision: assignData.big_picture_vision || '-',
             recognised_in_this_category: assignData.recognised_in_this_category || '-'
@@ -887,21 +865,8 @@ async function exportAppPdf(id) {
       const score = judgeData.score || '';
       const comment = judgeData.comment || '';
       
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
       console.log(`Field ${c.key}:`, value, 'Score:', score, 'Comment:', comment); // Debug log
       
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
-      console.log(`Field ${c.key}:`, value, 'Score:', score, 'Comment:', comment); // Debug log
-      
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
-      console.log(`Field ${c.key}:`, value, 'Score:', score, 'Comment:', comment); // Debug log
-      
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
       return `
         <div class="criteria-row">
           <div class="card">
@@ -922,19 +887,7 @@ async function exportAppPdf(id) {
       `;
     }).join('');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // Write the HTML with updated styles for displaying scores/comments
-=======
     // Write the complete HTML document
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
-    // Write the complete HTML document
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
-    // Write the complete HTML document
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
     win.document.write(`
       <!DOCTYPE html>
       <html>
@@ -1031,18 +984,7 @@ async function exportAppPdf(id) {
             background: #fff;
             white-space: pre-wrap;
             line-height: 1.4;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
             color: #333;
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
-            color: #333;
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
-=======
-            color: #333;
->>>>>>> afbeb186fe086fb684e125a10a83dc1ce0565219
           }
           footer {
             margin-top: 30px;
